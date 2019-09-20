@@ -25,6 +25,17 @@ syn sync fromstart " ccomment doxyBody
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " C-style multi-line
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if exists('b:current_syntax') && b:current_syntax =~ 'make'
+    " ### ...
+    execu 'syn region doxyBody matchgroup=doxyDelimiter '
+      \ . 'start=+^\s*####\@!+ '
+      \ . 'end=+$+ '
+      \ . 'contains=@doxyInbody'
+
+    " ### ...
+    syn match doxyContinue +^\s*###\_s+ display contained
+endif
+
 " /** ... */
 " /*! ... */
 execu 'syn region doxyBody matchgroup=doxyDelimiter '
@@ -368,6 +379,7 @@ execu 'syn region doxyMdInlineCode matchgroup=doxyMdDelimiter '
 " #### H4
 " ##### H5
 " ###### H6
+syn region doxyMdH1 matchgroup=doxyMdDelimiter start=+#\@<!#\s\@=+      end=+#*\s*$+ display oneline contained contains=@doxyMdInline
 syn region doxyMdH2 matchgroup=doxyMdDelimiter start=+#\@<!##\s\@=+     end=+#*\s*$+ display oneline contained contains=@doxyMdInline
 syn region doxyMdH3 matchgroup=doxyMdDelimiter start=+#\@<!###\s\@=+    end=+#*\s*$+ display oneline contained contains=@doxyMdInline
 syn region doxyMdH4 matchgroup=doxyMdDelimiter start=+#\@<!####\s\@=+   end=+#*\s*$+ display oneline contained contains=@doxyMdInline
@@ -377,7 +389,7 @@ syn region doxyMdH6 matchgroup=doxyMdDelimiter start=+#\@<!######\s\@=+ end=+#*\
 " Underlined headers (limited support: no highlight of the header itself).
 syn match doxyMdHeaderLine "\%(^\|\s\)\@<==\+$" display contained
 
-" Block quotes (overrides doxyContinue)
+" Block quotes (overrides doxyBlock and doxyContinue)
 " > quote
 " >> quote
 " > > quote
@@ -496,14 +508,14 @@ syn cluster rcGroup       add=doxy.*
 "    of a multi-part command.
 "    For example,
 "    @brief {text}
-"    doxyCommand (@command)
-"    doxyText    (common text)
+"    doxyCommand  (@command)
+"    doxyText     (common text)
 "
 "    @retval <name> {text}
-"    doxyName    (e.g., <name>, ...)
+"    doxyName     (e.g., <name>, ...)
 "
 "    @par [(title)] {text}
-"    doxyTitle   (e.g., (title), ...)
+"    doxyTitle    (e.g., (title), ...)
 "
 "    Escaped characters may use a more visible color than a command.
 "    doxyEscaped
@@ -516,14 +528,14 @@ syn cluster rcGroup       add=doxy.*
 "
 " 3. Font
 "    Code requires a visible color.
-"    doxyCodeFont
+"    doxyCode
 "
 "    Italic and bold fonts require a visible color.
-"    doxyItalicFont
-"    doxyBoldFont
+"    doxyItalic
+"    doxyBold
 "
 "    Strikethrough font requires a dimmer color.
-"    doxyStrikeFont
+"    doxyStrike
 
 " CR: contrast ratio
 " (CR=15.6) 0,0,88; 0,0,3 (white on black)
@@ -533,14 +545,16 @@ hi def doxyMdDelimiter guifg=#e3e3e3 guibg=#080808
 hi def doxyContinue    guifg=#f7f7f7 guibg=#1c1c1c
 " (CR=14.2) 0,100,85   (white, no recommended to be colorful)
 hi def doxyCommand     guifg=#d9d9d9 guibg=#080808
-" (CR= 8.2) 180,100,72 (tan on black)
+" (CR=11.0) 80,100,83  (font faces and entities)
+hi def doxyFont        guifg=#8dd400 guibg=#080808
+" (CR= 8.2) 180,100,72 (shall be the same as comment)
 hi def doxyText        guifg=#00b8b8 guibg=#080808
 " (CR=11.1) 145,100,87 (shall be the same as the source code)
-hi def doxyCodeFont    guifg=#00df5f guibg=#080808 font='Monaco'
-hi def doxyItalicFont  guifg=#00df5f guibg=#080808 term=italic cterm=italic gui=italic
-hi def doxyBoldFont    guifg=#00df5f guibg=#080808 term=bold   cterm=bold   gui=bold
-" (CR= 7.0) 0,0,60     (Strikethrough text is the least significant)
-hi def doxyStrikeFont  guifg=#909090 guibg=#080808
+hi def doxyCode        guifg=#00df5f guibg=#080808 font='Monaco'
+hi def doxyItalic      guifg=#00df5f guibg=#080808 term=italic cterm=italic gui=italic
+hi def doxyBold        guifg=#00df5f guibg=#080808 term=bold   cterm=bold   gui=bold
+" (CR= 7.0) 0,0,60         (Strikethrough text is the least significant)
+hi def doxyStrike      guifg=#909090 guibg=#080808
 " (CR=10.1) 50,100,85  (a doxygen identifier is more significant than the common
 "                       text, different from an identifier in the source code)
 hi def doxyName        guifg=#c9db00 guibg=#080808
@@ -557,16 +571,15 @@ hi def doxyTodo        guifg=#ffff00 guibg=#080808
 hi def link doxyBody       doxyText
 hi def link doxyNames      doxyName
 hi def link doxyNameTitle  doxyName
-hi def link doxyFont       doxyCommand
-hi def link doxyItalicWord doxyItalicFont
-hi def link doxyBoldWord   doxyBoldFont
-hi def link doxyCodeWord   doxyCodeFont
+hi def link doxyItalicWord doxyItalic
+hi def link doxyBoldWord   doxyBold
+hi def link doxyCodeWord   doxyCode
 hi def link doxyPar        doxyCommand
 hi def link doxySection    doxyCommand
 hi def link doxyTypeParam  doxyCommand
 hi def link doxyFakeClass  doxyCommand
 hi def link doxyParam      doxyCommand
-hi def link doxyParamIO    doxyName
+hi def link doxyParamIO    doxyHeading
 hi def link doxyFunction   doxyCommand
 hi def link doxyEntity     doxyHeading
 hi def link doxyGrouping   doxyCommand
@@ -574,10 +587,10 @@ hi def link doxyPaging     doxyCommand
 hi def link doxyCodeBlock  doxyCodeWord
 
 hi def link doxyMdDelimiter       doxyDelimiter
-hi def link doxyMdItalic          doxyItalicFont
-hi def link doxyMdBold            doxyBoldFont
-hi def link doxyMdStrike          doxyStrikeFont
-hi def link doxyMdInlineCode      doxyCodeFont
+hi def link doxyMdItalic          doxyItalic
+hi def link doxyMdBold            doxyBold
+hi def link doxyMdStrike          doxyStrike
+hi def link doxyMdInlineCode      doxyCode
 hi def link doxyMdRule            doxyEscaped
 hi def link doxyMdH1              doxyHeading
 hi def link doxyMdH2              doxyHeading
@@ -587,8 +600,8 @@ hi def link doxyMdH5              doxyHeading
 hi def link doxyMdH6              doxyHeading
 hi def link doxyMdHeaderLine      doxyEscaped
 hi def link doxyMdBlockQuote      doxyContinue
-hi def link doxyMdFencedCodeBlock doxyCodeFont
-hi def link doxyMdCodeBlock       doxyCodeFont
+hi def link doxyMdFencedCodeBlock doxyCode
+hi def link doxyMdCodeBlock       doxyCode
 hi def link doxyMdBulletList      doxyMdDelimiter
 hi def link doxyMdNumberList      doxyMdDelimiter
 
