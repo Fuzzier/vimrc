@@ -1,0 +1,288 @@
+fox123456789bar2xbarabc
+bar
+
+C-style comment block
+/**
+ * doxyCommand
+
+ * @ @notacommand
+
+ * @brief This is
+ *        a brief.
+
+ * @todo TODO,
+ *       Something important.
+
+ * @par paragraph `line code` title.
+ *      paragraph
+ *      body.
+
+ * @ingroup Name1 Name2 Name3
+
+ * @defgroup Name Group title.
+
+ * @addtogroup Name Group title.
+
+ * @weakgroup Name Group title.
+
+ * Escaped characters
+ * @n, @\, @@, @&, @$, @#, @<, @>, @%, @", @., @=, @::, @--, @---
+
+ * Font faces
+ * @a Italic xx
+ * @e Italic xx
+ * @em Italic xx
+ * @b Bold xx
+ * @c Code xx
+ * @p Code xx
+
+ * Code block
+ * @code{.cpp}
+ *  Code
+ *   line
+ * @endcode
+
+ * @param[in]     key   This is a param.
+ * @param[out]    value This is a param.
+ * @param[in,out] size  This is a param.
+
+ * @tparam    Type This is a tparam.
+ * @retval    int  This is a retval.
+ * @exception std::exception This is an exception.
+ * @throw     std::exception This is an exception.
+ * @throws    std::exception This is an exception.
+
+ * @relates ::Class_01 Descriptions.
+
+ * Markdown
+ * Headers
+ * # Header1
+ * ## Header2
+ * ### Header3
+ * #### Header4
+ * ##### Header5
+ * ###### Header6
+ * ####### not a header
+ * Header1
+ * =========
+
+ * Block quotes
+ * > xxxx
+ * >> xxxx
+ * > > xxxx
+ * not quote a > b
+
+ * Fenced code block
+ * ```{.cpp}
+ * xxx
+ * ```
+ * ~~~
+ * xxx
+ * ~~~
+ *
+ * Bullet lists
+ * * xxx
+ * + xxx
+ * - xxx
+
+ * Number lists
+ * 1. xxx
+ * 2. xxx
+ * #. xx
+
+ * Inline code
+ * `single `` line`
+ * `multiple ``
+ *    lines`
+
+ * Horizontal rules
+ * * * *
+ * - - -
+ * _ _ _
+
+ * Emphasis
+ * *xxx
+ *  xxx* xx
+ * _xxx
+ *  xxx_ xx
+ * **xxx
+ *   xxx** xx
+ * __xxx
+ *   xxx__ xx
+ * ~~xxx
+ *   xxx~~ xx
+
+ */
+
+
+/*!
+ *
+ */
+
+C++ style comment block
+/// doxyEscaped
+/// @n, @\, @@, @&, @$, @#, @<, @>, @%, @", @., @=, @::, @--, @---
+///
+/// doxyCommand
+/// @par paragraph `code` title.
+///      paragraph body.
+/// @
+///
+/// Font faces
+/// @a Italic xx
+/// @e Italic xx
+/// @em Italic xx
+/// @b Bold xx
+/// @c Code xx
+/// @p Code xx
+///
+/// Markdown
+/// Headers
+/// # Header1
+/// ## Header2
+/// ### Header3
+/// #### Header4
+/// ##### Header5
+/// ###### Header6
+/// ####### not a header #
+/// Header1
+/// =========
+///
+/// Block quotes
+/// > xxxx
+/// >> xxxx
+/// > > xxxx
+/// not quote a > b
+///
+/// Fenced code block
+/// ```{.cpp}
+/// Code
+/// ```
+/// ~~~
+/// Code
+/// ~~~
+///
+/// Bullet lists
+/// * xxx
+/// + xxx
+/// - xxx
+///
+/// Number lists
+/// 1. xxx
+/// 2. xxx
+/// #. xx
+///
+/// Inline code
+/// `Code `` line`
+/// `multiple ``
+///    Code lines`
+///
+/// Horizontal rules
+/// * * *
+/// - - -
+/// _ _ _
+///
+/// Emphasis
+/// *xxx
+///  xxx* xx
+/// _xxx
+///  xxx_ xx
+/// **xxx
+///   xxx** xx
+/// __xxx
+///   xxx__ xx
+/// ~~xxx
+///   xxx~~ xx
+
+//!
+//!
+//!
+
+C-style post-member comment block
+xxx /**<
+     *
+     */
+
+xxx /*!<
+     *
+     */
+
+C++-style post-member comment block
+xxx ///< doxyEscaped
+    ///< @n, @\, @@, @&, @$, @#, @<, @>, @%, @", @., @=, @::, @--, @---
+    ///<
+    ///< doxyCommand
+    ///< @par paragraph `code` title.
+    ///<      paragraph body.
+    ///< @
+    ///<
+    ///< Font faces
+    ///< @a Italic xx
+    ///< @e Italic xx
+    ///< @em Italic xx
+    ///< @b Bold xx
+    ///< @c Code xx
+    ///< @p Code xx
+    ///<
+    ///< Markdown
+    ///< Headers
+    ///< # Header1
+    ///< ## Header2
+    ///< ### Header3
+    ///< #### Header4
+    ///< ##### Header5
+    ///< ###### Header6
+    ///< ####### not a header #
+    ///< Header1
+    ///< =========
+    ///<
+    ///< Block quotes
+    ///< > xxxx
+    ///< >> xxxx
+    ///< > > xxxx
+    ///< not quote a > b
+    ///<
+    ///< Fenced code block
+    ///< ```{.cpp}
+    ///< xxx
+    ///< ```
+    ///< ~~~
+    ///< xxx
+    ///< ~~~
+    ///<
+    ///< Bullet lists
+    ///< * xxx
+    ///< + xxx
+    ///< - xxx
+    ///<
+    ///< Number lists
+    ///< 1. xxx
+    ///< 2. xxx
+    ///< #. xx
+    ///<
+    ///< Inline code
+    ///< `single `` line`
+    ///< `multiple ``
+    ///<    lines`
+    ///<
+    ///< Horizontal rules
+    ///< * * *
+    ///< - - -
+    ///< _ _ _
+    ///<
+    ///< Emphasis
+    ///< *xxx
+    ///<  xxx* xx
+    ///< _xxx
+    ///<  xxx_ xx
+    ///< **xxx
+    ///<   xxx** xx
+    ///< __xxx
+    ///<   xxx__ xx
+    ///< ~~xxx
+    ///<   xxx~~ xx
+
+xxx //!<
+    //!<
+    //!<
+
