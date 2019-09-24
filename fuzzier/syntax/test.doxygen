@@ -3,31 +3,47 @@ bar
 
 C-style comment block
 /**
- * doxyCommand
-
  * @ @notacommand
-
+ *
+ * ====================================
+ * Doxygen commands
+ * ====================================
+ *
+ * ==================
+ * Escaped characters
+ * ==================
+ * @n, @\, @@, @&, @$, @#, @<, @>, @%, @", @., @=, @::, @--, @---
+ *
+ * ====================
+ * Common text sections
+ * ====================
  * @brief This is
  *        a brief.
-
+ *
+ * @attention TODO,
+ *            Something important.
+ *
+ * @warning TODO,
+ *          Something important.
+ *
+ * @note TODO,
+ *       Something important.
+ *
  * @todo TODO,
  *       Something important.
-
- * @par paragraph `line code` title.
- *      paragraph
- *      body.
-
- * @ingroup Name1 Name2 Name3
-
- * @defgroup Name Group title.
-
- * @addtogroup Name Group title.
-
- * @weakgroup Name Group title.
-
- * Escaped characters
- * @n, @\, @@, @&, @$, @#, @<, @>, @%, @", @., @=, @::, @--, @---
-
+ *
+ * @test TODO,
+ *       Something important.
+ *
+ * @bug TODO,
+ *      Something important.
+ *
+ * @deprecated TODO,
+ *             Something important.
+ *
+ * ==============
+ * Small sections
+ * ==============
  * Font faces
  * @a Italic xx
  * @e Italic xx
@@ -35,72 +51,169 @@ C-style comment block
  * @b Bold xx
  * @c Code xx
  * @p Code xx
-
- * Code block
+ *
+ * Paragraph
+ * @par The paragraph `title`.
+ *      The paragraph
+ *          body.
+ *
+ * ================
+ * Blocks
+ * ================
  * @code{.cpp}
  *  Code
  *   line
  * @endcode
-
+ *
+ * @dot
+ *  Dot
+ *   code
+ * @enddot
+ *
+ * @verbatim
+ * verbatim text.
+ * @endverbatim
+ *
+ * @latexonly
+ * Latex text.
+ * @endlatexonly
+ *
+ * @htmlonly
+ * Html text.
+ * @endhtmlonly
+ *
+ * @f$a + b = c@f$
+ *
+ * @f[
+ * a + b = c
+ * @f]
+ *
+ * @f{
+ * evn
+ * }{
+ * a + b = c
+ * @f}
+ *
+ * =====
+ * Class
+ * =====
+ * @tparam T The type.
+ *
+ * @public
+ *
+ * @publicsection
+ *
+ * @protected
+ *
+ * @protectedsection
+ *
+ * @private
+ *
+ * @privatesection
+ *
+ * @extends BaseClass
+ *
+ * @implements Interface
+ *
+ * @memberof Class
+ *
+ * ========
+ * Function
+ * ========
  * @param[in]     key   This is a param.
  * @param[out]    value This is a param.
  * @param[in,out] size  This is a param.
-
- * @tparam    Type This is a tparam.
- * @retval    int  This is a retval.
- * @exception std::exception This is an exception.
- * @throw     std::exception This is an exception.
- * @throws    std::exception This is an exception.
-
- * @relates ::Class_01 Descriptions.
-
- * Markdown
- * Headers
- * # Header1
- * ## Header2
- * ### Header3
- * #### Header4
- * ##### Header5
- * ###### Header6
- * ####### not a header
- * Header1
- * =========
-
- * Block quotes
- * > xxxx
- * >> xxxx
- * > > xxxx
- * not quote a > b
-
- * Fenced code block
- * ```{.cpp}
- * xxx
- * ```
- * ~~~
- * xxx
- * ~~~
  *
- * Bullet lists
- * * xxx
- * + xxx
- * - xxx
-
- * Number lists
- * 1. xxx
- * 2. xxx
- * #. xx
-
- * Inline code
- * `single `` line`
- * `multiple ``
- *    lines`
-
- * Horizontal rules
- * * * *
- * - - -
- * _ _ _
-
- * Emphasis
+ * @retval int  This is a retval.
+ *
+ * @exception std::exception This is an exception.
+ *
+ * @throw     std::exception This is an exception.
+ *
+ * @throws    std::exception This is an exception.
+ *
+ * @relates Class Descriptions.
+ *
+ * @related Class Descriptions.
+ *
+ * @relatesalso Class Descriptions.
+ *
+ * @relatedalso Class Descriptions.
+ *
+ * @overload void Foo(int)
+ *
+ * @callgraph
+ *
+ * @hidecallgraph
+ *
+ * @callergraph
+ *
+ * @hidecallergraph
+ *
+ * @showrefs
+ *
+ * @hiderefs
+ *
+ * @showrefby
+ *
+ * @hiderefby
+ *
+ * ========
+ * Entities
+ * ========
+ * @file name
+ *
+ * @namespace name
+ *
+ * @def name
+ *
+ * @package name
+ *
+ * @headerfile <include\my.h> "include/my.h"
+ *
+ * @class Class <include\my.h> "include/my.h"
+ *
+ * @struct Struct <include\my.h> "include/my.h"
+ *
+ * @interface Interface <include\my.h> "include/my.h"
+ *
+ * @union Union <include\my.h> "include/my.h"
+ *
+ * @enum Enum <include\my.h> "include/my.h"
+ *
+ * @fn void Foo(int)
+ *
+ * @var v_
+ *
+ * @property p_
+ *
+ * @typedef MyType
+ *
+ * ========
+ * Grouping
+ * ========
+ * @ingroup Name1 Name2 Name3
+ *
+ * @defgroup Name Group title
+ *
+ * @addtogroup Name Group title
+ *
+ * @weakgroup Name Group title
+ *
+ * @name Group title
+ *
+ * @{
+ *
+ * @}
+ *
+ * @nosubgrouping
+ *
+ * ====================================
+ * Markdown
+ * ====================================
+ * ==========
+ * Font faces
+ * ==========
  * *xxx
  *  xxx* xx
  * _xxx
@@ -111,7 +224,160 @@ C-style comment block
  *   xxx__ xx
  * ~~xxx
  *   xxx~~ xx
-
+ *
+ * `single `` line`
+ * `multiple ``
+ *    lines`
+ *
+ * =======
+ * Headers
+ * =======
+ * # Header1
+ * ## Header2
+ * ### Header3
+ * #### Header4
+ * ##### Header5
+ * ###### Header6
+ * ####### not a header
+ *
+ * Header1
+ * =========
+ *
+ * ============
+ * Block quotes
+ * ============
+ * > xxxx
+ * >> xxxx
+ * > > xxxx
+ * not quote a > b
+ *
+ * =================
+ * Fenced code block
+ * =================
+ * ```{.cpp}
+ * xxx
+ * ```
+ * ~~~
+ * xxx
+ * ~~~
+ *
+ * ===========
+ * Bullet list
+ * ===========
+ * * xxx
+ * + xxx
+ * - xxx
+ *
+ * ===========
+ * Number list
+ * ===========
+ * 1. xxx
+ * 2. xxx
+ * #. xx
+ *
+ * ================
+ * Horizontal rules
+ * ================
+ * * * *
+ * - - -
+ * _ _ _
+ *
+ * ====================================
+ * Html
+ * ====================================
+ * ==========
+ * Font faces
+ * ==========
+ * <i>Italic</i>
+ * <em>Italic</em>
+ * <var>Italic</var>
+ * <b>Bold</b>
+ * <strong>Bold</strong>
+ * <tt>Code</tt>
+ * <code>Code</code>
+ * <dfn>Code</dfn>
+ * <kbd>Code</kbd>
+ * <strike>Strikethrough</strike>
+ * <del>Strikethrough</del>
+ * <u>Underline</u>
+ * <ins>Underline</ins>
+ * <small>Small</small>
+ * <sub>Subscript</sub>
+ * <sup>Superscript</sup>
+ *
+ * =======
+ * Headers
+ * =======
+ * <h1>Header 1</h1>
+ * <h2>Header 2</h2>
+ * <h3>Header 3</h3>
+ * <h4>Header 4</h4>
+ * <h5>Header 5</h5>
+ * <h6>Header 6</h6>
+ *
+ * <center id="centered_text">Centered</center>
+ *
+ * <p>
+ * A paragraph.<br>
+ * </p>
+ *
+ * <hr>
+ *
+ * <blockquote cite="url">
+ * Block
+ * quotes
+ * </blockquote>
+ *
+ * <pre>
+ * Preformatted
+ * </pre>
+ *
+ * <span id="title">
+ * This is a span.
+ * </span>
+ *
+ * <div id="board">
+ * This is a div.
+ * </div>
+ *
+ * <ol>
+ *  <li>List 1</li>
+ *  <li>
+ *   <ul>
+ *    <li>Item 1</li>
+ *    <li>Item 2</li>
+ *   </ul>
+ *  </li>
+ * </ol>
+ *
+ * <dl>
+ *  <dt>Coffee</dt>
+ *   <dd>Black hot drink</dd>
+ *  <dt>Milk</dt>
+ *   <dd>White cold drink</dd>
+ * </dl>
+ *
+ * <table border="1">
+ *  <tr>
+ *   <th>Month</th>
+ *   <th>Savings</th>
+ *  </tr>
+ *  <tr>
+ *   <td>January</td>
+ *   <td>$100</td>
+ *  </tr>
+ * </table>
+ *
+ * <a href="url">This is a link.</a>
+ * <a name="anchor">This is a named anchor.</a>
+ *
+ * <img src="url">
+ *
+ *
+ *
+ *
+ *
+ *
  */
 
 

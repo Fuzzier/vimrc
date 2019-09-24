@@ -17,25 +17,13 @@ endif
 " Options.
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let b:doxy_concealends='concealends'
-set conceallevel=2
-set concealcursor=nc
+set conceallevel=3
 
 syn sync fromstart " ccomment doxyBody
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" C-style multi-line
+" C/C++ doxygen comment
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-if exists('b:current_syntax') && b:current_syntax =~ 'make'
-    " ### ...
-    execu 'syn region doxyBody matchgroup=doxyDelimiter '
-      \ . 'start=+^\s*####\@!+ '
-      \ . 'end=+$+ '
-      \ . 'contains=@doxyInbody'
-
-    " ### ...
-    syn match doxyContinue +^\s*###\_s+ display contained
-endif
-
 " /** ... */
 " /*! ... */
 execu 'syn region doxyBody matchgroup=doxyDelimiter '
@@ -82,6 +70,24 @@ syn match doxyContinue +^\s*//[/!]\_s+ display contained
 " ///< ...
 " //!< ...
 syn match doxyContinue +^\s*//[/!]<\_s+ display contained
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Python, makefile
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if exists('b:current_syntax') && b:current_syntax =~ '\%(python\|make\)'
+    " ## ...
+    execu 'syn region doxyBody matchgroup=doxyPyDelimiter '
+      \ . 'start=+^\s*###\@!+ '
+      \ . 'end=+$+ '
+      \ . 'contains=@doxyInbody'
+    " # ...
+    execu 'syn region doxyBody matchgroup=doxyPyDelimiter '
+      \ . 'start=+^\s*##\@!+ '
+      \ . 'end=+$+ '
+      \ . 'contains=@doxyInbody'
+endif
+
 
 " There are several cases when @ is found:
 " 1. Followed by space or eol.
@@ -152,35 +158,35 @@ syn match doxyTitle +.*$+ display contained keepend contains=@doxyInline
 "                    contained items, the pattern can still match.
 execu 'syn region doxyFont '
   \ . 'start=+[@\\]\%([ae]\|em\)\>+ '
-  \ . 'end=+\%(\_s[0-9A-Za-z_*]\+\)\@<=[0-9A-Za-z_*]\@!+ '
+  \ . 'end=+\%(\_s[0-9A-Za-z_():*]\+\)\@<=[0-9A-Za-z_():*]\@!+ '
   \ . 'end=+[@\\]+me=e-1 '
   \ . 'contained contains=doxyContinue,doxyItalicWord'
 
 " \_s\@<=   match after a space or eol, do not match the command '@a'.
 execu 'syn match doxyItalicWord '
-  \ . '+\_s\@<=\%([0-9A-Za-z_*]\@<![0-9A-Za-z_*]\+\)[0-9A-Za-z_*]\@!+ '
+  \ . '+\_s\@<=\%([0-9A-Za-z_():*]\@<![0-9A-Za-z_():*]\+\)[0-9A-Za-z_():*]\@!+ '
   \ . 'display contained'
 
 " Bold word: @xxx <word>
 execu 'syn region doxyFont '
   \ . 'start=+[@\\]b\>+ '
-  \ . 'end=+\%(\_s[0-9A-Za-z_*]\+\)\@<=[0-9A-Za-z_*]\@!+ '
+  \ . 'end=+\%(\_s[0-9A-Za-z_():*]\+\)\@<=[0-9A-Za-z_():*]\@!+ '
   \ . 'end=+[@\\]+me=e-1 '
   \ . 'contained contains=doxyContinue,doxyBoldWord'
 
 execu 'syn match doxyBoldWord '
-  \ . '+\_s\@<=\%([0-9A-Za-z_*]\@<![0-9A-Za-z_*]\+\)[0-9A-Za-z_*]\@!+ '
+  \ . '+\_s\@<=\%([0-9A-Za-z_():*]\@<![0-9A-Za-z_():*]\+\)[0-9A-Za-z_():*]\@!+ '
   \ . 'contained'
 
 " Code word: @xxx <word>
 execu 'syn region doxyFont '
   \ . 'start=+[@\\][cp]\>+ '
-  \ . 'end=+\%(\_s[0-9A-Za-z_*]\+\)\@<=[0-9A-Za-z_*]\@!+ '
+  \ . 'end=+\%(\_s[0-9A-Za-z_():*]\+\)\@<=[0-9A-Za-z_():*]\@!+ '
   \ . 'end=+[@\\]+me=e-1 '
   \ . 'contained contains=doxyContinue,doxyCodeWord'
 
 execu 'syn match doxyCodeWord '
-  \ . '+\_s\@<=\%([0-9A-Za-z_*]\@<![0-9A-Za-z_*]\+\)[0-9A-Za-z_*]\@!+ '
+  \ . '+\_s\@<=\%([0-9A-Za-z_():*]\@<![0-9A-Za-z_():*]\+\)[0-9A-Za-z_():*]\@!+ '
   \ . 'contained'
 
 """"""""""""""""""""""""""""""""""""""""
@@ -193,6 +199,57 @@ execu 'syn match doxyPar '
   \ . 'display contained skipwhite nextgroup=doxyTitle'
 
 """"""""""""""""""""""""""""""""""""""""
+" Block
+""""""""""""""""""""""""""""""""""""""""
+" Code section: @code['{'<word>'}'] {text} @endcode
+execu 'syn region doxyCodeBlock matchgroup=doxyCommand '
+  \ . 'start=+[@\\]code\>\%({\.[[:alnum:]]\+}\)\?$+ '
+  \ . 'end=+[@\\]endcode$+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyDot matchgroup=doxyCommand '
+  \ . 'start=+[@\\]dot$+ '
+  \ . 'end=+[@\\]enddot$+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyVerbatim matchgroup=doxyCommand '
+  \ . 'start=+[@\\]verbatim$+ '
+  \ . 'end=+[@\\]endverbatim$+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyLatexonly matchgroup=doxyCommand '
+  \ . 'start=+[@\\]latexonly$+ '
+  \ . 'end=+[@\\]endlatexonly$+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlonly matchgroup=doxyCommand '
+  \ . 'start=+[@\\]htmlonly$+ '
+  \ . 'end=+[@\\]endhtmlonly$+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyFormula matchgroup=doxyCommand '
+  \ . 'start=+[@\\]f\$+ '
+  \ . 'end=+[@\\]f\$+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyFormula matchgroup=doxyCommand '
+  \ . 'start=+[@\\]f\[+ '
+  \ . 'end=+[@\\]f\]+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyFormula '
+  \ . 'start=+[@\\]f{+ '
+  \ . 'matchgroup=doxyCommand '
+  \ . 'end=+[@\\]f}+ '
+  \ . 'contained keepend contains=doxyFormulaEnv,doxyContinue'
+
+" Starts after '@f{', ends at the first following '}'.
+execu 'syn region doxyFormulaEnv matchgroup=doxyCommand '
+  \ . 'start=+[@\\]f{+ '
+  \ . 'end=+}{+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+""""""""""""""""""""""""""""""""""""""""
 " Text sections
 """"""""""""""""""""""""""""""""""""""""
 " A common text section: @xxx {text}
@@ -200,15 +257,16 @@ execu 'syn match doxyPar '
 "   attention   warning note   remark  remarks invariant copyright todo
 "   test  bug   deprecated     return  returns result sa see
 execu 'syn match doxySection '
-  \ . '+[@\\]\%(brief\|short\|details\|author\|authors\|version\|date\|since\|'
-  \ .          'pre\|post\|remark\|remarks\|invariant\|copyright\|return\|'
-  \ .          'returns\|result\|sa\|see\)\>+ '
+  \ . '+[@\\]\%(brief\|short\|details\|author\|authors\|version\|date\|'
+  \ .          'since\|pre\|post\|remark\|remarks\|invariant\|copyright\|'
+  \ .          'return\|returns\|result\|sa\|see\)\>+ '
   \ . 'display contained'
 
+" Special section (ends with a blank line).
 execu 'syn region doxyTodo '
   \ . 'start=+[@\\]\%(attention\|warning\|note\|todo\|test\|bug\|deprecated\)\>+ '
-  \ . 'end=+[@\\]+me=e-1 '
-  \ . 'display contained keepend contains=doxyContinue'
+  \ . 'end=+^\s*\*\?\s*$+ '
+  \ . 'display contained keepend contains=doxyContinue,@doxyIntext'
 
 """"""""""""""""""""""""""""""""""""""""
 " Class
@@ -263,10 +321,18 @@ execu 'syn match doxyFunction '
 " @xxx [(declaration)]
 execu 'syn match doxyFunction '
   \ . '+[@\\]overload\>+ '
-  \ . 'display contained skipwhite nextgroup=doxyTitle'
+  \ . 'display contained skipwhite nextgroup=doxyFunctionName'
+
+syn match doxyFunctionName +.*$+ display contained
 
 " @xxx
-syn match doxyFunction +[@\\]\%(callgraph\|callergraph\)\>+ display contained
+execu 'syn match doxyFunction '
+  \ . '+[@\\]\%(callgraph\|hidecallgraph\|'
+  \ .          'callergraph\|hidecallergraph\|'
+  \ .          'showrefs\|hiderefs\|'
+  \ .          'showrefby\|hiderefby'
+  \ .        '\)\>+ '
+  \ . 'display contained'
 
 """"""""""""""""""""""""""""""""""""""""
 " Entity
@@ -276,18 +342,33 @@ syn match doxyFunction +[@\\]\%(callgraph\|callergraph\)\>+ display contained
 execu 'syn match doxyEntity +[@\\]\%(file\|namespace\|def\|package\)\>+ '
   \ . 'display contained skipwhite nextgroup=doxyName'
 
+" @headerfile [<header-file>] [<header-name>]
+execu 'syn match doxyEntity +[@\\]headerfile\>+ '
+  \ . 'display contained skipwhite nextgroup=doxyHeaderFileName'
+
+execu 'syn match doxyHeaderFileName '
+  \ . '/\%(".\{-}"\)\|\%(<.\{-}>\)\|[0-9A-Za-z_./\\-]\+/ '
+  \ . 'display contained skipwhite nextgroup=doxyHeaderName'
+
+execu 'syn match doxyHeaderName '
+  \ . '/\%(".\{-}"\)\|\%(<.\{-}>\)\|[0-9A-Za-z_./\\-]\+/ '
+  \ . 'display contained'
+
 " @xxx <name> [<header-file>] [<header-name>]
 " class struct interface union enum
 execu 'syn match doxyEntity +[@\\]\%(class\|struct\|interface\|union\|enum\)\>+ '
-  \ . 'display contained skipwhite nextgroup=doxyName'
+  \ . 'display contained skipwhite nextgroup=doxyEntityName'
+
+execu 'syn match doxyEntityName /[0-9A-Za-z_:*]\+/ '
+  \ . 'display contained skipwhite nextgroup=doxyHeaderFileName'
 
 " @xxx (declaration)
 " fn var property typedef
 execu 'syn match doxyEntity +[@\\]\%(fn\|var\|property\|typedef\)\>+ '
-  \ . 'display contained skipwhite nextgroup=doxyTitle'
+  \ . 'display contained skipwhite nextgroup=doxyFunctionName'
 
 """"""""""""""""""""""""""""""""""""""""
-" Group
+" Grouping
 """"""""""""""""""""""""""""""""""""""""
 " @ingroup <name> [<name> ...]
 execu 'syn match doxyGrouping '
@@ -299,8 +380,23 @@ execu 'syn match doxyGrouping '
   \ . '+[@\\]\%(defgroup\|addtogroup\|weakgroup\)\>+ '
   \ . 'display contained skipwhite nextgroup=doxyNameTitle'
 
+" @name [(header)]
+execu 'syn match doxyGrouping '
+  \ . '+[@\\]name\>+ '
+  \ . 'display contained skipwhite nextgroup=doxyTitle'
+
+" @{ ... @}
+execu 'syn match doxyGrouping '
+  \ . '+[@\\]\%({\|}\)+ '
+  \ . 'display contained'
+
+" @nosubgrouping
+execu 'syn match doxyGrouping '
+  \ . '+[@\\]nosubgrouping\>+ '
+  \ . 'display contained'
+
 """"""""""""""""""""""""""""""""""""""""
-" Page
+" Subpaging
 """"""""""""""""""""""""""""""""""""""""
 " @xxx <name> (title)
 " page subpage section subsection subsubsection paragraph
@@ -317,15 +413,6 @@ execu 'syn match doxyPaging '
 execu 'syn match doxyPaging '
   \ . '+[@\\]tableofcontents\>+ '
   \ . 'display contained'
-
-""""""""""""""""""""""""""""""""""""""""
-" Blocks
-""""""""""""""""""""""""""""""""""""""""
-" Code section: @code['{'<word>'}'] {text} @endcode
-execu 'syn region doxyCodeBlock matchgroup=doxyMdDelimiter '
-  \ . 'start=+@code\%({\.[[:alnum:]]\+}\)\?$+ '
-  \ . 'end=+@endcode+ '
-  \ . 'contained keepend contains=doxyContinue'
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Markdown.
@@ -395,26 +482,39 @@ syn match doxyMdHeaderLine "\%(^\|\s\)\@<==\+$" display contained
 " > > quote
 " Prevent '>' from starting a block quote within the text: a block quote starts
 " from the start of the line, may optionally have a '*', then one or more '>'s.
-syn match doxyMdBlockQuote +^\s*\%(\*\s\+\)\?\%(>\s\?\)\+\s\@=+ display contained
+execu 'syn region doxyMdBlockQuote matchgroup=doxyMdDelimiter '
+  \ . 'start=+^\s*\%(\*\s\+\)\?\%(>\s\?\)\+\s\@=+ '
+  \ . 'end=+$+ '
+  \ . 'display oneline contained contains=@doxyInline'
 
 " A block quote starts from the start of the line, have '///' or '//!',
 " then one or more '>'s.
-syn region doxyBody matchgroup=doxyMdDelimiter start=+^\s*//[/!]\s\+\%(>\s\?\)\+\s\@=+ end=+$+
+execu 'syn region doxyMdBlockQuote matchgroup=doxyMdDelimiter '
+  \ . 'start=+^\s*//[/!]\s\+\%(>\s\?\)\+\s\@=+ '
+  \ . 'end=+$+ '
+  \ . 'display oneline contains=@doxyInline'
 
 " A block quote starts from the start of the line, have '///<' or '//!<',
 " then one or more '>'s.
-syn region doxyBody matchgroup=doxyMdDelimiter start=+^\s*//[/!]<\s\+\%(>\s\?\)\+\s\@=+ end=+$+
+execu 'syn region doxyMdBlockQuote matchgroup=doxyMdDelimiter '
+  \ . 'start=+^\s*//[/!]<\s\+\%(>\s\?\)\+\s\@=+ '
+  \ . 'end=+$+ '
+  \ . 'display oneline contains=@doxyInline'
 
 " Fenced code block
 " ```['{'<word>'}']
 " ```
-syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter start=+\s\@<=`\{3,}\%({\.[[:alnum:]]\+}\)\?$+ end=+\s\@<=`\{3,}\s*$+
-  \ contained keepend contains=doxyContinue
+execu 'syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter '
+  \ . 'start=+\s\@<=`\{3,}\%({\.[[:alnum:]]\+}\)\?$+ '
+  \ . 'end=+\s\@<=`\{3,}\s*$+ '
+  \ . 'contained keepend contains=doxyContinue'
 
 " ~~~['{'<word>'}']
 " ~~~
-syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter start=+\~\{3,}\%({\.[[:alnum:]]\+}\)\?$+ end=+\~\{3,}\s*$+
-  \ contained keepend contains=doxyContinue
+execu 'syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter '
+  \ . 'start=+\~\{3,}\%({\.[[:alnum:]]\+}\)\?$+ '
+  \ . 'end=+\~\{3,}\s*$+ '
+  \ . 'contained keepend contains=doxyContinue'
 
 " Code block (not supported: hard to check the empty lines before and after
 "             the code block)
@@ -433,7 +533,9 @@ syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter start=+\~\{3,}\%({\.
 syn match doxyMdBulletList +\s\@<=[\*+-]\s\@=+ display contained
 " #. xxx
 " 1. xxx
+" -# xxx
 syn match doxyMdNumberList +\%(#\|\d\+\)\.\s\@=+ display contained
+syn match doxyMdNumberList +\_s-#\s\@=+ display contained
 
 " Horizontal rules (put after and override bullet lists)
 " * * *
@@ -443,6 +545,254 @@ syn match doxyMdRule +\%(-\s*\)\{3,}$+ display contained
 " _ _ _
 syn match doxyMdRule +\%(_\s*\)\{3,}$+ display contained
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Html.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Font faces
+" Italic, <i></i>, <em></em>, <var></var>
+execu 'syn region doxyHtmlItalic matchgroup=doxyHtmlTag '
+  \ . 'start=+<i>+ '
+  \ . 'end=+</i>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlItalic matchgroup=doxyHtmlTag '
+  \ . 'start=+<em>+ '
+  \ . 'end=+</em>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlItalic matchgroup=doxyHtmlTag '
+  \ . 'start=+<var>+ '
+  \ . 'end=+</var>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Bold, <b></b>, <strong></strong>
+execu 'syn region doxyHtmlBold matchgroup=doxyHtmlTag '
+  \ . 'start=+<b>+ '
+  \ . 'end=+</b>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlBold matchgroup=doxyHtmlTag '
+  \ . 'start=+<strong>+ '
+  \ . 'end=+</strong>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Typewritter, <tt></tt>, <code></code>, <dfn></dfn>, <kbd></kbd>
+execu 'syn region doxyHtmlCode matchgroup=doxyHtmlTag '
+  \ . 'start=+<tt>+ '
+  \ . 'end=+</tt>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlCode matchgroup=doxyHtmlTag '
+  \ . 'start=+<code>+ '
+  \ . 'end=+</code>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlCode matchgroup=doxyHtmlTag '
+  \ . 'start=+<dfn>+ '
+  \ . 'end=+</dfn>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlCode matchgroup=doxyHtmlTag '
+  \ . 'start=+<kbd>+ '
+  \ . 'end=+</kbd>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Strikethrough, <strike></strike>, <del></del>
+execu 'syn region doxyHtmlStrike matchgroup=doxyHtmlTag '
+  \ . 'start=+<strike>+ '
+  \ . 'end=+</strike>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlStrike matchgroup=doxyHtmlTag '
+  \ . 'start=+<del>+ '
+  \ . 'end=+</del>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Underline, <u></u>, <ins></ins>
+execu 'syn region doxyHtmlUnderline matchgroup=doxyHtmlTag '
+  \ . 'start=+<u>+ '
+  \ . 'end=+</u>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlUnderline matchgroup=doxyHtmlTag '
+  \ . 'start=+<ins>+ '
+  \ . 'end=+</ins>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Smaller, <small></small>
+execu 'syn region doxyHtmlSmall matchgroup=doxyHtmlTag '
+  \ . 'start=+<small>+ '
+  \ . 'end=+</small>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Subscript, <sub></sub>
+execu 'syn region doxyHtmlSub matchgroup=doxyHtmlTag '
+  \ . 'start=+<sub>+ '
+  \ . 'end=+</sub>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Superscript, <sup></sup>
+execu 'syn region doxyHtmlSup matchgroup=doxyHtmlTag '
+  \ . 'start=+<sup>+ '
+  \ . 'end=+</sup>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Headers
+execu 'syn region doxyHtmlH1 matchgroup=doxyHtmlTag '
+  \ . 'start=+<h1>+ '
+  \ . 'end=+</h1>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlH2 matchgroup=doxyHtmlTag '
+  \ . 'start=+<h2>+ '
+  \ . 'end=+</h2>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlH3 matchgroup=doxyHtmlTag '
+  \ . 'start=+<h3>+ '
+  \ . 'end=+</h3>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlH4 matchgroup=doxyHtmlTag '
+  \ . 'start=+<h4>+ '
+  \ . 'end=+</h4>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlH5 matchgroup=doxyHtmlTag '
+  \ . 'start=+<h5>+ '
+  \ . 'end=+</h5>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+execu 'syn region doxyHtmlH6 matchgroup=doxyHtmlTag '
+  \ . 'start=+<h6>+ '
+  \ . 'end=+</h6>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Centered
+execu 'syn region doxyHtmlCenter matchgroup=doxyHtmlTag '
+  \ . 'start=+<center\>[^>]*>+ '
+  \ . 'end=+</center>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Line break, <br>
+execu 'syn match doxyHtmlLineBreak '
+  \ . '+<br>+ '
+  \ . 'display contained'
+
+" Paragraph, <p></p>
+execu 'syn match doxyHtmlParagraph '
+  \ . '+<p>+ '
+  \ . 'display contained'
+
+execu 'syn match doxyHtmlParagraph '
+  \ . '+</p>+ '
+  \ . 'display contained'
+
+" Horizontal ruler, <hr>
+execu 'syn match doxyHtmlRule '
+  \ . '+<hr>+ '
+  \ . 'display contained'
+
+" Block quote
+execu 'syn region doxyHtmlBlockQuote matchgroup=doxyHtmlTag '
+  \ . 'start=+<blockquote\>[^>]*>+ '
+  \ . 'end=+</blockquote>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Preformatted
+execu 'syn region doxyHtmlPreformatted matchgroup=doxyHtmlTag '
+  \ . 'start=+<pre>+ '
+  \ . 'end=+</pre>+ '
+  \ . 'contained keepend contains=doxyContinue'
+
+" Span
+execu 'syn region doxyHtmlSpan matchgroup=doxyHtmlTag '
+  \ . 'start=+<span\>[^>]*>+ '
+  \ . 'end=+</span>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Div
+execu 'syn region doxyHtmlDiv matchgroup=doxyHtmlTag '
+  \ . 'start=+<div\>[^>]*>+ '
+  \ . 'end=+</div>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Unnumbered item list, <ul></ul>
+execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
+  \ . 'start=+<ul>+ '
+  \ . 'end=+</ul>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Numbered item list, <ol></ol>
+execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
+  \ . 'start=+<ol>+ '
+  \ . 'end=+</ol>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" List item, <li></li>
+execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
+  \ . 'start=+<li>+ '
+  \ . 'end=+</li>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Description list, <dl></dl>
+execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
+  \ . 'start=+<dl>+ '
+  \ . 'end=+</dl>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Item title, <dt></dt>
+execu 'syn region doxyHtmlItemTitle matchgroup=doxyHtmlTag '
+  \ . 'start=+<dt>+ '
+  \ . 'end=+</dt>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Item description, <dd></dd>
+execu 'syn region doxyHtmlItemDesc matchgroup=doxyHtmlTag '
+  \ . 'start=+<dd>+ '
+  \ . 'end=+</dd>+ '
+  \ . 'contained contains=doxyContinue,@doxyHtml'
+
+" Table
+execu 'syn region doxyHtmlTable matchgroup=doxyHtmlTag '
+  \ . 'start=+<table\>[^>]*>+ '
+  \ . 'end=+</table>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Table caption
+execu 'syn region doxyHtmlCaption matchgroup=doxyHtmlTag '
+  \ . 'start=+<caption>+ '
+  \ . 'end=+</caption>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Table row
+execu 'syn region doxyHtmlTableRow matchgroup=doxyHtmlTag '
+  \ . 'start=+<tr>+ '
+  \ . 'end=+</tr>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Table header
+execu 'syn region doxyHtmlTableHeader matchgroup=doxyHtmlTag '
+  \ . 'start=+<th>+ '
+  \ . 'end=+</th>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Table data
+execu 'syn region doxyHtmlTableData matchgroup=doxyHtmlTag '
+  \ . 'start=+<td>+ '
+  \ . 'end=+</td>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Hyperlink
+execu 'syn region doxyHtmlLink matchgroup=doxyHtmlTag '
+  \ . 'start=+<a\>[^>]*>+ '
+  \ . 'end=+</a>+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyHtml'
+
+" Image
+execu 'syn match doxyHtmlImage '
+  \ . '+<img\>[^>]*>+ '
+  \ . 'contained keepend'
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Clusters.
@@ -455,7 +805,9 @@ syn cluster doxyInline contains=@doxyInword,doxyFont,@doxyMdInline
 
 " Anything that can appear within a {text}.
 syn cluster doxyIntext contains=
-  \ @doxyInline,doxyContinue,doxyPar,doxyCodeBlock
+  \ @doxyInline,doxyContinue,doxyPar,
+  \ doxyCodeBlock,doxyDot,doxyVerbatim,doxyHtmlonly,doxyLatexonly,doxyFormula,
+  \ @doxyHtml
 
 " Anything that can appear within doxyBody.
 syn cluster doxyInbody contains=
@@ -473,6 +825,20 @@ syn cluster doxyMd contains=
   \ doxyMdH1,doxyMdH2,doxyMdH3,doxyMdH4,doxyMdH5,doxyMdH6,doxyMdHeaderLine,
   \ doxyMdBlockQuote,doxyMdFencedCodeBlock,doxyMdCodeBlock,
   \ doxyMdBulletList,doxyMdNumberList
+
+" All HTML elements.
+syn cluster doxyHtml contains=
+  \ doxyHtmlItalic,doxyHtmlBold,doxyHtmlCode,doxyHtmlStrike,doxyHtmlUnderline,
+  \ doxyHtmlSmall,doxyHtmlSub,doxyHtmlSup,
+  \ doxyHtmlH1,doxyHtmlH2,doxyHtmlH3,doxyHtmlH4,doxyHtmlH5,doxyHtmlH6,
+  \ doxyHtmlCenter,doxyHtmlLineBreak,doxyHtmlParagraph,doxyHtmlRule,
+  \ doxyHtmlPreformatted,doxyHtmlBlockQuote,
+  \ doxyHtmlSpan,doxyHtmlDiv,
+  \ doxyHtmlList,doxyHtmlItemTitle,doxyHtmlItemDesc,
+  \ doxyHtmlTable,doxyHtmlCaption,doxyHtmlTableRow,doxyHtmlTableHeader,
+  \ doxyHtmlTableData,
+  \ doxyHtmlLink,doxyHtmlImage
+
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Since many syntax items in c.vim use the 'contains=ALLBUT' argument,
@@ -551,8 +917,10 @@ hi def doxyFont        guifg=#8dd400 guibg=#080808
 hi def doxyText        guifg=#00b8b8 guibg=#080808
 " (CR=11.1) 145,100,87 (shall be the same as the source code)
 hi def doxyCode        guifg=#00df5f guibg=#080808 font='Monaco'
-hi def doxyItalic      guifg=#00df5f guibg=#080808 term=italic cterm=italic gui=italic
-hi def doxyBold        guifg=#00df5f guibg=#080808 term=bold   cterm=bold   gui=bold
+hi def doxyItalic      guifg=#00df5f guibg=#080808 term=italic      cterm=italic      gui=italic
+hi def doxyBold        guifg=#00df5f guibg=#080808 term=bold        cterm=bold        gui=bold
+hi def doxyBoldItalic  guifg=#00df5f guibg=#080808 term=italic,bold cterm=italic,bold gui=italic,bold
+hi def doxyUnderline   guifg=#00df5f guibg=#080808 term=underline   cterm=underline   gui=underline
 " (CR= 7.0) 0,0,60         (Strikethrough text is the least significant)
 hi def doxyStrike      guifg=#909090 guibg=#080808
 " (CR=10.1) 50,100,85  (a doxygen identifier is more significant than the common
@@ -568,23 +936,33 @@ hi def doxyHeading     guifg=#d9b500 guibg=#080808
 hi def doxyTodo        guifg=#ffff00 guibg=#080808
 
 """"""""""""""""""""""""""""""""""""""""
-hi def link doxyBody       doxyText
-hi def link doxyNames      doxyName
-hi def link doxyNameTitle  doxyName
-hi def link doxyItalicWord doxyItalic
-hi def link doxyBoldWord   doxyBold
-hi def link doxyCodeWord   doxyCode
-hi def link doxyPar        doxyCommand
-hi def link doxySection    doxyCommand
-hi def link doxyTypeParam  doxyCommand
-hi def link doxyFakeClass  doxyCommand
-hi def link doxyParam      doxyCommand
-hi def link doxyParamIO    doxyHeading
-hi def link doxyFunction   doxyCommand
-hi def link doxyEntity     doxyHeading
-hi def link doxyGrouping   doxyCommand
-hi def link doxyPaging     doxyCommand
-hi def link doxyCodeBlock  doxyCodeWord
+hi def link doxyBody           doxyText
+hi def link doxyNames          doxyName
+hi def link doxyNameTitle      doxyName
+hi def link doxyItalicWord     doxyItalic
+hi def link doxyBoldWord       doxyBold
+hi def link doxyCodeWord       doxyCode
+hi def link doxyPar            doxyCommand
+hi def link doxySection        doxyCommand
+hi def link doxyTypeParam      doxyCommand
+hi def link doxyFakeClass      doxyCommand
+hi def link doxyParam          doxyCommand
+hi def link doxyParamIO        doxyHeading
+hi def link doxyFunction       doxyCommand
+hi def link doxyFunctionName   doxyName
+hi def link doxyEntity         doxyHeading
+hi def link doxyEntityName     doxyName
+hi def link doxyHeaderFileName doxyCode
+hi def link doxyHeaderName     doxyTitle
+hi def link doxyGrouping       doxyCommand
+hi def link doxyPaging         doxyCommand
+hi def link doxyCodeBlock      doxyCodeWord
+hi def link doxyDot            doxyCode
+hi def link doxyVerbatim       doxyCode
+hi def link doxyLatexonly      doxyCode
+hi def link doxyHtmlonly       doxyText
+hi def link doxyFormula        doxyCode
+hi def link doxyFormulaEnv     doxyHeading
 
 hi def link doxyMdDelimiter       doxyDelimiter
 hi def link doxyMdItalic          doxyItalic
@@ -599,11 +977,47 @@ hi def link doxyMdH4              doxyHeading
 hi def link doxyMdH5              doxyHeading
 hi def link doxyMdH6              doxyHeading
 hi def link doxyMdHeaderLine      doxyEscaped
-hi def link doxyMdBlockQuote      doxyContinue
+hi def link doxyMdBlockQuote      doxyCode
 hi def link doxyMdFencedCodeBlock doxyCode
 hi def link doxyMdCodeBlock       doxyCode
 hi def link doxyMdBulletList      doxyMdDelimiter
 hi def link doxyMdNumberList      doxyMdDelimiter
+
+hi def link doxyHtmlTag          doxyDelimiter
+hi def link doxyHtmlItalic       doxyItalic
+hi def link doxyHtmlBold         doxyBold
+hi def link doxyHtmlCode         doxyCode
+hi def link doxyHtmlStrike       doxyStrike
+hi def link doxyHtmlUnderline    doxyUnderline
+hi def link doxyHtmlSmall        doxyEscaped
+hi def link doxyHtmlSub          doxyEscaped
+hi def link doxyHtmlSup          doxyEscaped
+hi def link doxyHtmlH1           doxyHeading
+hi def link doxyHtmlH2           doxyHeading
+hi def link doxyHtmlH3           doxyHeading
+hi def link doxyHtmlH4           doxyHeading
+hi def link doxyHtmlH5           doxyHeading
+hi def link doxyHtmlH6           doxyHeading
+hi def link doxyHtmlCenter       doxyText
+hi def link doxyHtmlLineBreak    doxyDelimiter
+hi def link doxyHtmlParagraph    doxyDelimiter
+hi def link doxyHtmlRule         doxyDelimiter
+hi def link doxyHtmlPreformatted doxyCode
+hi def link doxyHtmlBlockQuote   doxyCode
+hi def link doxyHtmlSpan         doxyText
+hi def link doxyHtmlDiv          doxyText
+hi def link doxyHtmlList         doxyText
+hi def link doxyHtmlItemTitle    doxyHeading
+hi def link doxyHtmlItemDesc     doxyText
+hi def link doxyHtmlTable        doxyText
+hi def link doxyHtmlCaption      doxyHeading
+hi def link doxyHtmlTableRow     doxyText
+hi def link doxyHtmlTableHeader  doxyHeading
+hi def link doxyHtmlTableData    doxyText
+hi def link doxyHtmlLink         doxyTitle
+hi def link doxyHtmlImage        doxyHtmlTag
+
+hi def link doxyPyDelimiter Comment
 
 if !exists('b:current_syntax')
     let b:current_syntax = 'doxygen'
