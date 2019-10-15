@@ -17,9 +17,8 @@ endif
 " Options.
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 let b:doxy_concealends='concealends'
-set conceallevel=3
 
-syn sync fromstart " ccomment doxyBody
+syn sync fromstart
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " C/C++ doxygen comment
@@ -217,6 +216,11 @@ execu 'syn region doxyVerbatim matchgroup=doxyCommand '
   \ . 'end=+[@\\]endverbatim$+ '
   \ . 'contained keepend contains=doxyContinue'
 
+execu 'syn region doxyInternal matchgroup=doxyCommand '
+  \ . 'start=+[@\\]internal$+ '
+  \ . 'end=+[@\\]endinternal$+ '
+  \ . 'contained keepend contains=doxyContinue,@doxyInbody'
+
 execu 'syn region doxyLatexonly matchgroup=doxyCommand '
   \ . 'start=+[@\\]latexonly$+ '
   \ . 'end=+[@\\]endlatexonly$+ '
@@ -295,7 +299,7 @@ execu 'syn match doxyFakeClass '
 " @param ['['in|out|in,out']'] <name> {text}
 execu 'syn match doxyParam '
   \ . '+[@\\]param\>+ '
-  \ . 'display contained skipwhite nextgroup=doxyParamIO'
+  \ . 'display contained skipwhite nextgroup=doxyParamIO,doxyName'
 
 execu 'syn match doxyParamIO '
   \ . '+\[\%(in\|out\|in,out\)\]+ '
@@ -530,12 +534,12 @@ execu 'syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter '
 " + xxx
 " - xxx
 " \s\@<=   must not start from the beginning of a line
-syn match doxyMdBulletList +\s\@<=[\*+-]\s\@=+ display contained
-" #. xxx
+syn match doxyMdBulletList +\s\@<=\*\s\@=+ display contained
+syn match doxyMdBulletList +\_s\@<=[+-]\s\@=+ display contained
 " 1. xxx
 " -# xxx
-syn match doxyMdNumberList +\%(#\|\d\+\)\.\s\@=+ display contained
-syn match doxyMdNumberList +\_s-#\s\@=+ display contained
+syn match doxyMdNumberList +\_s\@<=\d\+\.\s\@=+ display contained
+syn match doxyMdNumberList +\_s\@<=-#\s\@=+ display contained
 
 " Horizontal rules (put after and override bullet lists)
 " * * *
@@ -675,21 +679,21 @@ execu 'syn region doxyHtmlCenter matchgroup=doxyHtmlTag '
   \ . 'contained keepend contains=doxyContinue,@doxyHtml'
 
 " Line break, <br>
-execu 'syn match doxyHtmlLineBreak '
+execu 'syn match doxyHtmlTag '
   \ . '+<br>+ '
   \ . 'display contained'
 
 " Paragraph, <p></p>
-execu 'syn match doxyHtmlParagraph '
+execu 'syn match doxyHtmlTag '
   \ . '+<p>+ '
   \ . 'display contained'
 
-execu 'syn match doxyHtmlParagraph '
+execu 'syn match doxyHtmlTag '
   \ . '+</p>+ '
   \ . 'display contained'
 
 " Horizontal ruler, <hr>
-execu 'syn match doxyHtmlRule '
+execu 'syn match doxyHtmlTag '
   \ . '+<hr>+ '
   \ . 'display contained'
 
@@ -730,10 +734,13 @@ execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
   \ . 'contained contains=doxyContinue,@doxyHtml'
 
 " List item, <li></li>
-execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
-  \ . 'start=+<li>+ '
-  \ . 'end=+</li>+ '
-  \ . 'contained contains=doxyContinue,@doxyHtml'
+execu 'syn match doxyHtmlTag '
+  \ . '+<li>+ '
+  \ . 'display contained'
+
+execu 'syn match doxyHtmlTag '
+  \ . '+</li>+ '
+  \ . 'display contained'
 
 " Description list, <dl></dl>
 execu 'syn region doxyHtmlList matchgroup=doxyHtmlTag '
@@ -806,7 +813,8 @@ syn cluster doxyInline contains=@doxyInword,doxyFont,@doxyMdInline
 " Anything that can appear within a {text}.
 syn cluster doxyIntext contains=
   \ @doxyInline,doxyContinue,doxyPar,
-  \ doxyCodeBlock,doxyDot,doxyVerbatim,doxyHtmlonly,doxyLatexonly,doxyFormula,
+  \ doxyCodeBlock,doxyDot,doxyVerbatim,doxyInternal,
+  \ doxyHtmlonly,doxyLatexonly,doxyFormula,
   \ @doxyHtml
 
 " Anything that can appear within doxyBody.
@@ -830,9 +838,9 @@ syn cluster doxyMd contains=
 syn cluster doxyHtml contains=
   \ doxyHtmlItalic,doxyHtmlBold,doxyHtmlCode,doxyHtmlStrike,doxyHtmlUnderline,
   \ doxyHtmlSmall,doxyHtmlSub,doxyHtmlSup,
+  \ doxyHtmlTag,
   \ doxyHtmlH1,doxyHtmlH2,doxyHtmlH3,doxyHtmlH4,doxyHtmlH5,doxyHtmlH6,
-  \ doxyHtmlCenter,doxyHtmlLineBreak,doxyHtmlParagraph,doxyHtmlRule,
-  \ doxyHtmlPreformatted,doxyHtmlBlockQuote,
+  \ doxyHtmlCenter,doxyHtmlPreformatted,doxyHtmlBlockQuote,
   \ doxyHtmlSpan,doxyHtmlDiv,
   \ doxyHtmlList,doxyHtmlItemTitle,doxyHtmlItemDesc,
   \ doxyHtmlTable,doxyHtmlCaption,doxyHtmlTableRow,doxyHtmlTableHeader,
@@ -904,36 +912,33 @@ syn cluster rcGroup       add=doxy.*
 "    doxyStrike
 
 " CR: contrast ratio
-" (CR=15.6) 0,0,88; 0,0,3 (white on black)
-hi def doxyDelimiter   guifg=#e3e3e3 guibg=#080808
-hi def doxyMdDelimiter guifg=#e3e3e3 guibg=#080808
-" (CR=15.0) 0,0,97; 0,0,11 (brighter foreground due to brighter background)
-hi def doxyContinue    guifg=#f7f7f7 guibg=#1c1c1c
-" (CR=14.2) 0,100,85   (white, no recommended to be colorful)
-hi def doxyCommand     guifg=#d9d9d9 guibg=#080808
-" (CR=11.0) 80,100,83  (font faces and entities)
-hi def doxyFont        guifg=#8dd400 guibg=#080808
-" (CR= 8.2) 180,100,72 (shall be the same as comment)
-hi def doxyText        guifg=#00b8b8 guibg=#080808
+" (CR=15.0) 0,0,87     (white on black)
+hi def doxyDelimiter   ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
+hi def doxyMdDelimiter ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
+hi def doxyContinue    ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
+hi def doxyCommand     ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
+hi def doxyFont        ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
+" (CR= 7.4) 180,100,68 (shall be the same as Comment)
+hi def doxyText        ctermfg=37  ctermbg=0   guifg=#00afaf guibg=#080808
 " (CR=11.1) 145,100,87 (shall be the same as the source code)
-hi def doxyCode        guifg=#00df5f guibg=#080808 font='Monaco'
-hi def doxyItalic      guifg=#00df5f guibg=#080808 term=italic      cterm=italic      gui=italic
-hi def doxyBold        guifg=#00df5f guibg=#080808 term=bold        cterm=bold        gui=bold
-hi def doxyBoldItalic  guifg=#00df5f guibg=#080808 term=italic,bold cterm=italic,bold gui=italic,bold
-hi def doxyUnderline   guifg=#00df5f guibg=#080808 term=underline   cterm=underline   gui=underline
-" (CR= 7.0) 0,0,60         (Strikethrough text is the least significant)
-hi def doxyStrike      guifg=#909090 guibg=#080808
-" (CR=10.1) 50,100,85  (a doxygen identifier is more significant than the common
+hi def doxyCode        ctermfg=40  ctermbg=0   guifg=#00df5f guibg=#080808 font='Monaco'
+hi def doxyItalic      ctermfg=45  ctermbg=0   guifg=#00df5f guibg=#080808 term=italic      cterm=italic      gui=italic
+hi def doxyBold        ctermfg=50  ctermbg=0   guifg=#00df5f guibg=#080808 term=bold        cterm=bold        gui=bold
+hi def doxyBoldItalic  ctermfg=50  ctermbg=0   guifg=#00df5f guibg=#080808 term=italic,bold cterm=italic,bold gui=italic,bold
+hi def doxyUnderline   ctermfg=45  ctermbg=0   guifg=#00df5f guibg=#080808 term=underline   cterm=underline   gui=underline
+" (CR= 7.5) 0,0,61     (Strikethrough text is the least significant)
+hi def doxyStrike      ctermfg=247 ctermbg=0   guifg=#9e9e9e guibg=#080808
+" (CR=12.8) 72,100,87  (a doxygen identifier is more significant than the common
 "                       text, different from an identifier in the source code)
-hi def doxyName        guifg=#c9db00 guibg=#080808
-" (CR=10.0) 190,100,94 (a title is more significant than the common text)
-hi def doxyTitle       guifg=#00c8f0 guibg=#080808
-" (CR= 8.3) 70,100,70  (special characters)
-hi def doxyEscaped     guifg=#95b300 guibg=#080808
-" (CR=13.0) 65,100,86  (a header is more significant than the common text)
-hi def doxyHeading     guifg=#d9b500 guibg=#080808
-" (CR=15.0) 60,100,100 (yellow, the brightest of all, quite attractive)
-hi def doxyTodo        guifg=#ffff00 guibg=#080808
+hi def doxyName        ctermfg=190 ctermbg=0   guifg=#afdf00 guibg=#080808
+" (CR= 8.5) 60,100,68  (a title is more significant than the common text)
+hi def doxyTitle       ctermfg=44  ctermbg=0   guifg=#afaf00 guibg=#080808
+" (CR=12.8) 72,100,87  (special characters)
+hi def doxyEscaped     ctermfg=148 ctermbg=0   guifg=#dfdfdf guibg=#080808
+" (CR= 9.8) 47,100,87  (a header is more significant than the common text)
+hi def doxyHeading     ctermfg=178 ctermbg=0   guifg=#dfaf00 guibg=#080808
+" (CR=17.5) 52,100,100 (yellow, quite attractive)
+hi def doxyTodo        ctermfg=190 ctermbg=0   guifg=#dfff00 guibg=#080808
 
 """"""""""""""""""""""""""""""""""""""""
 hi def link doxyBody           doxyText
@@ -959,6 +964,7 @@ hi def link doxyPaging         doxyCommand
 hi def link doxyCodeBlock      doxyCodeWord
 hi def link doxyDot            doxyCode
 hi def link doxyVerbatim       doxyCode
+hi def link doxyInternal       doxyText
 hi def link doxyLatexonly      doxyCode
 hi def link doxyHtmlonly       doxyText
 hi def link doxyFormula        doxyCode
@@ -969,14 +975,14 @@ hi def link doxyMdItalic          doxyItalic
 hi def link doxyMdBold            doxyBold
 hi def link doxyMdStrike          doxyStrike
 hi def link doxyMdInlineCode      doxyCode
-hi def link doxyMdRule            doxyEscaped
+hi def link doxyMdRule            doxyHeading
 hi def link doxyMdH1              doxyHeading
 hi def link doxyMdH2              doxyHeading
 hi def link doxyMdH3              doxyHeading
 hi def link doxyMdH4              doxyHeading
 hi def link doxyMdH5              doxyHeading
 hi def link doxyMdH6              doxyHeading
-hi def link doxyMdHeaderLine      doxyEscaped
+hi def link doxyMdHeaderLine      doxyHeading
 hi def link doxyMdBlockQuote      doxyCode
 hi def link doxyMdFencedCodeBlock doxyCode
 hi def link doxyMdCodeBlock       doxyCode
@@ -999,9 +1005,6 @@ hi def link doxyHtmlH4           doxyHeading
 hi def link doxyHtmlH5           doxyHeading
 hi def link doxyHtmlH6           doxyHeading
 hi def link doxyHtmlCenter       doxyText
-hi def link doxyHtmlLineBreak    doxyDelimiter
-hi def link doxyHtmlParagraph    doxyDelimiter
-hi def link doxyHtmlRule         doxyDelimiter
 hi def link doxyHtmlPreformatted doxyCode
 hi def link doxyHtmlBlockQuote   doxyCode
 hi def link doxyHtmlSpan         doxyText

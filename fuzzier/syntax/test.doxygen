@@ -53,7 +53,7 @@ C-style comment block
  * @p Code xx
  *
  * Paragraph
- * @par The paragraph `title`.
+ * @par The `title` of the paragraph.
  *      The paragraph
  *          body.
  *
@@ -73,6 +73,10 @@ C-style comment block
  * @verbatim
  * verbatim text.
  * @endverbatim
+ *
+ * @internal
+ * @endinternal
+ *
  *
  * @latexonly
  * Latex text.
@@ -120,6 +124,7 @@ C-style comment block
  * ========
  * Function
  * ========
+ * @param         arg   This is a param.
  * @param[in]     key   This is a param.
  * @param[out]    value This is a param.
  * @param[in,out] size  This is a param.
@@ -273,7 +278,7 @@ C-style comment block
  * ===========
  * 1. xxx
  * 2. xxx
- * #. xx
+ * -# xx
  *
  * ================
  * Horizontal rules
