@@ -88,6 +88,19 @@ if exists('b:current_syntax') && b:current_syntax =~ '\%(python\|make\)'
 endif
 
 
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Batch
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+if exists('b:current_syntax') && b:current_syntax =~ '\%(dosbatch\)'
+    " REM ...
+    " :: ...
+    execu 'syn region doxyBody matchgroup=doxyPyDelimiter '
+      \ . 'start=+^\s*(\cREM\|::)\s\@=+ '
+      \ . 'end=+$+ '
+      \ . 'contains=@doxyInbody'
+endif
+
+
 " There are several cases when @ is found:
 " 1. Followed by space or eol.
 " 2. An escaped character.
@@ -921,7 +934,7 @@ hi def doxyFont        ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
 " (CR= 7.4) 180,100,68 (shall be the same as Comment)
 hi def doxyText        ctermfg=37  ctermbg=0   guifg=#00afaf guibg=#080808
 " (CR=11.1) 145,100,87 (shall be the same as the source code)
-hi def doxyCode        ctermfg=40  ctermbg=0   guifg=#00df5f guibg=#080808 font='Monaco'
+hi def doxyCode        ctermfg=40  ctermbg=0   guifg=#00df5f guibg=#080808 font='Dejavu Sans Mono'
 hi def doxyItalic      ctermfg=45  ctermbg=0   guifg=#00df5f guibg=#080808 term=italic      cterm=italic      gui=italic
 hi def doxyBold        ctermfg=50  ctermbg=0   guifg=#00df5f guibg=#080808 term=bold        cterm=bold        gui=bold
 hi def doxyBoldItalic  ctermfg=50  ctermbg=0   guifg=#00df5f guibg=#080808 term=italic,bold cterm=italic,bold gui=italic,bold
@@ -932,7 +945,7 @@ hi def doxyStrike      ctermfg=247 ctermbg=0   guifg=#9e9e9e guibg=#080808
 "                       text, different from an identifier in the source code)
 hi def doxyName        ctermfg=190 ctermbg=0   guifg=#afdf00 guibg=#080808
 " (CR= 8.5) 60,100,68  (a title is more significant than the common text)
-hi def doxyTitle       ctermfg=44  ctermbg=0   guifg=#afaf00 guibg=#080808
+hi def doxyTitle       ctermfg=142 ctermbg=0   guifg=#afaf00 guibg=#080808
 " (CR=12.8) 72,100,87  (special characters)
 hi def doxyEscaped     ctermfg=148 ctermbg=0   guifg=#dfdfdf guibg=#080808
 " (CR= 9.8) 47,100,87  (a header is more significant than the common text)
