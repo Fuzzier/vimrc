@@ -934,7 +934,7 @@ hi def doxyFont        ctermfg=188 ctermbg=0   guifg=#dfdfdf guibg=#080808
 " (CR= 7.4) 180,100,68 (shall be the same as Comment)
 hi def doxyText        ctermfg=37  ctermbg=0   guifg=#00afaf guibg=#080808
 " (CR=11.1) 145,100,87 (shall be the same as the source code)
-hi def doxyCode        ctermfg=40  ctermbg=0   guifg=#00df5f guibg=#080808 font='Dejavu Sans Mono'
+hi def doxyCode        ctermfg=40  ctermbg=0   guifg=#00df5f guibg=#080808 font='Bitstream Vera Sans Mono'
 hi def doxyItalic      ctermfg=45  ctermbg=0   guifg=#00df5f guibg=#080808 term=italic      cterm=italic      gui=italic
 hi def doxyBold        ctermfg=50  ctermbg=0   guifg=#00df5f guibg=#080808 term=bold        cterm=bold        gui=bold
 hi def doxyBoldItalic  ctermfg=50  ctermbg=0   guifg=#00df5f guibg=#080808 term=italic,bold cterm=italic,bold gui=italic,bold
