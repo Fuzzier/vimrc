@@ -441,7 +441,7 @@ C++ style comment block
 /// Number lists
 /// 1. xxx
 /// 2. xxx
-/// #. xx
+/// -# xx
 ///
 /// Inline code
 /// `Code `` line`
@@ -529,7 +529,7 @@ xxx ///< doxyEscaped
     ///< Number lists
     ///< 1. xxx
     ///< 2. xxx
-    ///< #. xx
+    ///< -# xx
     ///<
     ///< Inline code
     ///< `single `` line`
