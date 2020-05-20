@@ -418,7 +418,7 @@ execu 'syn match doxyGrouping '
 " @xxx <name> (title)
 " page subpage section subsection subsubsection paragraph
 execu 'syn match doxyPaging '
-  \ . '+[@\\]\%(page\|subpage\|section\|subsection\|subsubsection\|paragraph\)\>+ '
+  \ . '+[@\\]\%(page\|subpage\|section\|subsection\|subsubsection\|paragraph\|ref\)\>+ '
   \ . 'display contained skipwhite nextgroup=doxyNameTitle'
 
 " @mainpage <name>
