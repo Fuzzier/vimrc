@@ -438,12 +438,12 @@ execu 'syn match doxyPaging '
 " space/eol *...* space/eol
 " space/eol _..._ space/eol
 execu 'syn region doxyMdItalic matchgroup=doxyMdDelimiter '
-  \ . 'start=+\%(\_s\|[(\[{<,:;]\)\@<=\*[[:alnum:]]\@=+ '
+  \ . 'start=+\%(\_s\|[(\[{<,:;]\|[\u4E00-\u9FFF]\)\@<=\*[[:alnum:]\u4E00-\u9FFF]\@=+ '
   \ . 'end=+\%(\_s\|[(\[{<=+\-\\@\*]\)\@<!\*[[:alnum:]]\@!+ '
   \ . 'contained contains=doxyContinue,@doxyMdInline '
   \ . b:doxy_concealends
 execu 'syn region doxyMdItalic matchgroup=doxyMdDelimiter '
-  \ . 'start=+\%(\s\|[(\[{<,:;]\)\@<=_[[:alnum:]]\@=+ '
+  \ . 'start=+\%(\s\|[(\[{<,:;]\|[\u4E00-\u9FFF]\)\@<=_[[:alnum:]\u4E00-\u9FFF]\@=+ '
   \ . 'end=+\%(\_s\|[(\[{<=+\-\\@_]\)\@<!_[[:alnum:]]\@!+ '
   \ . 'contained contains=doxyContinue,@doxyMdInline '
   \ . b:doxy_concealends
@@ -451,12 +451,12 @@ execu 'syn region doxyMdItalic matchgroup=doxyMdDelimiter '
 " space/eol **...** space/eol
 " space/eol __...__ space/eol
 execu 'syn region doxyMdBold matchgroup=doxyMdDelimiter '
-  \ . 'start=+\%(\_s\|[(\[{<,:;]\)\@<=\*\*[[:alnum:]]\@=+ '
+  \ . 'start=+\%(\_s\|[(\[{<,:;]\|[\u4E00-\u9FFF]\)\@<=\*\*[[:alnum:]\u4E00-\u9FFF]\@=+ '
   \ . 'end=+\%(\_s\|[(\[{<=+\-\\@\*]\)\@<!\*\*[[:alnum:]]\@!+ '
   \ . 'contained contains=doxyContinue,@doxyMdInline '
   \ . b:doxy_concealends
 execu 'syn region doxyMdBold matchgroup=doxyMdDelimiter '
-  \ . 'start=+\%(\s\|[(\[{<,:;]\)\@<=__[[:alnum:]]\@=+ '
+  \ . 'start=+\%(\s\|[(\[{<,:;]\|[\u4E00-\u9FFF]\)\@<=__[[:alnum:]\u4E00-\u9FFF]\@=+ '
   \ . 'end=+\%(\_s\|[(\[{<=+\-\\@_]\)\@<!__[[:alnum:]]\@!+ '
   \ . 'contained contains=doxyContinue,@doxyMdInline '
   \ . b:doxy_concealends
@@ -464,7 +464,7 @@ execu 'syn region doxyMdBold matchgroup=doxyMdDelimiter '
 " Strikethrough
 " space/eol ~~...~~ space/eol
 execu 'syn region doxyMdStrike matchgroup=doxyMdDelimiter '
-  \ . 'start=+\%(\_s\|[(\[{<,:;]\)\@<=\~\~[[:alnum:]]\@=+ '
+  \ . 'start=+\%(\_s\|[(\[{<,:;]\|[\u4E00-\u9FFF]\)\@<=\~\~[[:alnum:]\u4E00-\u9FFF]\@=+ '
   \ . 'end=+\%(\_s\|[(\[{<=+\-\\@~]\)\@<!\~\~[[:alnum:]]\@!+ '
   \ . 'contained contains=doxyContinue,@doxyMdInline '
   \ . b:doxy_concealends
