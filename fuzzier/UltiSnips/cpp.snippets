@@ -1,0 +1,2511 @@
+################################################################################
+##
+# @file
+#
+# @brief UltiSnippet snippets for C++.
+#
+# @author  Wei Tang <gauchyler@uestc.edu.cn>
+# @date    2019-05-05
+#
+# @copyright Copyright (c) 2019.
+#   National Key Laboratory of Science and Technology on Communications,
+#   University of Electronic Science and Technology of China.
+#   All rights reserved.
+################################################################################
+
+
+################################################################################
+global !p
+import datetime
+import subprocess
+import uuid
+import re
+
+def year():
+    return datetime.datetime.utcnow().year
+
+def date():
+    return datetime.datetime.utcnow().date().isoformat()
+
+def time():
+    return datetime.datetime.utcnow().time().isoformat('seconds')
+
+def now():
+    return datetime.datetime.utcnow().isoformat(' ', 'seconds')
+
+def makeUuid():
+    x = str(uuid.uuid4())
+    x = x.upper()
+    x = x.replace('-', '_')
+    return x
+
+def makeHeaderGuard(filename):
+    name = filename + '__' + str(uuid.uuid4())
+    name = name.upper()
+    name = name.replace('.', '_')
+    name = name.replace('-', '_')
+    return name
+
+# If x is a qualified name, remove the qualifiers.
+# If x is an interface name, remove the leading 'I' from it properly.
+# Othersize, the name is returned as is.
+# If f == 'u': make the first charactor upper case.
+# If f == 'l': make the first charactor lower case.
+def makeProperName(x, f):
+    # If x starts with 'I' and a captical letter.
+    if re.match('I[A-Z]', x):
+        # Remove the leading 'I'
+        y = x[1:]
+    # If x starts with 'I' and a non-captical letter.
+    else:
+        # Keep the leading 'I'
+        y = x
+    if f == 'l':
+        z = y[0].lower()
+    elif f == 'u':
+        z = y[0].upper()
+    if len(y) > 1:
+        z += y[1:]
+    return z
+
+# Split camel-case or snake-case strings into space-separated strings.
+# e.g., "task" -> "task"
+#       "taskLeader" -> "task leader"
+# @param[in] x     The string.
+# @param[in] delim Delimiter.
+def str2delim(x, delim):
+    y = ''
+    while True:
+        m = re.search('^([^A-Z_]*)(.*)', x)
+        if not m:
+            break
+        #
+        x = m.group(1)
+        if x:
+            if y: y = y + delim
+            y = y + x
+        #
+        x = m.group(2)
+        if not x: break
+        # Remove the snake.
+        if x[0] == '_':
+            x = x[1:] if len(x) > 1 else ''
+        if not x: break
+        # Make of the first character lower case.
+        x = x[0].lower() + (x[1:] if len(x) > 1 else '')
+    return y
+
+def lowerFirst(x):
+    return x[0].lower() + (x[1:] if len(x) > 1 else '')
+
+def type2var(x):
+    z = ''
+    # Remove:          const       Xxx::           Tuple Type _t      *&
+    m = re.search(r'^(?:const\s+)?(?:.*::)?(\w+?)(:?Tuple|Type|_t)?[\s\*&]*$', x)
+    y = m.group(1) if m else x
+    m = re.search(r'^I[A-Z]', y)
+    y = y[1:] if m else y
+    if y:
+        z = y[0].lower() + (y[1:] if len(y) > 1 else '')
+    z = z.replace('buffer',  'buf')
+    z = z.replace('message', 'msg')
+    z = z.replace('packet',  'pkt')
+    z = z.replace('header',  'hdr')
+    z = z.replace('vector',  'vec')
+    z = z.replace('array',   'arr')
+    return z
+
+def var2type(x):
+    z = ''
+    m = re.search(r'^(\w+?)_?$', x)
+    y = m.group(1) if m else x
+    if y:
+        z = y[0].upper() + (y[1:] if len(y) > 1 else '')
+    return z
+
+# @brief Convert string to camel-case identifier.
+# @param[in] x The string.
+# @param[in] u The first character in uppercase.
+def str2camel(x, u):
+    z = ''
+    tokens = re.split(r'\W+', x)
+    for y in tokens:
+        if not len(y): continue
+        if u:
+            z += y[0].upper() + (y[1:].lower() if len(y) > 1 else '')
+        else:
+            z += y.lower()
+        u = True
+    return z
+
+# @brief Convert string to snake-case identifier.
+# @param[in] x The string.
+# @param[in] u In uppercase.
+def str2snake(x, u):
+    z = ''
+    tokens = re.split(r'\W+', x)
+    for y in tokens:
+        if not len(y): continue
+        if len(z): z += '_'
+        z += y.upper() if u else y.lower()
+    return z
+
+# @brief Convert camel-case identifier to snake-case identifier.
+# @param[in] x The string.
+# @param[in] u In uppercase.
+def camel2snake(x, u):
+    # 'Xxx' => '_Xxx'
+    y = re.sub(r'(.)([A-Z][a-z]+)', r'\1_\2', x)
+    # 'xxYy' => 'xx_Yy'
+    z = re.sub(r'([0-9a-z])([A-Z])', r'\1_\2', y)
+    a = z.upper() if u else z.lower()
+    return a
+
+# @brief Convert camel-case identifier to delimited identifier.
+# @param[in] x The string.
+# @param[in] u In uppercase.
+def camel2delim(x, u, delim):
+    y = camel2snake(x, u)
+    # 'xx_yy' => 'xx yy'
+    z = re.sub(r'_', delim, y).strip()
+    return z
+
+# @brief Get unqualified name.
+def unqualify(x):
+    y = re.sub(r'.*:(\w+)', r'\1', x)
+    return y
+
+endglobal
+
+################################################################################
+snippet date "the current date in UTC"
+`!p snip.rv = date()`
+endsnippet
+
+# snippet time "The current time in UTC"
+# `!p snip.rv = time()`
+# endsnippet
+
+snippet datetime "the current date in UTC"
+`!p snip.rv = now()`
+endsnippet
+
+snippet uuid "uuid"
+`!p if not snip.c: snip.rv = makeUuid()`
+endsnippet
+
+################################################################################
+# Comments
+################################################################################
+snippet 10/ "comment"
+//////////
+endsnippet
+
+snippet 20/ "comment"
+////////////////////
+endsnippet
+
+snippet 40/ "comment"
+////////////////////////////////////////
+endsnippet
+
+snippet 80/ "comment"
+////////////////////////////////////////////////////////////////////////////////
+endsnippet
+
+snippet /> "///< comment"
+///< ${1:${VISUAL}}
+endsnippet
+
+################################################################################
+# Doxygen
+################################################################################
+snippet fileinfo "file header"
+/**
+ * @file
+ *
+ * @brief ${1:Brief.}
+ *
+ * @author  Wei Tang <gauchyler@uestc.edu.cn>
+ * @date    `!p snip.rv = date()`
+ *
+ * @copyright Copyright (c) `!p snip.rv = year()`.
+ *   National Key Laboratory of Science and Technology on Communications,
+ *   University of Electronic Science and Technology of China.
+ *   All rights reserved.
+ */
+
+$0
+endsnippet
+
+snippet @dox "doxygen"
+/**
+ * @ingroup ${1:Group}
+ * @brief ${2:Brief}
+ */
+endsnippet
+
+snippet @defg "@defgroup"
+/**
+ * @ingroup ${1:Parent}
+ * @defgroup ${2:Group}
+ * @brief ${3:Brief}
+ */
+endsnippet
+
+snippet @ing "@ingroup"
+@ingroup $0
+endsnippet
+
+snippet @ingg "@ingroup @{ @}"
+/**
+ * @ingroup ${1:Group}
+ * @{
+ */
+$0/**
+ * @}
+ */
+endsnippet
+
+snippet @atg "@addtogroup"
+@addtogroup $0
+endsnippet
+
+snippet @atgg "@addtogroup @{ @}"
+/**
+ * @addtogroup ${1:Group}
+ * @{
+ */
+$0/**
+ * @}
+ */
+endsnippet
+
+snippet @cl "@class"
+@class ${1:`!v getreg('"')`}
+endsnippet
+
+snippet <h1 "<h1></h1>"
+<h1>${1:${VISUAL:}}</h1>
+endsnippet
+
+snippet <h2 "<h2></h2>"
+<h2>${1:${VISUAL:}}</h2>
+endsnippet
+
+snippet <h3 "<h3></h3>"
+<h3>${1:${VISUAL:}}</h3>
+endsnippet
+
+snippet <h4 "<h4></h4>"
+<h4>${1:${VISUAL:}}</h4>
+endsnippet
+
+snippet @tp "@tparam"
+@tparam ${1:T}
+endsnippet
+
+snippet @pi "@param[in]"
+@param[in] ${1:name}
+endsnippet
+
+snippet @po "@param[out]"
+@param[out] ${1:name}
+endsnippet
+
+snippet @pio "@param[in,out]"
+@param[in,out] ${1:name}
+endsnippet
+
+snippet <i "<i></i>" i
+<i>${1:${VISUAL:}}</i>
+endsnippet
+
+snippet <b "<b></b>" i
+<b>${1:${VISUAL:}}</b>
+endsnippet
+
+snippet <c "<code></code>" i
+<code>${1:${VISUAL:}}</code>
+endsnippet
+
+snippet @c "@code @endcode"
+@code{.cpp}
+* $0
+* @endcode
+endsnippet
+
+snippet ~c "~~~ code ~~~"
+~~~
+* $0
+* ~~~
+endsnippet
+
+snippet @v "@verbatim @endverbatim"
+@verbatim
+* ${1:${VISUAL:}}
+* @endverbatim
+endsnippet
+
+################################################################################
+# Preprocessors
+################################################################################
+
+########################################
+# Header file guard
+########################################
+snippet once "header file guard"
+#ifndef ${1:`!p if not snip.c: snip.rv = makeHeaderGuard(fn)`}
+#define $1
+
+$0#endif // $1
+endsnippet
+
+########################################
+# Include
+########################################
+snippet i< "include header"
+#include <${1:iostream}>
+endsnippet
+
+snippet i" "include header"
+#include "${1:iostream}"
+endsnippet
+
+snippet i<h "include header"
+#include <${1:stdio}.h>
+endsnippet
+
+snippet i"h "include header"
+#include "${1:stdio}.h"
+endsnippet
+
+snippet i<hh "#include header"
+#include <${1:stdio}.hh>
+endsnippet
+
+snippet i"hh "#include header"
+#include "${1:stdio}.hh"
+endsnippet
+
+snippet i<hpp "#include header"
+#include <${1:stdio}.hpp>
+endsnippet
+
+snippet i"hpp "#include header"
+#include "${1:stdio}.hpp"
+endsnippet
+
+########################################
+# Conditional
+########################################
+snippet #if "#if"
+#if ${1:SYMBOL}
+$0
+#else // !($1)
+
+#endif // $1
+endsnippet
+
+snippet #if! "#if!"
+#if !${1:SYMBOL}
+$0
+#else // $1
+
+#endif // !$1
+endsnippet
+
+snippet #ifd "#if defined()"
+#if defined(${1:SYMBOL})
+$0
+#else // !defined($1)
+
+#endif // defined($1)
+endsnippet
+
+snippet #ifn "#if !defined()"
+#if !defined(${1:SYMBOL})
+$0
+#else // defined($1)
+
+#endif // !defined($1)
+endsnippet
+
+snippet #ifcpp "#ifdef __cplusplus"
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+$0
+
+#ifdef __cplusplus
+} // extern "C"
+#endif // __cplusplus
+endsnippet
+
+########################################
+# Pragma
+########################################
+snippet pack1 "#pragma pack"
+#pragma pack(push, 1)
+
+$0
+
+#pragma pack(pop)
+endsnippet
+
+################################################################################
+# Statements
+################################################################################
+
+########################################
+# Return
+########################################
+snippet ret "return"
+return
+endsnippet
+
+snippet ret0 "return 0"
+return 0;
+endsnippet
+
+snippet ret- "return -1"
+return -1;
+endsnippet
+
+snippet retf "return false"
+return false;
+endsnippet
+
+snippet rett "return true"
+return true;
+endsnippet
+
+snippet retn "return nullptr"
+return nullptr;
+endsnippet
+
+########################################
+# Conditional
+########################################
+snippet if "if"
+if (${1:condition})
+{
+    ${2:${VISUAL}}
+}
+endsnippet
+
+snippet ifc "if constexpr"
+if constexpr (${1:condition})
+{
+    ${2:${VISUAL}}
+}
+endsnippet
+
+snippet elif "else if"
+else if (${1:condition})
+{
+    ${2:${VISUAL}}
+}
+endsnippet
+
+snippet else "else"
+else
+{
+    ${1:${VISUAL}}
+}
+endsnippet
+
+snippet switch "switch"
+switch (${1:v})
+{
+$0
+default:
+    break;
+}
+endsnippet
+
+snippet case "case"
+case ${1:value}:
+    {
+        ${2:${VISUAL}}
+    }
+    break;
+
+endsnippet
+
+########################################
+# Loop
+########################################
+snippet for "for (++)"
+for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
+{
+    ${5:${VISUAL}}
+}
+endsnippet
+
+snippet foru "for (++)"
+for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
+{
+    ${5:${VISUAL}}
+}
+endsnippet
+
+snippet fori "for (++)"
+for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
+{
+    ${5:${VISUAL}}
+}
+endsnippet
+
+snippet for16 "for (uint16_t ++)"
+for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1)
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet for32 "for (uint32_t ++)"
+for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1)
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet for64 "for (uint64_t ++)"
+for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1)
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet fort "for (iterator)"
+for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ++$1)
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet fort+ "for (iterator)"
+for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); )
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet fort> "for (iterator)"
+for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ++$1)
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet for>+ "for (iterator)"
+for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); )
+{
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet forr "for (x : C)"
+for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:items_})
+{
+    ${4:${VISUAL}}
+}
+endsnippet
+
+snippet while "while"
+while (${1:condition})
+{
+    ${2:${VISUAL}}
+}
+endsnippet
+
+snippet dow "do while"
+do // while ($1)
+{
+    ${2:${VISUAL}}
+}
+while (${1:false});
+endsnippet
+
+snippet be "begin(), end()" w
+${1:${VISUAL:container}}.begin(), $1.end()
+endsnippet
+
+snippet cbe "cbegin(), cend()" w
+${1:${VISUAL:container}}.cbegin(), $1.cend()
+endsnippet
+
+########################################
+# Error handling
+########################################
+snippet try "try"
+try
+{
+    ${1:${VISUAL}}$0
+}
+endsnippet
+
+snippet catch "catch"
+catch (${1:Exception}& e)
+{
+    ${1:${VISUAL}}$0
+}
+endsnippet
+
+snippet cats "catch (std::exception &)"
+catch (std::exception& e)
+{
+    ${1:std::cerr << e.what() << std::endl;}
+}
+endsnippet
+
+snippet catb "catch (boost::exception &)"
+catch (boost::exception& e)
+{
+    ${1:std::cerr << diagnostic_information(e) << std::endl;}
+}
+endsnippet
+
+snippet catbs "catch (boost & std)"
+catch (boost::exception& e)
+{
+    ${2:std::cerr << diagnostic_information(e) << std::endl;}
+}
+catch (std::exception& e)
+{
+    ${1:std::cerr << e.what() << std::endl;}
+}
+endsnippet
+
+snippet trys "try/catch"
+try
+{
+    ${1:${VISUAL}}$0
+}
+catch (std::exception& e)
+{
+    std::cerr << e.what() << std::endl;
+}
+endsnippet
+
+snippet try. "try/catch"
+try
+{
+    ${1:${VISUAL}}$0
+}
+catch (...)
+{
+    throw;
+}
+endsnippet
+
+snippet cata "catch (bad_alloc)"
+catch (std::bad_alloc&)
+{
+    $0
+}
+endsnippet
+
+snippet cat. "catch (...)"
+catch (...)
+{
+    $0
+    throw;
+}
+endsnippet
+
+# Unindent 4 spaces.
+# 6 = 2 (length of 'e:') + 4 (indent width)
+pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-6); snip.cursor.set(snip.line, snip.column)"
+snippet e: "exit:" b
+exit:
+endsnippet
+
+# Unindent 4 spaces.
+# 6 = 2 (length of 'e;') + 4 (indent width)
+pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-6); snip.cursor.set(snip.line, snip.column)"
+snippet e; "exit:;" b
+exit:
+    return;
+endsnippet
+
+snippet ge "goto exit;"
+goto exit;
+endsnippet
+
+################################################################################
+# Declarations
+################################################################################
+
+########################################
+# Namespace
+########################################
+snippet ns "namespace"
+namespace ${1:${VISUAL:mpl}} {
+$0} // namespace $1
+endsnippet
+
+snippet nns "namespace"
+namespace nsfx {
+
+$0
+
+} // namespace nsfx
+endsnippet
+
+########################################
+# enum
+########################################
+snippet denum "enum"
+enum ${1:name}
+{
+    ${2:`!p snip.rv=str2delim(t[1],'_').upper()`}_NONE,
+    $0
+    $2_LAST,
+    $2_COUNT = $2_LAST - 1,
+}
+endsnippet
+
+########################################
+# Keywords
+########################################
+snippet pu "public"
+public
+endsnippet
+
+snippet pro "protected"
+protected
+endsnippet
+
+snippet pr "private"
+private
+endsnippet
+
+snippet v "virtual" b
+virtual
+endsnippet
+
+snippet vp "virtual public"
+virtual public
+endsnippet
+
+snippet ov "override"
+override
+endsnippet
+
+snippet fi "final"
+final
+endsnippet
+
+snippet no "noexcept"
+noexcept
+endsnippet
+
+snippet co "const" w
+const
+endsnippet
+
+snippet cno "const noexcept"
+const noexcept
+endsnippet
+
+########################################
+# Functions
+########################################
+snippet exp "explicit"
+explicit
+endsnippet
+
+snippet ctor "Ctor(args)"
+explicit
+${1:`!v getreg('c')`}(${2:void})
+endsnippet
+
+snippet dtor "~Dtor(void) noexcept"
+~${1:`!v getreg('c')`}(void) noexcept
+endsnippet
+
+snippet vdtor "virtual ~Dtor(void) noexcept"
+virtual ~${1:`!v getreg('c')`}(void) noexcept
+endsnippet
+
+snippet xtor "Ctor & Dtor"
+explicit
+${1:`!v getreg('c')`}(${2:void});
+~$1(void) noexcept;
+endsnippet
+
+snippet vxtor "Ctor & Dtor"
+explicit
+${1:`!v getreg('c')`}(${2:void});
+virtual ~$1(void) noexcept;
+endsnippet
+
+snippet fn "void Function(args)"
+${1:void} ${2:Function}(${3:void})
+endsnippet
+
+snippet vf0 "virtual void Function(args) = 0"
+virtual ${1:void} ${2:Function}(${3:void}) = 0;
+endsnippet
+
+snippet vfo0 "virtual void Function(args) override = 0"
+virtual ${1:void} ${2:Function}(${3:void}) override = 0;
+endsnippet
+
+snippet vf "virtual void Function(args)"
+virtual ${1:void} ${2:Function}(${3:void})
+endsnippet
+
+snippet vfo "virtual void Function(args) override"
+virtual ${1:void} ${2:Function}(${3:void}) override;
+endsnippet
+
+snippet up "unused parameter"
+(void)(${1:msg});
+endsnippet
+
+########################################
+# Operators
+########################################
+snippet cpy "Copyable"
+// Copyable.`!p snip << 1; snip += snip.mkline('public:')`
+${1:`!v getreg('c')`}(const $1& rhs);
+$1& operator=(const $1& rhs);
+endsnippet
+
+snippet cpy.d "Copyable" m
+// Copyable.`!p snip << 1; snip += snip.mkline('public:')`
+${1:`!v getreg('c')`}(const $1& rhs)
+    : $0
+{
+}
+
+$1& operator=(const $1& rhs)
+{
+    if (this != &rhs)
+    {
+        $0
+    }
+    return *this;
+}
+endsnippet
+
+snippet mov "Movable"
+// Movable.`!p snip << 1; snip += snip.mkline('public:')`
+${1:`!v getreg('c')`}($1&& rhs) noexcept;
+$1& operator=($1&& rhs) noexcept;
+endsnippet
+
+snippet mov.d "Movable" m
+// Movable.`!p snip << 1; snip += snip.mkline('public:')`
+${1:`!v getreg('c')`}($1&& rhs) noexcept
+    : $0
+{
+}
+
+$1& operator=($1&& rhs) noexcept
+{
+    if (this != &rhs)
+    {
+        $0
+    }
+    return *this;
+}
+endsnippet
+
+snippet ncpy "Non-copyable"
+// Non-copyable.`!p snip << 1; snip += snip.mkline('private:')`
+${1:`!v getreg('c')`}(const $1&) = delete;
+$1& operator=(const $1&) = delete;
+endsnippet
+
+snippet nmov "Non-movable"
+// Non-movable.`!p snip << 1; snip += snip.mkline('private:')`
+${1:`!v getreg('c')`}($1&&) = delete;
+$1& operator=($1&&) = delete;
+endsnippet
+
+snippet opb "operator bool()" m
+// Boolean operators.`!p snip << 1; snip += 'public:'`
+bool operator!(void) const noexcept
+{
+    return !${1:p_};
+}
+
+explicit operator bool() const noexcept
+{
+    return !!$1;
+}
+endsnippet
+
+snippet opc "unary operator>"
+bool operator==(const ${1:`!v getreg('c')`}& rhs) const noexcept;
+bool operator!=(const $1& rhs) const noexcept;
+bool operator<(const $1& rhs) const noexcept;
+bool operator<=(const $1& rhs) const noexcept;
+bool operator>(const $1& rhs) const noexcept;
+bool operator>=(const $1& rhs) const noexcept;
+endsnippet
+
+snippet opc.d "unary operator>" m
+bool operator==(const ${1:`!v getreg('c')`}& rhs) const noexcept
+{
+    return ${2:v_} == rhs.$2;
+}
+
+bool operator!=(const $1& rhs) const noexcept
+{
+    return $2 != rhs.$2;
+}
+
+bool operator<(const $1& rhs) const noexcept
+{
+    return $2 < rhs.$2;
+}
+
+bool operator<=(const $1& rhs) const noexcept
+{
+    return $2 <= rhs.$2;
+}
+
+bool operator>(const $1& rhs) const noexcept
+{
+    return $2 > rhs.$2;
+}
+
+bool operator>=(const $1& rhs) const noexcept
+{
+    return $2 >= rhs.$2;
+}
+endsnippet
+
+snippet opc2 "binary operator>"
+bool operator==(const ${1:`!v getreg('c')`}& lhs, ${2:$1}& rhs) noexcept;
+bool operator!=(const $1& lhs, const $2& rhs) noexcept;
+bool operator<(const $1&lhs, const $2&  rhs) noexcept;
+bool operator<=(const $1&lhs, const $2&  rhs) noexcept;
+bool operator>(const $1&lhs, const $2&  rhs) noexcept;
+bool operator>=(const $1&lhs, const $2&  rhs) noexcept;
+endsnippet
+
+snippet opc2.d "binary operator>"
+bool operator==(const ${1:`!v getreg('c')`}& lhs, ${2:$1}& rhs) noexcept
+{
+    return lhs.${3:v_} == rhs.$3;
+}
+
+bool operator!=(const $1& lhs, const $2& rhs) noexcept
+{
+    return lhs.$3 != rhs.$3;
+}
+
+bool operator<(const $1& lhs, const $2& rhs) noexcept
+{
+    return lhs.$3 > rhs.$3;
+}
+
+bool operator<=(const $1& lhs, const $2& rhs) noexcept
+{
+    return lhs.$3 >= rhs.$3;
+}
+
+bool operator>(const $1& lhs, const $2& rhs) noexcept
+{
+    return lhs.$3 < rhs.$3;
+}
+
+bool operator>=(const $1& lhs, const $2& rhs) noexcept
+{
+    return lhs.$3 <= rhs.$3;
+}
+endsnippet
+
+snippet mv "std::move()" w
+std::move(${1:${VISUAL:v}})
+endsnippet
+
+snippet fw "std::forward()" w
+std::forward<${1:T}>(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+########################################
+# Custom new/delete
+########################################
+snippet new.d "new/delete"
+static void* operator new(size_t);
+static void* operator new(size_t, const std::nothrow_t&) noexcept;
+static void  operator delete(void*) noexcept;
+static void  operator delete(void*, const std::nothrow_t&) noexcept;
+endsnippet
+
+snippet new.i "new/delete"
+void* ${1:`!v getreg('c')`}::operator new(size_t)
+{
+    DsaAllocator<$1> allocator;
+    return allocator.allocate(1);
+}
+
+void* ${1:`!v getreg('c')`}::operator new(size_t, const std::nothrow_t&) noexcept
+{
+    DsaAllocator<$1> allocator;
+    return allocator.allocate(1, std::nothrow);
+}
+
+void $1::operator delete(void* p) noexcept
+{
+    DsaAllocator<$1> allocator;
+    $1* ${2:${1/.*/\l$0/}} = ($1*)p;
+    allocator.deallocate($2, 1);
+}
+
+void $1::operator delete(void* p, const std::nothrow_t&) noexcept
+{
+    DsaAllocator<$1> allocator;
+    $1* ${2:${1/.*/\l$0/}} = ($1*)p;
+    allocator.deallocate($2, 1);
+}
+endsnippet
+
+snippet n= "T* v = new T"
+${1:T}* ${2:`!p snip.rv=type2var(t[1])`} = new $1(${3:});
+auto $2_guard = std::unique_ptr<$1>($2);
+endsnippet
+
+snippet nnd "NSFX_NO_POOL_NEW_DELETE()"
+NSFX_NO_POOL_NEW_DELETE_OPERATORS(${1:`!v getreg('c')`});
+endsnippet
+
+# Unindent 4 spaces.
+# 7 = 3 (length of 'dnd') + 4 (indent width)
+pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-7); snip.cursor.set(snip.line, snip.column)"
+snippet dnd "NSFX_DSA_NEW_DELETE()"
+public:
+    NSFX_DSA_NEW_DELETE_OPERATORS(${1:`!v getreg('c')`});
+endsnippet
+
+########################################
+# Smart pointers
+########################################
+snippet u> "std::unique_ptr<T>" w
+std::unique_ptr<${1:${VISUAL:T}}>
+endsnippet
+
+snippet u>m "std::make_unique<T>(...)"
+auto ${3:`!p snip.rv=type2var(t[1])`} = std::make_unique<${1:T}>(${2:});
+endsnippet
+
+snippet mu "std::make_unique<T>(...)" w
+std::make_unique<${1:T}>(${2:})
+endsnippet
+
+snippet u>n "std::unique_ptr<T> p { new T{...} }"
+std::unique_ptr<${1:${VISUAL:T}}> ${2:`!p snip.rv=type2var(t[1])`} {
+    new $1{${0}}
+};
+endsnippet
+
+snippet u>v "std::unique_ptr<T> p" w
+std::unique_ptr<${1:T}> ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet u>= "std::unique_ptr<T> p {...}"
+std::unique_ptr<${1:T}> ${2:`!p snip.rv=type2var(t[1])`} { ${3:$2} };
+endsnippet
+
+snippet u>g "std::unique_ptr<T> p_guard {...}"
+std::unique_ptr<${1:${VISUAL:T}}> ${2:`!p snip.rv=type2var(t[1])`}_guard { ${3:$2} };
+endsnippet
+
+snippet s> "std::shared_ptr<T>" w
+std::shared_ptr<${1:${VISUAL:T}}>
+endsnippet
+
+snippet w> "std::weak_ptr<T>" w
+std::weak_ptr<${1:${VISUAL:T}}>
+endsnippet
+
+snippet i> "intrusive_ptr<T>" w
+intrusive_ptr<${1:${VISUAL:T}}>
+endsnippet
+
+snippet i>m "std::make_intrusive<T>(...)"
+auto ${3:`!p snip.rv=type2var(t[1])`} = make_intrusive<${1:T}>(${2:});
+endsnippet
+
+snippet mi "std::make_intrusive<T>(...)" w
+make_intrusive<${1:T}>(${2:})
+endsnippet
+
+snippet i>n "intrusive_ptr<T> { new T{...} };"
+intrusive_ptr<${1:${VISUAL:T}}> ${2:`!p snip.rv=type2var(t[1])`} {
+    new $1{$0}
+};
+endsnippet
+
+snippet i>v "intrusive_ptr<T> p" w
+intrusive_ptr<${1:${VISUAL:T}}> ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet i>= "intrusive_ptr<T> p {...}"
+intrusive_ptr<${1:${VISUAL:T}}> ${2:`!p snip.rv=type2var(t[1])`} { ${3:$2}};
+endsnippet
+
+########################################
+# Leak guard
+########################################
+snippet sg "make_safe_guard()"
+auto ${1}_guard = make_safe_guard(${2:$1});
+endsnippet
+
+snippet sg_ "make_safe_guard()"
+auto ${1}_guard = make_safe_guard(${2:$1}_);
+endsnippet
+
+########################################
+# Type cast
+########################################
+snippet sc> "static_cast" w
+static_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+snippet sc>= "static_cast"
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
+    static_cast<$1*>(${3:$2});
+endsnippet
+
+snippet cc> "const_cast" w
+const_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+snippet cc>= "const_cast"
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
+    const_cast<$1*>(${3:$2});
+endsnippet
+
+snippet dc> "dynamic_cast" w
+dynamic_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+snippet dc>= "dynamic_cast"
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
+    dynamic_cast<$1*>(${3:$2});
+endsnippet
+
+snippet rc> "reinterpret_cast" w
+reinterpret_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+snippet rc>= "reinterpret_cast"
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
+    reinterpret_cast<$1*>(${3:$2});
+endsnippet
+
+snippet c> "C-style cast"
+(${1:${VISUAL:T}}*)(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+snippet c>= "C-style cast"
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
+    ($1*)(${3:$2});
+endsnippet
+
+snippet v>= "C-style cast"
+${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} =
+    ($1)(${3:$2});
+endsnippet
+
+########################################
+# Assignment, etc.
+########################################
+snippet tv "T v" w
+${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet t_ "T v_" w
+${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}_
+endsnippet
+
+snippet t= "T v ="
+${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+endsnippet
+
+snippet rv "T& v" w
+${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet r_ "T& v_" w
+${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}_
+endsnippet
+
+snippet r= "T& v =" w
+${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+endsnippet
+
+snippet pv "T* v" w
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet p_ "T* v_" w
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}_
+endsnippet
+
+snippet p= "T* v = nullptr"
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr}
+endsnippet
+
+snippet v= "value ="
+${1:v} = ${2:$1}
+endsnippet
+
+snippet _= "value_ ="
+${1:v}_ = ${2:$1}
+endsnippet
+
+snippet cv "const T v" w
+const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet c= "const T v ="
+const ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+endsnippet
+
+snippet crv "const T& v" w
+const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet cr= "const T& v" w
+const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+endsnippet
+
+snippet cpv "const T* v" w
+const ${1:${VISUAL}}* ${2:`!p snip.rv=type2var(t[1])`}
+endsnippet
+
+snippet cp= "const T* v = nullptr"
+const ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr}
+endsnippet
+
+########################################
+# Initialization list
+########################################
+snippet i_ "x_(x)"
+${1:x}_(${2:$1}),
+endsnippet
+
+snippet ir_ "x_(rhs.x)"
+${1:x}_(rhs.${2:$1}),
+endsnippet
+
+########################################
+# Common type
+########################################
+snippet u8  "uint8_t" w
+uint8_t
+endsnippet
+
+snippet i8  "int8_t" w
+int8_t
+endsnippet
+
+snippet u16  "uint16_t" w
+uint16_t
+endsnippet
+
+snippet i16  "int16_t" w
+int16_t
+endsnippet
+
+snippet u32  "uint32_t" w
+uint32_t
+endsnippet
+
+snippet i32  "int32_t" w
+int32_t
+endsnippet
+
+snippet u64  "uint64_t" w
+uint64_t
+endsnippet
+
+snippet i64  "int64_t" w
+int64_t
+endsnippet
+
+snippet umax  "uintmax_t" w
+uintmax_t
+endsnippet
+
+snippet imax  "intmax_t" w
+intmax_t
+endsnippet
+
+snippet upt  "uintptr_t" w
+uintptr_t
+endsnippet
+
+snippet ipt  "intptr_t" w
+intptr_t
+endsnippet
+
+snippet nu  "NULL" w
+NULL
+endsnippet
+
+snippet np  "nullptr" w
+nullptr
+endsnippet
+
+########################################
+# String
+########################################
+snippet str "std::string" w
+std::string
+endsnippet
+
+snippet str& "const std::string&" w
+const std::string&
+endsnippet
+
+snippet wstr "std::wstring" w
+std::wstring
+endsnippet
+
+snippet wstr& "const std::wstring&" w
+const std::wstring&
+endsnippet
+
+snippet cc "const char*"
+const char*
+endsnippet
+
+########################################
+# stream I/O
+########################################
+snippet co<< "std::cout"
+std::cout << $0 << std::endl;
+endsnippet
+
+snippet ce<< "std::cerr"
+std::cerr << $0 << std::endl;
+endsnippet
+
+########################################
+# Atomic
+########################################
+snippet ato "std::atomic" w
+std::atomic<${1:${VISUAL:T}}>
+endsnippet
+
+########################################
+# Containers
+########################################
+snippet itbe "begin,end" w
+${1:T}::iterator begin(void) noexcept { return ${2:x}.begin(); }
+$1::iterator end(void)   noexcept { return $2.end();   }
+endsnippet
+
+########################################
+# Main
+########################################
+snippet main
+int main(int argc, char** argv)
+{
+    ${0}
+    return 0;
+}
+endsnippet
+
+################################################################################
+# NSFX
+################################################################################
+
+########################################
+# JsonVar
+########################################
+snippet jv "JsonVar" w
+JsonVar
+endsnippet
+
+snippet jv& "const JsonVar&" w
+const JsonVar&
+endsnippet
+
+########################################
+# ByteIterator
+########################################
+snippet bio "ByteIterator"
+ByteIterator bio{${1:buf}.begin(), $1.end()};
+endsnippet
+
+snippet biot "ByteIterator"
+ByteIterator bio{${1:buf}.end() - ${2:size}, $1.end()};
+endsnippet
+
+snippet cbio "ConstByteIterator"
+ConstByteIterator bio{${1:buf}.begin(), $1.end()};
+endsnippet
+
+snippet cbiot "ConstByteIterator"
+ConstByteIterator bio{${1:buf}.end() - ${2:size}, $1.end()};
+endsnippet
+
+########################################
+# Exception handling
+########################################
+snippet ass "assert()"
+assert(${1:${VISUAL:predicate}});
+endsnippet
+
+snippet na "NSFX_ASSERT()"
+NSFX_ASSERT(${1:${VISUAL:predicate}});
+endsnippet
+
+snippet nam "NSFX_ASSERT_MSG()"
+NSFX_ASSERT_MSG(${1:${VISUAL:predicate}}, ${2:message});
+endsnippet
+
+snippet nv "NSFX_VERIFY()"
+NSFX_VERIFY(${1:${VISUAL:predicate}});
+endsnippet
+
+snippet nvm "NSFX_VERIFY_MSG()"
+NSFX_VERIFY_MSG(${1:${VISUAL:predicate}}, ${2:message});
+endsnippet
+
+snippet ntl "NSFX_THROW()(fmt)"
+NSFX_THROW(${1:LogicError}())("${2:Unknown message}");
+endsnippet
+
+snippet ntl< "NSFX_THROW()<<fmt"
+NSFX_THROW(${1:LogicError}()) << "${2:msg}";
+endsnippet
+
+snippet ntc "NSFX_THROW()(fmt)"
+NSFX_THROW(ConfigError())(
+    "Invalid '${1:name}' {}", ${2:cfg("$1")});
+endsnippet
+
+snippet nt "NSFX_THROW()(fmt)"
+NSFX_THROW(${1:RuntimeError}())("${2:msg}");
+endsnippet
+
+snippet nt< "NSFX_THROW()<<fmt"
+NSFX_THROW(${1:RuntimeError}()) << "${2:msg}";
+endsnippet
+
+########################################
+# LOG
+########################################
+snippet nlf "log fatal"
+NSFX_LOG_FATAL()(${1:});
+endsnippet
+
+snippet nle "log error"
+NSFX_LOG_ERROR()(${1:});
+endsnippet
+
+snippet nlw "log warning"
+NSFX_LOG_WARN()(${1:});
+endsnippet
+
+snippet nli "log info"
+NSFX_LOG_INFO()(${1:});
+endsnippet
+
+snippet nld "log debug"
+NSFX_LOG_DEBUG()(${1:});
+endsnippet
+
+snippet nlt "log trace"
+NSFX_LOG_TRACE()(${1:});
+endsnippet
+
+snippet nlf< "log fatal"
+NSFX_LOG_FATAL() << ${1:};
+endsnippet
+
+snippet nle< "log error"
+NSFX_LOG_ERROR() << ${1:};
+endsnippet
+
+snippet nlw< "log warning"
+NSFX_LOG_WARN() << ${1:};
+endsnippet
+
+snippet nli< "log info"
+NSFX_LOG_INFO() << ${1:};
+endsnippet
+
+snippet nld< "log debug"
+NSFX_LOG_DEBUG() << ${1:};
+endsnippet
+
+snippet nlt< "log trace"
+NSFX_LOG_TRACE() << ${1:};
+endsnippet
+
+####################
+snippet nlfc "log fatal"
+NSFX_LOG_FATAL_C(${1:category})(${2:});
+endsnippet
+
+snippet nlec "log error"
+NSFX_LOG_ERROR_C(${1:category})(${2:});
+endsnippet
+
+snippet nlwc "log warning"
+NSFX_LOG_WARN_C(${1:category})(${2:});
+endsnippet
+
+snippet nlic "log info"
+NSFX_LOG_INFO_C(${1:category})(${2:});
+endsnippet
+
+snippet nldc "log debug"
+NSFX_LOG_DEBUG_C(${1:category})(${2:});
+endsnippet
+
+snippet nltc "log trace"
+NSFX_LOG_TRACE_C(${1:category})(${2:});
+endsnippet
+
+####################
+snippet nlfr "log fatal"
+NSFX_LOG_FATAL_R()(${1:});
+endsnippet
+
+snippet nler "log error"
+NSFX_LOG_ERROR_R()(${1:});
+endsnippet
+
+snippet nlwr "log warning"
+NSFX_LOG_WARN_R()(${1:});
+endsnippet
+
+snippet nlir "log info"
+NSFX_LOG_INFO_R()(${1:});
+endsnippet
+
+snippet nldr "log debug"
+NSFX_LOG_DEBUG_R()(${1:});
+endsnippet
+
+snippet nltr "log trace"
+NSFX_LOG_TRACE_R()(${1:});
+endsnippet
+
+########################################
+# Callback
+########################################
+snippet ev "Delegate"
+using ${1:}Cb = void(${2:Ts});
+Delegate<$1Cb> ${3:`!p snip.rv=type2var(t[1])`}Ev_;
+endsnippet
+
+snippet cb "Callback"
+using ${1:}Cb = void(${2:Ts});
+Callback<$1Cb> ${3:`!p snip.rv=type2var(t[1])`}Cb_;
+endsnippet
+
+########################################
+# TEST
+########################################
+snippet ts "test suite"
+NSFX_TEST_SUITE(${1:name})
+{
+    $0
+}
+endsnippet
+
+snippet tsf "test suite with fixture"
+NSFX_TEST_SUITE_F(${1:name}, ${2:Fixture})
+{
+    $0
+}
+endsnippet
+
+snippet tc "test case"
+NSFX_TEST_CASE(${1:name})
+{
+    $0
+}
+endsnippet
+
+snippet tcf "test case with fixture"
+NSFX_TEST_CASE_F(${1:name}, ${2:Fixture})
+{
+    $0
+}
+endsnippet
+
+snippet te "test expection"
+NSFX_TEST_EXPECT${1:_EQ}(${2:predicate});
+endsnippet
+
+snippet ta "test assertion"
+NSFX_TEST_ASSERT${1:_EQ}(${2:predicate});
+endsnippet
+
+########################################
+# Object registry
+########################################
+snippet rc "register class"
+NSFX_REGISTER_CLASS(${1:${VISUAL:Class}}, "edu.uestc.nsfx.${2:$1}");
+endsnippet
+
+########################################
+# Interface usage
+########################################
+snippet ui "useI()" w
+useI<${1:Intf}>(${2:`!p snip.rv=type2var(t[1])`})
+endsnippet
+
+########################################
+# Message
+########################################
+snippet cdm "cancel & delete message"
+cancelAndDelete(${1:msg});
+endsnippet
+
+snippet cmsg "const msg" w
+const Message* msg
+endsnippet
+
+snippet cpkt "const pkt" w
+const Packet* pkt
+endsnippet
+
+snippet nbuf "new buffer"
+static pstring_t cate("${1:xxx}");
+Buffer ${2:msg}(cate);
+endsnippet
+
+snippet nmsg "new msg"
+static pstring_t cate("${1:xxx}");
+std::unique_ptr<Message> ${2:msg} { new Message(cate) };
+endsnippet
+
+snippet npkt "new pkt"
+static pstring_t cate("${1:xxx}");
+std::unique_ptr<Packet> ${2:pkt} { new Packet(cate) };
+endsnippet
+
+snippet dmsg "dup msg"
+std::unique_ptr<Message> ${1:dup} { ${2:msg}->dup() };
+endsnippet
+
+snippet dpkt "dup pkt"
+std::unique_ptr<Packet> ${1:dup} { ${2:pkt}->dup() };
+endsnippet
+
+snippet m2p "message to packet"
+NSFX_ASSERT_MSG($2->isPacket(),
+    "Invalid message, which must be a packet");
+const Packet* ${1:pkt} = static_cast<const Packet*>(${2:msg});
+endsnippet
+
+snippet dupush "du.push"
+// 添加分组头部.
+${1:T}* ${2:hdr} = nullptr;
+{
+    Buffer& du = ${3:dup}->du();
+    du.push(sizeof($1));
+    $3->addByteLength(sizeof($1));
+    $2 = reinterpret_cast<$1*>(du.data());
+    //
+    $0
+}
+endsnippet
+
+snippet duput "du.put"
+// 添加分组头部.
+${1:T}* ${2:hdr} = nullptr;
+{
+    Buffer& du = ${3:dup}->du();
+    du.put(sizeof($1));
+    $3->addByteLength(sizeof($1));
+    $2 = reinterpret_cast<$1*>(du.data());
+    //
+    $0
+}
+endsnippet
+
+snippet dupop "du.pop"
+// 提取分组头部.
+${1:T} ${2:hdr};
+{
+    Buffer& du = ${3:dup}->du();
+    if (du.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        goto exit;
+    }
+    du.pop(&$2, sizeof($1));
+    $3->addByteLength(0-sizeof($1));
+    //
+    $0
+}
+endsnippet
+
+snippet dumod "du.modify"
+// 修改分组头部.
+${1:T} ${2:hdr};
+{
+    Buffer& du = ${3:dup}->du();
+    if (du.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        goto exit;
+    }
+    du.pop(&$2, sizeof($1));
+    $3->addByteLength(0-sizeof($1));
+    //
+    $0
+    //
+    du.pop(&$2, sizeof($1));
+    $3->addByteLength(sizeof($1));
+}
+endsnippet
+
+snippet duptr "du.ptr"
+// 读取分组头部.
+const ${1:T}* ${2:hdr} = nullptr;
+{
+    const Buffer& du = ${3:dup}->du();
+    if (du.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        goto exit;
+    }
+    $2 = reinterpret_cast<const $1*>(du.data());
+    //
+    $0
+}
+endsnippet
+
+snippet dupeep "du.peep"
+// 读取分组头部.
+${1:T} ${2:hdr};
+{
+    const Buffer& du = ${3:dup}->du();
+    if (du.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        goto exit;
+    }
+    du.peep(&$2, sizeof($1));
+    //
+    $0
+}
+endsnippet
+
+snippet icipush "ici.push"
+// 设置ICI.
+${1:T}* ${2:ici} = nullptr;
+{
+    Buffer& par = ${3:dup}->par();
+    par.clear();
+    par.push(sizeof($1));
+    $2 = reinterpret_cast<$1*>(par.data());
+    //
+    $0
+}
+endsnippet
+
+snippet iciput "ici.put"
+// 设置ICI.
+${1:T}* ${2:ici} = nullptr;
+{
+    Buffer& par = ${3:dup}->par();
+    par.clear();
+    par.put(sizeof($1));
+    $2 = reinterpret_cast<$1*>(par.data());
+    //
+    $0
+}
+endsnippet
+
+snippet icipop "ici.pop"
+// 提取ICI.
+${1:T} ${2:ici};
+{
+    Buffer& par = ${3:dup}->par();
+    if (par.size() != sizeof($1))
+    {
+        NSFX_THROW(LogicError())("Invalid ICI size {} B", par.size());
+    }
+    par.pop(&$2, sizeof($1));
+    //
+    $0
+}
+endsnippet
+
+snippet iciptr "ici.ptr"
+// 读取ICI.
+const ${1:T}* ${2:ici} = nullptr;
+{
+    const Buffer& par = ${3:dup}->par();
+    if (par.size() != sizeof($1))
+    {
+        NSFX_THROW(LogicError())("Invalid ICI size {} B", par.size());
+    }
+    $2 = reinterpret_cast<const $1*>(par.data());
+    //
+    $0
+}
+endsnippet
+
+snippet icipeep "ici.peep"
+// 读取ICI.
+${1:T} ${2:ici};
+{
+    const Buffer& par = ${3:dup}->par();
+    if (par.size() != sizeof($1))
+    {
+        NSFX_THROW(LogicError())("Invalid ICI size {} B", par.size());
+    }
+    par.peep(&$2, sizeof($1));
+    //
+    $0
+}
+endsnippet
+
+snippet tagpush "tag.push"
+// 添加标签.
+${1:T}* ${2:info} = nullptr;
+{
+    Buffer& tag = ${3:dup}->tag();
+    tag.push(sizeof($1));
+    $2 = reinterpret_cast<$1*>(tag.data());
+    //
+    $0
+}
+endsnippet
+
+snippet tagput "tag.put"
+// 添加标签.
+${1:T}* ${2:info} = nullptr;
+{
+    Buffer& tag = ${3:dup}->tag();
+    tag.put(sizeof($1));
+    $2 = reinterpret_cast<$1*>(tag.data());
+    //
+    $0
+}
+endsnippet
+
+snippet tagpop "tag.pop"
+// 提取标签.
+${1:T} ${2:info};
+{
+    Buffer& tag = ${3:dup}->tag();
+    if (tag.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        goto exit;
+    }
+    tag.pop(&$2, sizeof($1));
+    //
+    $0
+}
+endsnippet
+
+snippet tagmod "tag.modify"
+// 修改标签.
+${1:T} ${2:info};
+{
+    Buffer& tag = ${3:dup}->tag();
+    if (tag.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        goto exit;
+    }
+    tag.pop(&$2, sizeof($1));
+    //
+    $0
+    //
+    tag.push(&$2, sizeof($1));
+}
+endsnippet
+
+snippet tagptr "tag.ptr"
+// 读取标签.
+const ${1:T}* ${2:info} = nullptr;
+{
+    const Buffer& tag = ${3:dup}->tag();
+    if (tag.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        goto exit;
+    }
+    $2 = reinterpret_cast<const $1*>(tag.data());
+    //
+    $0
+}
+endsnippet
+
+snippet tagpeep "tag.peep"
+// 读取标签.
+const ${1:T}* ${2:info} = nullptr;
+{
+    const Buffer& tag = ${3:dup}->tag();
+    if (tag.size() < sizeof($1))
+    {
+        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        goto exit;
+    }
+    tag.peep(&$2, sizeof($1));
+    //
+    $0
+}
+endsnippet
+
+########################################
+# Data structures
+########################################
+snippet key "Key"
+union ${1:Key}
+{
+    struct Fields
+    {
+        $0
+    } s_;
+    uint64_t u_;
+    static_assert(sizeof(s_) <= sizeof(u_), "Invalid key type");
+};
+endsnippet
+
+snippet keyper "Keyper"
+struct ${1:Keyper}
+{
+    ${2:Key} operator()(const ${3:T}& ${4:`!p snip.rv=type2var(t[3])`}) const noexcept
+    {
+        return $4.${5:`!p snip.rv=type2var(t[2])`_};
+    }
+};
+endsnippet
+
+snippet less "Less"
+struct ${1:Less}
+{
+    const bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
+    {
+        return ${3:lhs < rhs};
+    }
+};
+endsnippet
+
+snippet comp "Comp"
+struct ${1:Comp}
+{
+    bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
+    {
+        return lhs.${3:time_} < rhs.$3;
+    }
+};
+endsnippet
+
+snippet lexc "lex comp"
+if (lhs.${1:k0} != rhs.$1)
+{
+    return lhs.$1 < rhs.$1;
+}
+else
+{
+    return lhs.${2:k1} < rhs.$2;
+}
+endsnippet
+
+snippet itn "IntrusiveTreeNode"
+IntrusiveTreeNode<class ${1:C}>
+endsnippet
+
+snippet iat> "IntrusiveAvlTree"
+using ${4:Map} = IntrusiveAvlTree<${1:T}, class ${2:C},
+                 multi_set_t<false>, ${3:Key}, Keyper, Comp>;
+$4  ${5:`!p snip.rv = type2var(t[4])`_};`!p snip << 1; snip += snip.mkline()`
+$4::iterator begin(void) noexcept { return $5.begin(); }
+$4::iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
+$4::const_iterator begin(void) const noexcept { return $5.begin(); }
+$4::const_iterator end(void)   const noexcept { return $5.end();   }
+endsnippet
+
+snippet irt> "IntrusiveRbTree"
+using ${4:Map} = IntrusiveRbTree<${1:T}, class ${2:C},
+                 multi_set_t<false>, ${3:Key}, Keyper, Comp>;
+$4  ${5:`!p snip.rv = type2var(t[4])`_};`!p snip << 1; snip += snip.mkline()`
+$4::iterator begin(void) noexcept { return $5.begin(); }
+$4::iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
+$4::const_iterator begin(void) const noexcept { return $5.begin(); }
+$4::const_iterator end(void)   const noexcept { return $5.end();   }
+endsnippet
+
+snippet iln "IntrusiveListNode"
+IntrusiveListNode<class ${1:C}>
+endsnippet
+
+snippet il> "IntrusiveList"
+using ${3:List} = IntrusiveList<${1:T}, class ${2:C}>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+$3::iterator begin(void) noexcept { return $4.begin(); }
+$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::const_iterator begin(void) const noexcept { return $4.begin(); }
+$3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet isln "IntrusiveSlistNode"
+IntrusiveSlistNode<class ${1:C}C>
+endsnippet
+
+snippet isl> "IntrusiveSlist"
+using ${3:List} = IntrusiveSlist<${1:T}, class ${2:C}>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+$3::iterator begin(void) noexcept { return $4.begin(); }
+$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::const_iterator begin(void) const noexcept { return $4.begin(); }
+$3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet ihn "IntrusiveHeapNode"
+IntrusiveHeapNode<class ${1:C}>
+endsnippet
+
+snippet ih> "IntrusiveHeap"
+using ${3:Heap} = IntrusiveHeap<${1:T}, class ${2:C},
+                  max_heap_t<false>, Comp>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+$3::iterator begin(void) noexcept { return $4.begin(); }
+$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::const_iterator begin(void) const noexcept { return $4.begin(); }
+$3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet issn "IntrusiveSlistSetNode"
+IntrusiveSlistSetNode<class ${1:C}>
+endsnippet
+
+snippet iss> "IntrusiveSlistSet"
+using ${3:Set} = IntrusiveSlistSet<${1:T}, class ${2:C},
+                 ${3:Key}, Keyper, Hash>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+$3::iterator begin(void) noexcept { return $4.begin(); }
+$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::const_iterator begin(void) const noexcept { return $4.begin(); }
+$3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet ivn "IntrusiveVectorNode"
+IntrusiveVectorNode<class ${1:C}>
+endsnippet
+
+snippet iv> "IntrusiveVector"
+using ${3:Vector} = IntrusiveVector<${1:T}, class ${2:C}>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+$3::iterator begin(void) noexcept { return $4.begin(); }
+$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::const_iterator begin(void) const noexcept { return $4.begin(); }
+$3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet ifskn "IntrusiveFixedSkipListNode"
+IntrusiveFixedSkipListNode<${1:3}, class ${2:C}>
+endsnippet
+
+snippet ifsk> "IntrusiveFixedSkipList"
+using ${5:Map} = IntrusiveFixedSkipList<${1:t}, ${2:3}, class ${3:C},
+                 ${4:Key}, Keyper, Comp>;
+$5  ${6:`!p snip.rv = type2var(t[5])`_};`!p snip << 1; snip += snip.mkline()`
+$5::iterator begin(void) noexcept { return $6.begin(); }
+$5::iterator end(void)   noexcept { return $6.end();   }`!p snip << 1; snip += snip.mkline()`
+$5::const_iterator begin(void) const noexcept { return $6.begin(); }
+$5::const_iterator end(void)   const noexcept { return $6.end();   }
+endsnippet
+
+snippet sk> "SkipList"
+using ${3:Map} = SkipList<${1:T}, ${2:Key}, Keyper, Comp>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+$3::iterator begin(void) noexcept { return $4.begin(); }
+$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::const_iterator begin(void) const noexcept { return $4.begin(); }
+$3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet cont "container"
+bool empty(void) const noexcept { return ${3:map_}.empty(); }
+
+size_t size(void) const noexcept { return $3.size(); }
+
+void resize(size_t n) { $3.resize(n); }
+
+$1*
+find($2) noexcept;
+
+const ${1:T}*
+find(${2:key}) const noexcept;
+
+bool has($2) const noexcept;
+
+$1* add($2);
+
+$1* addOrGet($2);
+
+$1* addOrUpdate($2);
+
+void remove($2) noexcept;
+
+void remove($1* `!p snip.rv=type2var(t[1])`) noexcept;
+
+$1*
+front(void) noexcept { return $3.front(); }
+
+const $1*
+front(void) const noexcept { return $3.front(); }
+
+const $1*
+push_back($2);
+
+std::unique_ptr<$1>
+pop_front(void) noexcept
+{
+    return std::unique_ptr<$1>{ $3.pop_front() };
+}
+
+void clear(void) noexcept { $3.destroy(); }
+
+void checkTimeout(simtime_t time) noexcept;
+endsnippet
+
+snippet mfindc "find"
+return const_cast<${1:`!v getreg('c')`}*>(this)->find(${2:key});
+endsnippet
+
+snippet mfind "find"
+${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
+Key key = $0;
+auto it = ${3:map_}.find(key);
+if (it != $3.end())
+{
+    $2 = *it;
+}
+return $2;
+endsnippet
+
+snippet madd "add"
+${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
+Key key = $0;
+auto it = ${3:map_}.find(key);
+NSFX_ASSERT(it != $3.end());
+$2 = new $1(this, );
+$3.insert($2);
+return $2;
+endsnippet
+
+snippet maog "addOrGet"
+${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
+Key key$0;
+auto it = ${3:map_}.find(key);
+if (it != $3.end())
+{
+    $2 = *it;
+}
+else
+{
+    $2 = new $1(this, );
+    $3.insert($2);
+}
+return $2;
+endsnippet
+
+snippet maou "addOrUpdate"
+${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
+Key key$0;
+auto it = ${3:map_}.find(key);
+if (it != $3.end())
+{
+    $2 = *it;
+}
+else
+{
+    $2 = new $1(this, );
+    $3.insert($2);
+}
+return $2;
+endsnippet
+
+snippet mct "checkTimeout"
+while (!${1:list_}.empty())
+{
+    ${2:T}* ${3:`!p snip.rv = type2var(t[2])`} = $1.front();
+    if ($3->time_ <= time)
+    {
+        $1.pop_front();
+        delete $3;
+        continue;
+    }
+    break;
+}
+endsnippet
+
+########################################
+# sim time
+########################################
+snippet tn "now"
+simtime_t now = simTime();
+endsnippet
+
+snippet tn- "now"
+simtime_t now = ${1:tib_}->simTime();
+endsnippet
+
+snippet t+ "now + dt"
+simtime_t ${1:time} = now + ${2:dt};
+endsnippet
+
+########################################
+# Module
+########################################
+snippet dmod "declare module"
+class ${1:Xxx}
+    : public Module
+{
+public:
+    explicit
+    `!p snip.rv=unqualify(t[1])`(void);
+    virtual ~`!p snip.rv=unqualify(t[1])`(void) noexcept;
+
+    // Module
+public:
+    virtual void use(const char* iid, void* p) override;
+    virtual void initialize(const JsonVar& cfg) override;
+    virtual void handle(const Message* msg) override;
+
+private:
+    enum TimerId
+    {
+        TIMER_ID_NONE,
+        TIMER_ID_LAST,
+    };
+
+    enum PortId
+    {
+        PORT_ID_NONE,
+        PORT_ID_LAST,
+    };
+
+};
+endsnippet
+
+snippet dsubm "declare submodule"
+class ${1:Xxx}
+    : public SubModule
+{
+public:
+    explicit
+    `!p snip.rv=unqualify(t[1])`(${0});
+    virtual ~`!p snip.rv=unqualify(t[1])`(void) noexcept;
+
+    // SubModule
+public:
+    virtual void initialize(const JsonVar& cfg) override;
+    virtual void handle(const Message* msg) override;
+
+private:
+    enum TimerId
+    {
+        TIMER_ID_NONE,
+        TIMER_ID_LAST,
+    };
+
+};
+endsnippet
+
+snippet dtid "enum TimerId"
+enum TimerId
+{
+    TIMER_ID_NONE,
+    TIMER_ID_LAST,
+};
+endsnippet
+
+snippet dpid "enum PortId"
+enum PortId
+{
+    PORT_ID_NONE,
+    PORT_ID_LAST,
+};
+endsnippet
+
+snippet csm "create sub-module"
+${1:o} = createObjectAs<Module>(${2:cfg}("cid").asString().data());
+take($1);
+$1->setName(${3:name});
+$1->setLogLevel(logLevel());
+$1->useI<Xxx>(this);
+connect(this, "<xxx-data.req", $1, ">xxx-data.req");
+connect(this, ">xxx-data.ind", $1, "<xxx-data.ind");
+$1->initialize($2);
+endsnippet
+
+snippet dtimer "declare timer"
+std::unique_ptr<Message> $2;
+    `!p snip.rv=str2snake(t[1],True)`,
+${2:`!p snip.rv=str2camel(t[1],False)`_} = std::make_unique<Message>("${1:name}");
+$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`);
+endsnippet
+
+snippet ctm "create timer to module"
+${2:`!p snip.rv=str2camel(t[1],False)`_} = std::make_unique<Message>("${1:name}");
+$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`);
+endsnippet
+
+snippet dport "declare port"
+Port* $2;
+    `!p snip.rv=str2snake(t[1],True)`_PORT,
+${2:`!p snip.rv=str2camel(t[1],False)`Port_} = addPort("${1:name}");
+$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`_PORT);
+endsnippet
+
+snippet apm "add port for module"
+${2:`!p snip.rv=str2camel(t[1],False)`} = addPort("${1:name}");
+$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`_PORT);
+endsnippet
+
+snippet cpm "connect ports for modules"
+connect(${1:this}, "<${2:net-data}.req", ${3:o}, ">$2.req");
+connect($1, ">$2.ind", $3, "<$2.ind");
+endsnippet
+
+########################################
+# module initialize(cfg)
+########################################
+snippet cmis "miss init"
+if (!${1:v})
+{
+    NSFX_THROW(LogicError())("Missing '$1'");
+}
+endsnippet
+
+snippet cinit "cfg init"
+if (cfg.has("name"))
+{
+    setName(cfg["name"].asStdString());
+}
+if (cfg.has("log level"))
+{
+    LogLevel level = (LogLevel)cfg["log level"].asI32();
+    setLogLevel(level);
+}
+endsnippet
+
+snippet caddr "cfg addr"
+if (cfg.has("$2"))
+{
+    ${1:addr} = (aint_t)cfg("${2:`!p snip.rv=camel2delim(t[1],False,' ')`}").as${3:I16}();
+    if ($1 == ADDR_NONE)
+    {
+        NSFX_THROW(ConfigError())(
+            "Invalid '$2': {}", cfg("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet cnum "cfg numeric"
+if (cfg.has("$2"))
+{
+    ${1:v} = cfg("${2:`!p snip.rv=camel2delim(t[1],False,' ')`}").as${3:U16}();
+    if ($1 <= 0)
+    {
+        NSFX_THROW(ConfigError())(
+            "Invalid '$2': {}", cfg("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet cdbl "cfg dbl"
+if (cfg.has("$2"))
+{
+    double = cfg("${2:name}").asDouble();
+    if ($1 <= 0)
+    {
+        NSFX_THROW(ConfigError())(
+            "Invalid '$2': {}", cfg("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet ctime "cfg time"
+if (cfg.has("$1"))
+{
+    int64_t ns;
+    unit::str_to_nanosec(cfg("${1:name}"), &ns);
+    if (ns <= 0)
+    {
+        NSFX_THROW(ConfigError())(
+            "Invalid '$1': {}", cfg("$1"));
+    }
+    ${2:`!p snip.rv=str2camel(t[1],False)`} = simtime_t(ns, SIMTIME_NS);
+}
+endsnippet
+
+snippet cpower "cfg power"
+if (cfg.has("$1"))
+{
+    double f64;
+    unit::str_to_watts(cfg("${1:name}"), &f64);
+    if (f64 <= 0)
+    {
+        NSFX_THROW(ConfigError())(
+            "Invalid '$1': {}", cfg("$1"));
+    }
+    $0
+}
+endsnippet
+
+snippet cmod "cfg module"
+{
+    const JsonVar& $2J = cfg("${2:`!p snip.rv=var2type(t[1]).lower()`}");
+    ${1:v} = createObjectAs<Module>($2J("cid"));
+    take($1);
+    $1->initialize($2J);
+}
+endsnippet
+
+########################################
+# module handle(msg)
+########################################
+snippet hmsg "handle msg"
+if (msg->isSelf())
+{
+    TimerId tid = (TimerId)(uintptr_t)msg->data();
+    switch (tid)
+    {
+    case XXX_TIMER : xxx(); break;
+    default: NSFX_THROW(LogicError())("Unknown self message");
+    }
+}
+else
+{
+    Port* port = msg->arrivalPort();
+    PortId pid = (PortId)(uintptr_t)port->data();
+    switch (pid)
+    {
+    case XXX_PORT : xxx(msg); break;
+    default: NSFX_THROW(LogicError())("Unknown message");
+    }
+}
+endsnippet
+
+snippet caset "case timer"
+case ${2:`!p snip.rv=camel2snake(t[1],True)`}_TIMER : on${1:Xxx}(); break;
+endsnippet
+
+snippet casep "case port"
+case ${2:`!p snip.rv=camel2snake(t[1],True)`}_PORT : on${1:Xxx}(${3:msg}); break;
+endsnippet
+
