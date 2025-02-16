@@ -169,7 +169,6 @@ set autoread                    " read opened files when changed outside Vim.
 set autowrite                   " write a modified buffer on each :next ,...
 set backspace=indent,eol,start  " backspacing over everything in insert mode
 set backup                      " keep a backup file
-set browsedir=current           " which directory to use for the file browser
 set cmdheight=2                 " prevent status line to be overwritten by mode message
 set complete+=k                 " scan the files given with the 'dictionary' option
 set concealcursor=n             " conceal text only in normal mode
@@ -222,6 +221,10 @@ set viewoptions-=options        " do not save options and mappings in window ses
 set visualbell                  " visual bell instead of beeping
 set wildignore=*.bak,*.o,*.e,*~ " wildmenu: ignore these extensions
 set wildmenu                    " command-line completion in an enhanced mode
+
+if has('browse')
+set browsedir=current           " which directory to use for the file browser
+endif
 
 "===============================================================================
 " BUFFERS, WINDOWS
