@@ -226,6 +226,14 @@ if has('browse')
 set browsedir=current           " which directory to use for the file browser
 endif
 
+" Ignore <Esc>+key combination in Insert mode, so <Esc>+key will not be
+" recoginized as a combined key, which generates garbage characters instead of
+" exiting Insert mode.
+" see https://vi.stackexchange.com/questions/16148/slow-vim-escape-from-insert-mode
+if $TERM =~ 'screen\|xterm'
+set noesckeys
+endif
+
 "===============================================================================
 " BUFFERS, WINDOWS
 "===============================================================================
