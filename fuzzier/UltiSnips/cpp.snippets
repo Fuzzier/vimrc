@@ -1031,6 +1031,30 @@ snippet fw "std::forward()" w
 std::forward<${1:T}>(${2:`!p snip.rv=type2var(t[1])`})
 endsnippet
 
+snippet fw. "std::forward()..." w
+std::forward<${1:Args}>(${2:`!p snip.rv=type2var(t[1])`})...
+endsnippet
+
+########################################
+# Template
+########################################
+snippet temp "template"
+template<$0>
+endsnippet
+
+snippet c. "class... Args" w
+class... Args
+endsnippet
+
+snippet ta. "template<class... Args>"
+template<class... Args>
+endsnippet
+
+snippet a. "Args&&... args" w
+Args&&... args
+endsnippet
+
+
 ########################################
 # Custom new/delete
 ########################################
