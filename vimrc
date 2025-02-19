@@ -296,6 +296,15 @@ autocmd BufReadPost *
     \ endif
 
 "-------------------------------------------------------------------------------
+" Tab navigation.
+"-------------------------------------------------------------------------------
+" Shortcuts for navigating among windows.
+nnoremap <Leader>tn :tabnext<CR>
+nnoremap <Leader>tp :tabprev<CR>
+nnoremap <Leader>tc :tabnew<CR>
+nnoremap <Leader>tx :tabclose<CR>
+
+"-------------------------------------------------------------------------------
 " Window navigation.
 "-------------------------------------------------------------------------------
 " Shortcuts for navigating among windows.
