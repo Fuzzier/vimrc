@@ -692,6 +692,8 @@ call plug#begin(repos_path)
     " Replace text with the contents of a register.
     " Comment: `ya"` does not yank the surrounding blanks, good.
     Plug 'vim-scripts/ReplaceWithRegister'
+    " Vim plugin that shows the context of the currently visible buffer contents
+    Plug 'wellle/context.vim'
     " Vim plugin that provides additional text objects.
     Plug 'wellle/targets.vim'
     "
@@ -1210,6 +1212,13 @@ nmap <silent> gc  <Plug>TComment_gc
 xmap <silent> gc  <Plug>TComment_gc
 " Toggle comment for current line.
 nmap <silent> gcc <Plug>TComment_gcc
+
+"---------------------------------------
+" wellle/context.vim
+"---------------------------------------
+let g:context_enabled = 1
+let g:context_max_height = 5
+let g:context_max_join_parts = 5
 
 "=======================================
 " IDE like
