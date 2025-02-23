@@ -1330,15 +1330,15 @@ nnoremap <silent> <Leader>fl  :LeaderfLine<CR>
 nnoremap <silent> <Leader>fal :LeaderfLineAll<CR>
 "
 " Customize command inside LeaderF's prompt.
-" <C-Up>   => <Up>     : navigate the next result list.
-" <C-Down> => <Down>   : navigate the prev result list.
+" <C-K>    => <Up>     : navigate the next result list.
+" <C-J>    => <Down>   : navigate the prev result list.
 " <Up>     => <C-Up>   : recall prev input history.
 " <Down>   => <C-Down> : recall next input history.
 " <C-Up>   => <C-K>    : scroll up in the popup preview window.
 " <C-Down> => <C-J>    : scroll down in the popup preview window.
 let g:Lf_CommandMap = {
-    \ '<C-J>':    ['<Down>'],
     \ '<C-K>':    ['<Up>'],
+    \ '<C-J>':    ['<Down>'],
     \ '<Up>':     ['<C-Up>'],
     \ '<Down>':   ['<C-Down>'],
     \ '<C-Up>':   ['<C-K>'],
