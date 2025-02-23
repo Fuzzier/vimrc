@@ -1236,10 +1236,19 @@ let g:asyncrun_bell = 1
 "---------------------------------------
 " skywind3000/vim-terminal-help
 "---------------------------------------
-" initialize working dir: 0 for unchanged, 1 for file path and 2 for project root.
+" The key to toggle terminal window.
+let g:terminal_key = '<Leader>to'
+" Initialize working dir: 0 for unchanged, 1 for file path and 2 for project root.
 let g:terminal_cwd = 2
-" set to term to kill term session when exiting vim.
+" Set to 'term' to kill term session when exiting vim.
 let g:terminal_kill = 'term'
+" Set to 1 to close window if process finished.
+let g:terminal_close = 1
+"
+" Use `Esc` key to leave terminal insert mode.
+tnoremap <Esc> <C-\><C-n>
+" Use `:to` to open a terminal.
+command! T :tab terminal
 
 "---------------------------------------
 " ctrlpvim/ctrlp.vim
