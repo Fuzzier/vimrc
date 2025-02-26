@@ -161,6 +161,14 @@ def camel2snake(x, u):
     a = z.upper() if u else z.lower()
     return a
 
+# @brief Convert camel-case identifier to snake-case identifier.
+# @param[in] x The string.
+# @param[in] u In uppercase.
+def camel2snake_timer(x, u):
+    y = camel2snake(x, u)
+    z = re.sub('_timeout', '', y, flags=re.IGNORECASE)
+    return z
+
 # @brief Convert camel-case identifier to delimited identifier.
 # @param[in] x The string.
 # @param[in] u In uppercase.
@@ -2386,7 +2394,7 @@ $2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`);
 endsnippet
 
 snippet dport "declare port"
-Port* $2;
+Port* $2 {nullptr};
     `!p snip.rv=str2snake(t[1],True)`_PORT,
 ${2:`!p snip.rv=str2camel(t[1],False)`Port_} = addPort("${1:name}");
 $2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`_PORT);
@@ -2526,7 +2534,7 @@ else
 endsnippet
 
 snippet caset "case timer"
-case ${2:`!p snip.rv=camel2snake(t[1],True)`}_TIMER : on${1:Xxx}(); break;
+case ${2:`!p snip.rv=camel2snake_timer(t[1],True)`}_TIMER : on${1:Xxx}(); break;
 endsnippet
 
 snippet casep "case port"
