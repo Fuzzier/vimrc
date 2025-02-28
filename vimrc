@@ -746,7 +746,7 @@ call plug#begin(repos_path)
     " =========================
     " A Vim plugin which shows git diff markers in the sign column and
     " stages/previews/undoes hunks and partial hunks.
-    " Plug 'airblade/vim-gitgutter'
+    Plug 'airblade/vim-gitgutter'
     " A Git wrapper so awesome, it should be illegal.
     Plug 'tpope/vim-fugitive'
     " ➕ Show a diff using Vim its sign column.
@@ -1441,8 +1441,8 @@ let g:gutentags_exclude_filetypes = [
 "---------------------------------------
 " airblade/vim-gitgutter
 "---------------------------------------
-" Turn off signs, which interferes with fugitive.
-" let g:gitgutter_signs = 0
+" Turn off signs, which interferes with `quickfixsigns_vim`.
+let g:gitgutter_signs = 0
 
 "---------------------------------------
 " tpope/vim-fugitive
