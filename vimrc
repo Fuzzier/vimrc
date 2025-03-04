@@ -130,7 +130,7 @@ set linespace=1
 
 if has('nvim')
     set title
-    set titlestring=%t\ %{:expand(':h')}
+    set titlestring=%t\ (%{expand('%:p:h')})
 endif
 
 "-------------------------------------------------------------------------------
