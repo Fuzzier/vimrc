@@ -26,6 +26,17 @@ if !has('nvim')
     " For 1920x1080.
     set lines=49
 
+    " gVim options.
+    "  e: use GUI tabs.
+    " -m: no menu bar.
+    "  g: grey inactive menu items.
+    " -t: no tearoff menu items (like Motif).
+    " -T: no toolbar.
+    "  r: show right-hand scrollbar.
+    "  L: show left-hand scrollbar when vertically split.
+    set guioptions=eg
+
     " Hide scrollbars.
-    set go-=rL
+    set guioptions-=rL
+
 endif
