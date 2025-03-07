@@ -246,7 +246,7 @@ silent! vunmap <C-X>
 " The current directory is the directory of the file in the current window.
 "-------------------------------------------------------------------------------
 " Commented: Exclude buffers for: manpage, coc, fugitive, terminal.
-autocmd BufEnter * :if bufname() !~# '^\(man:\|list:\|fugitive:\|LeaderF:\|!\)'
+autocmd BufEnter * :if bufname() !~# '^\(man:\|term:\|list:\|fugitive:\|LeaderF:\|!\)'
                 \| :lchdir %:p:h
                 \| :endif
 
