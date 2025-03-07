@@ -288,13 +288,30 @@ autocmd BufReadPost *
     \ endif
 
 "-------------------------------------------------------------------------------
+" Terminal.
+"-------------------------------------------------------------------------------
+" Use `:T` to open a terminal in a new tab.
+command! T :tab terminal
+" Use `<Esc>` to leave terminal insert mode.
+tnoremap <Esc>   <C-\><C-n>
+"
+if has('terminal') && exists(':terminal')
+    set termwinkey=<C-_>
+    " Use `Ctrl-Tab` key to switch to the next tab.
+    tnoremap <silent> <C-Tab>   <C-_>:tabnext<CR>
+elseif has('nvim')
+    " Use `Ctrl-Tab` key to switch to the next tab.
+    tnoremap <silent> <C-Tab>   <C-\><C-n>:tabnext<CR>
+endif
+
+"-------------------------------------------------------------------------------
 " Tab navigation.
 "-------------------------------------------------------------------------------
-" Shortcuts for navigating among windows.
-nnoremap <Leader>tn :tabnext<CR>
-nnoremap <Leader>tp :tabprev<CR>
-nnoremap <Leader>tc :tabnew<CR>
-nnoremap <Leader>tx :tabclose<CR>
+" Shortcuts for navigating tabs.
+nnoremap <silent> <C-Tab>   :tabnext<CR>
+nnoremap <silent> <C-S-Tab> :tabprev<CR>
+inoremap <silent> <C-Tab>   <C-o>:tabnext<CR>
+inoremap <silent> <C-S-Tab> <C-o>:tabprev<CR>
 
 "-------------------------------------------------------------------------------
 " Window navigation.
@@ -414,13 +431,6 @@ function! AdjustWinWidth(n)
 endfunction
 nnoremap <C-w><C-d> :call AdjustWinWidth(-10)<CR>
 nnoremap <C-w><C-a> :call AdjustWinWidth(10)<CR>
-
-"-------------------------------------------------------------------------------
-" Buffer navigation.
-"-------------------------------------------------------------------------------
-" Shortcuts for navigating buffers.
-nnoremap <C-TAB>   :bn<CR>
-nnoremap <C-S-TAB> :bp<CR>
 
 "-------------------------------------------------------------------------------
 " Yank via 'Y'
@@ -1228,6 +1238,9 @@ let g:asyncrun_bell = 1
 "---------------------------------------
 " skywind3000/vim-terminal-help
 "---------------------------------------
+" Disable default mappings.
+" * 'termwinkey' remains unchanged.
+let g:terminal_default_mapping = 0
 " The key to toggle terminal window.
 let g:terminal_key = '<Leader>to'
 " Initialize working dir: 0 for unchanged, 1 for file path and 2 for project root.
@@ -1236,11 +1249,6 @@ let g:terminal_cwd = 2
 let g:terminal_kill = 'term'
 " Set to 1 to close window if process finished.
 let g:terminal_close = 1
-"
-" Use `Esc` key to leave terminal insert mode.
-tnoremap <Esc> <C-\><C-n>
-" Use `:to` to open a terminal.
-command! T :tab terminal
 
 "---------------------------------------
 " ctrlpvim/ctrlp.vim
