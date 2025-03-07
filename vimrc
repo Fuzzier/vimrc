@@ -790,14 +790,14 @@ let g:coc_data_home = vimrc_path . '/coc'
 "
 " Check whether coc.nvim installed.
 if isdirectory(repos_path.'/coc.nvim')
-    " Use <TAB> for trigger completion and navigate to the next complete item.
+    " Use <Tab> for trigger completion and navigate to the next complete item.
     function! s:check_backspace() abort
       let col = col('.') - 1
       return !col || getline('.')[col - 1]  =~ '\s'
     endfunction
     "
-    " Use <C-SPACE> to trigger completion.
-    inoremap <silent><expr> <C-SPACE> coc#refresh()
+    " Use <C-Space> to trigger completion.
+    inoremap <silent><expr> <C-Space> coc#refresh()
     "
     " Use <CR> to confirm completion without expanding a snippet
     " (<C-y> is always available to expand a snippet).
@@ -812,8 +812,8 @@ if isdirectory(repos_path.'/coc.nvim')
     endif
     "
     " Snippet navigation keys.
-    let g:coc_snippet_next = '<TAB>'
-    let g:coc_snippet_prev = '<S-TAB>'
+    let g:coc_snippet_next = '<Tab>'
+    let g:coc_snippet_prev = '<S-Tab>'
     "
     " Use '[c' and ']c' to navigate diagnostics.
     if coc#util#api_version() <= 30
@@ -898,10 +898,10 @@ let g:UltiSnipsUsePythonVersion = 3
 let g:UltiSnipsEnableSnipMate = 0
 "
 " Shortcut keys.
-let g:UltiSnipsExpandTrigger = '<TAB>'
-let g:UltiSnipsListSnippets  = '<Leader><TAB>'
-let g:UltiSnipsJumpForwardTrigger  = '<TAB>'
-let g:UltiSnipsJumpBackwardTrigger = '<S-TAB>'
+let g:UltiSnipsExpandTrigger = '<Tab>'
+let g:UltiSnipsListSnippets  = '<Leader><Tab>'
+let g:UltiSnipsJumpForwardTrigger  = '<Tab>'
+let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
 "
 " Set private directories for snippets.
 " Used by :UltiSnipsEdit command.
