@@ -156,7 +156,12 @@ function! SetFontSize(size)
     execute l:fw
     " echom 'Set font size to ' . a:size
 endfunction
-call SetFontSize(12)
+"
+if has('nvim') && has('gui_running')
+    call SetFontSize(12)
+else
+    call SetFontSize(12)
+endif
 
 "-------------------------------------------------------------------------------
 " Various settings
