@@ -605,15 +605,18 @@ call plug#begin(repos_path)
     " =========================
     " Highlighting
     " =========================
+    " Highlight words and expressions
+    Plug 'azabiong/vim-highlighter'
     " Highlight several words in different colors simultaneously.
     " Comment: The highest version just works.
     " Plug 'inkarkat/vim-mark', { 'commit': 'd9431b7cf5ddf1828035b45b7becd8a985d4311d' }
     " Comment: The newer versions depend upon a giganic library
     "          'inkarkat/vim-ingo-library' with a tiny dependency.
-    " call Plug 'inkarkat/vim-mark', { 'branch': 'stable' }
+    " Plug 'inkarkat/vim-mark', { 'branch': 'stable' }
     " Comment: The standalone version has no dependencies.
     " Plug 'ayuanx/vim-mark-standalone', { 'tag': '3.0.0_standalone' }
-    Plug 'fuzzier/vim-mark-standalone'
+    " Comment: Many functions are broken.
+    " Plug 'fuzzier/vim-mark-standalone'
     " Word highlighting and navigation throughout out the buffer.
     " Comment: It is less versatile than 'vim-mark'.
     " Plug 'lfv89/vim-interestingwords'
@@ -921,15 +924,23 @@ let g:UltiSnipsSnippetDirectories = [vimrc_path . '/fuzzier/UltiSnips']
 " Highlighting
 "=======================================
 "---------------------------------------
+" azabiong/vim-highlighter
+"---------------------------------------
+" Turn highlighting on or off using only the HiSet key.
+let HiSetToggle = 1
+" The directory to store highlight (*.hl) files.
+let HiKeywords = vimrc_path . '/hl'
+
+"---------------------------------------
 " ayuanx/vim-mark-standalone
 " fuzzier/vim-mark-standalone
 "---------------------------------------
 " Disable default mapping.
-let g:mark_maps = 0
+" let g:mark_maps = 0
 "
 " Set hotkeys.
-nnoremap <silent> <Leader>m <Plug>MarkSet
-nnoremap <silent> <Leader>M <Plug>MarkAllClear
+" nnoremap <silent> <Leader>m <Plug>MarkSet
+" nnoremap <silent> <Leader>M <Plug>MarkAllClear
 "
 " 1. Jump to marked words; OR
 " 2. Search.
@@ -938,8 +949,8 @@ nnoremap <silent> <Leader>M <Plug>MarkAllClear
 "
 " 1. Search; OR
 " 2. Mark.
-nnoremap <silent> * <Plug>MarkSearchNext
-nnoremap <silent> # <Plug>MarkSearchPrev
+" nnoremap <silent> * <Plug>MarkSearchNext
+" nnoremap <silent> # <Plug>MarkSearchPrev
 
 " --------------------------------------
 " lfv89/vim-interestingwords
