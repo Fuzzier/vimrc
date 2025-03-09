@@ -309,6 +309,12 @@ elseif has('nvim')
     tnoremap <silent> <C-Tab>   <C-\><C-n>:tabnext<CR>
 endif
 
+if has('nvim')
+autocmd TermOpen * setlocal nonumber norelativenumber signcolumn=no
+else
+autocmd TerminalOpen * setlocal nonumber norelativenumber signcolumn=no
+endif
+
 "-------------------------------------------------------------------------------
 " Tab navigation.
 "-------------------------------------------------------------------------------
