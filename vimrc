@@ -295,16 +295,27 @@ autocmd BufReadPost *
 "-------------------------------------------------------------------------------
 " Terminal.
 "-------------------------------------------------------------------------------
-" Use `:T` to open a terminal in a new tab.
-command! T :tab terminal
 " Use `<Esc>` to leave terminal insert mode.
 tnoremap <Esc>   <C-\><C-n>
 "
 if has('terminal') && exists(':terminal')
+    if executable('SetVcEnv.cmd')
+        " Use `:T` to open a terminal in a new tab.
+        command! T :tab terminal ++shell cmd /k SetVcEnv.cmd
+    else
+        command! T :tab terminal
+    endif
+    " Set terminal window key to.
     set termwinkey=<C-_>
     " Use `Ctrl-Tab` key to switch to the next tab.
     tnoremap <silent> <C-Tab>   <C-_>:tabnext<CR>
 elseif has('nvim')
+    if executable('SetVcEnv.cmd')
+        " Use `:T` to open a terminal in a new tab.
+        command! T :tab terminal cmd /k SetVcEnv.cmd
+    else
+        command! T :tab terminal
+    endif
     " Use `Ctrl-Tab` key to switch to the next tab.
     tnoremap <silent> <C-Tab>   <C-\><C-n>:tabnext<CR>
 endif
