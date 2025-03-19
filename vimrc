@@ -891,8 +891,21 @@ if isdirectory(repos_path.'/coc.nvim')
     endfunction
     "
     " set statusline=%n\ %<%f\ %h%m%r%=%{CocStatusDiagnostic()}\ %-14.(%l,%c%V%)\ %P
-    set statusline=%n\ %<%f\ %h%m%r%=%{CocStatusDiagnostic()}\ %{gutentags#statusline('[',']')}\ %-14.(%l,%c%V%)\ %P
+    " set statusline=%n\ %<%f\ %h%m%r%=%{CocStatusDiagnostic()}\ %{gutentags#statusline('[',']')}\ %-14.(%l,%c%V%)\ %P
     " set statusline=%n\ %<%f\ %=%{tagbar#currenttag('%s','','f')}\ %h%m%r%=%{CocStatusDiagnostic()}\ %-14.(%l,%c%V%)\ %P
+    " %n : buffer number
+    " %< : where to truncate line if too long
+    " %f : file path relative to cwd
+    " %M : modified flag
+    " %R : readonly flag
+    " %= : section separator
+    " %- : left justify
+    " () : group items
+    " %l : line number
+    " %c : column number
+    " %V : virtual column number
+    " %P : percentage
+    set statusline=%n\ %<%f\ %h%M%R%=\ %-12.(%l,%c%V%)\ %P
 endif
 
 "---------------------------------------
