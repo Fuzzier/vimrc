@@ -1365,6 +1365,8 @@ let g:Lf_GtagsGutentags = 1
 " Root path to tag files, the tag files are put under 'LeaderF/gtags/'.
 let g:Lf_CacheDirectory = vimrc_path
 " Search file from the root path.
+" * Find root markers in ancestor directories.
+" * Fallback to current directory.
 let g:Lf_WorkingDirectoryMode = 'Ac'
 " Use [0-9] to select entry.
 let g:Lf_QuickSelect = 0
