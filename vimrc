@@ -357,6 +357,7 @@ nnoremap <C-w>v      :vs<C-w>
 let g:xbufwin_off = 0
 "
 function! XBufWinRestView()
+    if &diff | return | endif " Do not interfere with synchronous diff view
     if g:xbufwin_off | return | endif
     let l:buf = bufnr()
     let l:win = win_getid()
@@ -372,6 +373,7 @@ function! XBufWinRestView()
 endfunction
 
 function! XBufWinSaveView()
+    if &diff | return | endif " Do not interfere with synchronous diff view
     if g:xbufwin_off | return | endif
     let l:win = win_getid()
     let l:view = winsaveview()
@@ -396,7 +398,7 @@ endfunction
 augroup XBufWin
   autocmd!
   autocmd BufEnter * :call XBufWinRestView()
-  autocmd WinLeave,BufLeave * :call XBufWinSaveView()
+  autocmd WinScrolled,WinLeave,BufLeave * :call XBufWinSaveView()
 augroup END
 
 "-------------------------------------------------------------------------------
