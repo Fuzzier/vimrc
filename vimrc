@@ -956,9 +956,12 @@ let g:UltiSnipsSnippetDirectories = [vimrc_path . '/fuzzier/UltiSnips']
 let HiSetToggle = 1
 " The directory to store highlight (*.hl) files.
 let HiKeywords = vimrc_path . '/hl'
-" Jump forward/backward highlights
+" Jump forward/backward highlights of the same pattern
 nnoremap gj <Cmd>Hi><CR>
 nnoremap gk <Cmd>Hi<<CR>
+" Jump forward/backward the nearest highlights
+nnoremap gl <Cmd>Hi}<CR>
+nnoremap gh <Cmd>Hi{<CR>
 
 "---------------------------------------
 " ayuanx/vim-mark-standalone
