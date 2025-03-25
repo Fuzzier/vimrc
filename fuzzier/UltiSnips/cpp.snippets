@@ -811,6 +811,22 @@ snippet no "noexcept"
 noexcept
 endsnippet
 
+snippet scx "static constexpr"
+static constexpr
+endsnippet
+
+snippet scxb "static constexpr bool"
+static constexpr bool
+endsnippet
+
+snippet cx "constexpr" w
+constexpr
+endsnippet
+
+snippet cxb "constexpr bool" w
+constexpr bool
+endsnippet
+
 snippet co "const" w
 const
 endsnippet
@@ -1382,6 +1398,10 @@ snippet ipt  "intptr_t" w
 intptr_t
 endsnippet
 
+snippet zt  "size_t" w
+size_t
+endsnippet
+
 snippet nu  "NULL" w
 NULL
 endsnippet
@@ -1407,6 +1427,10 @@ endsnippet
 
 snippet wstr& "const std::wstring&" w
 const std::wstring&
+endsnippet
+
+snippet strv "std::string_view" w
+std::string_view
 endsnippet
 
 snippet cc "const char*"
@@ -1487,8 +1511,12 @@ endsnippet
 ########################################
 # Exception handling
 ########################################
-snippet ass "assert()"
+snippet as "assert()"
 assert(${1:${VISUAL:predicate}});
+endsnippet
+
+snippet sas "static_assert()"
+static_assert(${1:${VISUAL:predicate}});
 endsnippet
 
 snippet na "NSFX_ASSERT()"
