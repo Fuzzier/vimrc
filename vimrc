@@ -298,6 +298,10 @@ autocmd BufReadPost *
 " Use `<Esc>` to leave terminal insert mode.
 tnoremap <Esc>   <C-\><C-n>
 "
+if has('win32')
+tnoremap <C-l>   <CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR>
+endif
+"
 if has('terminal') && exists(':terminal')
     if executable('SetVcEnv.cmd')
         " Use `:T` to open a terminal in a new tab.
