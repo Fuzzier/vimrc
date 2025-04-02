@@ -2045,76 +2045,42 @@ function! CopyClassName()
 endfunction
 nnoremap <Leader><Leader>c  :call CopyClassName()<CR>
 
-function! ToggleNsfxLikely(order)
-    if a:order
-        " if (expr)                 =>  if (NSFX_LIKELY(expr))
-        " if (NSFX_LIKELY(expr))    =>  if (NSFX_UNLIKELY(expr))
-        " if (NSFX_UNLIKELY(expr))  =>  if (expr)
-        let keys = ['NSFX_LIKELY', 'NSFX_UNLIKELY']
-    else
-        " if (expr)                 =>  if (NSFX_UNLIKELY(expr))
-        " if (NSFX_UNLIKELY(expr))  =>  if (NSFX_LIKELY(expr))
-        " if (NSFX_LIKELY(expr))    =>  if (expr)
-        let keys = ['NSFX_UNLIKELY', 'NSFX_LIKELY']
-    endif
+function! ToggleNsfxLikely()
+    " if (expr)                    =>  if NSFX_EXPR_LIKELY(expr) NSFX_LIKELY
+    " if NSFX_EXPR_LIKELY(expr)    =>  if NSFX_EXPR_UNLIKELY(expr) NSFX_LIKELY
+    " if NSFX_EXPR_UNLIKELY(expr)  =>  if (expr)
     let cline_num = line('.')
     let cline = getline(cline_num)
-    " if cline =~ 'NSFX_LIKELY('
-    if cline =~ keys[0] . '('
-        " let nline = substitute(cline, 'NSFX_LIKELY', 'NSFX_UNLIKELY', '')
-        let nline = substitute(cline, keys[0], keys[1], '')
+    if cline =~# 'NSFX_EXPR_LIKELY'
+        let nline = substitute(cline, 'NSFX_EXPR_LIKELY', 'NSFX_EXPR_UNLIKELY', '')
+        let nline = substitute(nline, 'NSFX_LIKELY', 'NSFX_UNLIKELY', '')
         call setline(cline_num, nline)
-    " elseif cline =~ 'NSFX_UNLIKELY('
-    elseif cline =~ keys[1] . '('
-        " Remove parenthesis after 'NSFX_UNLIKELY'
-        let cpos = getpos('.') " [bufnum, lnum, col, off]
-        let npos = copy(cpos)
-        " The character index of the left parenthesis after 'NSFX_UNLIKELY'
-        " let npos[2] = matchend(cline, 'NSFX_UNLIKELY')
-        let npos[2] = matchend(cline, keys[1])
-        " Move cursor to the left parenthesis
-        call setcharpos('.', npos)
-        try
-            " %: Find the matching right parenthesis
-            " x: Remove the right parenthesis
-            normal! %x
-        finally
-            " Restore the original cursor position
-            call setcharpos('.', cpos)
-        endtry
-        let cline = getline(cline_num)
-        " let nline = substitute(cline, 'NSFX_UNLIKELY(', '', '')
-        let nline = substitute(cline, keys[1] . '(', '', '')
+    elseif cline =~# 'NSFX_EXPR_UNLIKELY'
+        let nline = substitute(cline, 'NSFX_EXPR_UNLIKELY', '', '')
+        let nline = substitute(nline, '\s\+NSFX_UNLIKELY', '', '')
         call setline(cline_num, nline)
     elseif cline =~ '('
-        " let nline = substitute(cline, '(', '(NSFX_LIKELY(', '')
-        let nline = substitute(cline, '(', '(' . keys[0] . '(', '')
+        let nline = substitute(cline, '(', 'NSFX_EXPR_LIKELY(', '')
         call setline(cline_num, nline)
-        " Add parenthesis after 'NSFX_LIKELY'
+        " The parenthesis after 'NSFX_EXPR_LIKELY'
         let cpos = getpos('.') " [bufnum, lnum, col, off]
         let npos = copy(cpos)
-        " The character index of the left parenthesis after 'NSFX_LIKELY'
-        " let npos[2] = matchend(nline, 'NSFX_LIKELY')
-        let npos[2] = matchend(nline, keys[0])
+        " The character index of the left parenthesis after 'NSFX_EXPR_LIKELY'
+        let npos[2] = matchend(nline, 'NSFX_EXPR_LIKELY')
         " Move cursor to the newly inserted left parenthesis
         call setcharpos('.', npos)
         try
             " %: Find the matching right parenthesis
-            " i): Insert right parenthesis
-            normal! %i)
+            " a): Insert right parenthesis
+            normal! %a NSFX_LIKELY
         finally
             " Restore the original cursor position
             call setcharpos('.', cpos)
         endtry
     endif
-    if a:order
-        silent! call repeat#set(":call ToggleNsfxLikely(v:true)\<CR>")
-    else
-        silent! call repeat#set(":call ToggleNsfxLikely(v:false)\<CR>")
-    endif
+    silent! call repeat#set(":call ToggleNsfxLikely()\<CR>")
 endfunction
-nnoremap <Leader><Leader>n  :call ToggleNsfxLikely(v:true)<CR>
-nnoremap <Leader><Leader>N  :call ToggleNsfxLikely(v:false)<CR>
+nnoremap <Leader><Leader>n  :call ToggleNsfxLikely()<CR>
 
 function! ToggleLogicalNot()
     " if (expr)   =>  if (!expr)
