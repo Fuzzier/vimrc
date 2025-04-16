@@ -1434,6 +1434,8 @@ let g:Lf_CacheDirectory = vimrc_path
 " * Find root markers in ancestor directories.
 " * Fallback to current directory.
 let g:Lf_WorkingDirectoryMode = 'Ac'
+" Root markers.
+let g:Lf_RootMarkers = ['.ccls', '.git']
 " Use [0-9] to select entry.
 let g:Lf_QuickSelect = 0
 "
