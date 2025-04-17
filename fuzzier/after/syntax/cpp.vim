@@ -13,3 +13,7 @@ syntax keyword cppSTLconstant
 
 syntax keyword cppSTLfunction
         \ make_intrusive
+
+syntax keyword cppCast
+        \ rtti_cast
+
