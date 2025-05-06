@@ -692,6 +692,8 @@ call plug#begin(repos_path)
     " Word highlighting and navigation throughout out the buffer.
     " Comment: It is less versatile than 'vim-mark'.
     " Plug 'lfv89/vim-interestingwords'
+    " Show syntax highlighting attributes of character under cursor.
+    Plug 'vim-scripts/SyntaxAttr.vim'
     "
     " =========================
     " Indent guides
