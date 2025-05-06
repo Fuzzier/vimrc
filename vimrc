@@ -615,6 +615,8 @@ autocmd Syntax c,cpp,make,dosbatch
 " JSON with C++ style comment.
 autocmd FileType json syntax match Comment +/\/\.\+$+
 
+highlight link jsonKeyword Identifier
+
 "===============================================================================
 " PLUGINS (managed by 'junegunn/vim-plug')
 "===============================================================================
