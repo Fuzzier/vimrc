@@ -535,11 +535,18 @@ nnoremap <C-w><C-d> :call AdjustWinWidth(-10)<CR>
 nnoremap <C-w><C-a> :call AdjustWinWidth(10)<CR>
 
 "-------------------------------------------------------------------------------
-" Yank via 'Y'
+" Hotkeys
 "-------------------------------------------------------------------------------
 if has('nvim')
     " 'Y' yank whole lines.
     nmap Y yy
+
+    " Yank to "*
+    vnoremap <C-Insert> "*y
+
+    " Put from "*
+    nnoremap <S-Insert> "*p
+    inoremap <S-Insert> <C-r>*
 endif
 
 "-------------------------------------------------------------------------------
