@@ -681,7 +681,9 @@ call plug#begin(repos_path)
     " Comment: Fully functional LSP client.
     "          Cache for each project.
     "          Starting from `v0.0.82`, coc.nvim uses custom popup menu.
-    Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+    " Comment: The Vim9 script has problems.
+    " Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+    Plug 'neoclide/coc.nvim', { 'commit': '3381d89d925f004fc13279bdfb7b8de97972e8a8', 'do': 'npm ci' }
     " Plug 'neoclide/coc.nvim', { 'do': 'yarn install --frozen-lockfile' }
     " Extended Vim syntax highlighting for C and C++ (C++11/14/17/20).
     " Comment: Not ideal.
