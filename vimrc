@@ -114,6 +114,25 @@ set t_Co=256
 colorscheme calmar256x-dark
 "
 "-------------------------------------------------------------------------------
+" Highlight
+"-------------------------------------------------------------------------------
+if has('nvim')
+    hi link cUserFunction          Identifier
+    hi link cUserVariableBraceInit Identifier
+    hi link cOperator              Statement
+
+    hi link cppOperator            Statement
+    hi link cppSTLfunction         Identifier
+
+    hi clear DiagnosticError
+    hi DiagnosticError ctermfg=9 guifg=#ff5f00
+
+    " hi clear CocFloating
+    " hi CocFloating guibg=#262626
+    hi FgCocErrorFloatBgCocFloating ctermfg=9 guifg=#ff5f00 guibg=#262626
+endif
+"
+"-------------------------------------------------------------------------------
 " GUI (console & window)
 "-------------------------------------------------------------------------------
 " Show guideline at 81-th column.
