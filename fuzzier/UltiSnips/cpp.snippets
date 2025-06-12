@@ -962,17 +962,10 @@ ${1:`!v getreg('c')`}($1&&) = delete;
 $1& operator=($1&&) = delete;
 endsnippet
 
-snippet opb "operator bool()" m
-// Boolean operators.`!p snip << 1; snip += 'public:'`
-bool operator!(void) const noexcept
-{
-    return !${1:p_};
-}
-
-explicit operator bool() const noexcept
-{
-    return !!$1;
-}
+snippet opb "operator bool()"
+// Boolean operator.`!p snip << 1; snip += snip.mkline('public:')`
+    bool operator!(void) const noexcept { return !${1:p_};  }
+explicit operator bool() const noexcept { return !!$1; }
 endsnippet
 
 snippet opc "unary operator>"
@@ -1283,7 +1276,7 @@ ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet t= "T v ="
-${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet rv "T& v" w
@@ -1295,7 +1288,7 @@ ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet r= "T& v =" w
-${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet pv "T* v" w
@@ -1307,7 +1300,7 @@ ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet p= "T* v = nullptr"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr}
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
 endsnippet
 
 snippet v= "value ="
@@ -1323,7 +1316,7 @@ const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
 snippet c= "const T v ="
-const ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+const ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet crv "const T& v" w
@@ -1331,7 +1324,7 @@ const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
 snippet cr= "const T& v" w
-const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet cpv "const T* v" w
@@ -1339,7 +1332,7 @@ const ${1:${VISUAL}}* ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
 snippet cp= "const T* v = nullptr"
-const ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr}
+const ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
 endsnippet
 
 ########################################
@@ -2401,9 +2394,8 @@ endsnippet
 
 snippet dtimer "declare timer"
     `!p snip.rv=var2type(var2type(t[1]))`,
-std::unique_ptr<Event> ${1:timer};
-$1 = std::make_unique<Event>();
-$1 ->setData((void*)EventId::`!p snip.rv=var2type(t[1])`);
+Event ${1:timer};
+$1 .setData((void*)EventId::`!p snip.rv=var2type(t[1])`);
 endsnippet
 
 snippet ctm "create timer to module"
@@ -2449,11 +2441,28 @@ if ($1.has("log level"))
 }
 endsnippet
 
+snippet carray "cfg array"
+if (${1:cfg}.has("$2"))
+{
+    if (!$1("$2").isArray())
+    {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2', which must be an array");
+    }
+    ${3:size} = $1("$2").size();
+    if (!$3)
+    {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2', which must not be empty");
+    }
+}
+endsnippet
+
 snippet caddr "cfg addr"
 if (${1:cfg}.has("$3"))
 {
-    ${2:addr} = (aint_t)$1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:I32}();
-    if ($1 == Addr::None)
+    ${2:addr} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:I32}();
+    if ($2 == AddrValue::None)
     {
         NSFX_THROW(ConfigError{})(
             "Invalid '$3': {}", $1("$3"));
@@ -2498,7 +2507,7 @@ if (${1:cfg}.has("$2"))
         NSFX_THROW(ConfigError{})(
             "Invalid '$2': {}", $1("$2"));
     }
-    ${4:`!p snip.rv=str2camel(t[1],False)`} = simtime_t(ns, SIMTIME_NS);
+    ${3:`!p snip.rv=str2camel(t[2],False)`} = simtime_t(ns, SIMTIME_NS);
 }
 endsnippet
 
@@ -2554,8 +2563,8 @@ snippet cmod "cfg module"
 endsnippet
 
 snippet hev "handle ev"
-TimerId tid = (TimerId)(uintptr_t)ev->data();
-switch (tid)
+EventId eid = (EventId)(uintptr_t)ev->data();
+switch (eid)
 {
 ${0}case EventId::Xxx : xxx(); break;
 default: NSFX_THROW(LogicError{})("Unknown event");
