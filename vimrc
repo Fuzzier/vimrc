@@ -332,8 +332,8 @@ endfunction
 if exists('&guioptions') && stridx(&guioptions, 'e') != -1
     set guitablabel=%{TabLabel(tabpagenr())}
 else
-    hi TabLine     ctermfg=grey  ctermbg=black  guifg=#999999 guibg=#000000
-    hi TabLineSel  ctermfg=white  ctermbg=black guifg=#ffffff guibg=#000000
+    hi TabLine     ctermfg=grey  ctermbg=black guifg=#999999 guibg=#000000
+    hi TabLineSel  ctermfg=white ctermbg=black guifg=#ffffff guibg=#000000
     hi TabLineFill ctermbg=black
     set tabline=%!TabLine()
 endif
