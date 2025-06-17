@@ -57,7 +57,7 @@
                 },
                 "client":
                 {
-                  "snippetSupport": true
+                  "snippetSupport": false
                 },
                 "completion":
                 {
