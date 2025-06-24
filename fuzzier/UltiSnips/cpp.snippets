@@ -675,25 +675,7 @@ endsnippet
 snippet cats "catch (std::exception &)"
 catch (std::exception& e)
 {
-    ${1:std::cerr << e.what() << std::endl;}
-}
-endsnippet
-
-snippet catb "catch (boost::exception &)"
-catch (boost::exception& e)
-{
-    ${1:std::cerr << diagnostic_information(e) << std::endl;}
-}
-endsnippet
-
-snippet catbs "catch (boost & std)"
-catch (boost::exception& e)
-{
-    ${2:std::cerr << diagnostic_information(e) << std::endl;}
-}
-catch (std::exception& e)
-{
-    ${1:std::cerr << e.what() << std::endl;}
+    fmt::println(stderr, "{}", e.what());
 }
 endsnippet
 
@@ -704,7 +686,7 @@ try
 }
 catch (std::exception& e)
 {
-    std::cerr << e.what() << std::endl;
+    fmt::println(stderr, "{}", e.what());
 }
 endsnippet
 
@@ -1264,6 +1246,15 @@ ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} =
     ($1)(${3:$2});
 endsnippet
 
+snippet rbuf "std::byte[]"
+alignas(${1:T})
+std::byte ${2:storage_}[sizeof($1)];
+endsnippet
+
+snippet ld "launder()" w
+std::launder(${1:${VISUAL:T}})
+endsnippet
+
 ########################################
 # Assignment, etc.
 ########################################
@@ -1445,6 +1436,21 @@ endsnippet
 
 snippet ce<< "std::cerr"
 std::cerr << $0 << std::endl;
+endsnippet
+
+########################################
+# Format
+########################################
+snippet fmt "format"
+template<>
+struct formatter<::nsfx::${1:T}> : formatter<::std::string_view>
+{
+    template<class FormatContext>
+    auto format(::nsfx::$1 ${2:`!p snip.rv=type2var(t[1])`}, FormatContext& ctx) const
+    {
+        return formatter<::std::string_view>::format(${3:to_string($2)}, ctx);
+    }
+};
 endsnippet
 
 ########################################
@@ -2198,12 +2204,18 @@ size_t size(void) const noexcept { return $3.size(); }
 void resize(size_t n) { $3.resize(n); }
 
 $1*
+front(void) noexcept { return $3.front(); }
+
+const $1*
+front(void) const noexcept { return $3.front(); }
+
+bool has($2) const noexcept;
+
+$1*
 find($2) noexcept;
 
 const ${1:T}*
 find(${2:key}) const noexcept;
-
-bool has($2) const noexcept;
 
 $1* add($2);
 
@@ -2211,24 +2223,17 @@ $1* addOrGet($2);
 
 $1* addOrUpdate($2);
 
-void remove($2) noexcept;
-
-void remove($1* `!p snip.rv=type2var(t[1])`) noexcept;
-
-$1*
-front(void) noexcept { return $3.front(); }
-
-const $1*
-front(void) const noexcept { return $3.front(); }
-
-const $1*
-push_back($2);
+$1* push_back($2);
 
 std::unique_ptr<$1>
 pop_front(void) noexcept
 {
     return std::unique_ptr<$1>{ $3.pop_front() };
 }
+
+void remove($2) noexcept;
+
+void remove($1* `!p snip.rv=type2var(t[1])`) noexcept;
 
 void clear(void) noexcept { $3.destroy(); }
 
@@ -2507,7 +2512,7 @@ if (${1:cfg}.has("$2"))
         NSFX_THROW(ConfigError{})(
             "Invalid '$2': {}", $1("$2"));
     }
-    ${3:`!p snip.rv=str2camel(t[2],False)`} = simtime_t(ns, SIMTIME_NS);
+    ${3:`!p snip.rv=str2camel(t[2],False)`} = simtime_t::nano(ns);
 }
 endsnippet
 
