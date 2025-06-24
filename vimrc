@@ -384,8 +384,8 @@ if has('win32')
 tnoremap <C-l>   <CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR><CR>
 endif
 
-" Use `:T` to open a terminal in a new tab.
-command! T  call OpenTab('SetVcEnv.cmd')
+" Open a terminal in a new tab.
+command! Tv call OpenTab('SetVcEnv.cmd')
 command! Tc call OpenTab('SetClangEnv.cmd')
 
 if has('terminal') && exists(':terminal')
