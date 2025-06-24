@@ -833,9 +833,9 @@ call plug#begin(repos_path)
     "          The header quotes is a sweet addition.
     Plug 'mhinz/vim-startify'
     " 🚀 Run Async Shell Commands in Vim 8.0 / NeoVim and Output to the Quickfix Window !!
-    Plug 'skywind3000/asyncrun.vim'
+    " Plug 'skywind3000/asyncrun.vim'
     " 🚀 Modern Task System for Project Building, Testing and Deploying !!
-    Plug 'skywind3000/asynctasks.vim'
+    " Plug 'skywind3000/asynctasks.vim'
     " Small changes make vim/nvim's internal terminal great again !!
     Plug 'skywind3000/vim-terminal-help'
     " A tree explorer plugin for vim.
