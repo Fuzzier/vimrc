@@ -413,6 +413,12 @@ nnoremap <silent> <C-S-Tab> :tabprev<CR>
 inoremap <silent> <C-Tab>   <C-o>:tabnext<CR>
 inoremap <silent> <C-S-Tab> <C-o>:tabprev<CR>
 
+" open a terminal in a new tab.
+command! TT tabnew
+command! TC tabclose
+command! TN tabnext
+command! TP tabprev
+
 "-------------------------------------------------------------------------------
 " Window navigation.
 "-------------------------------------------------------------------------------
