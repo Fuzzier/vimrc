@@ -1669,8 +1669,9 @@ function! CppIsJumpLabel(line)
     " * protected:
     " * private:
     " * default:
+    " * case XX:
     if a:line =~ '^\s*[_a-zA-Z][_0-9a-zA-Z]*\s*::\@!'
-        if a:line !~# '^\s*\(public\|protected\|private\|default\)\s*:'
+        if a:line !~# '^\s*\(public\|protected\|private\|default\|case\s.*\)\s*:'
             return v:true
         endif
     endif
@@ -1823,13 +1824,25 @@ function! CppIndentNonComment(cline_num)
     let pline_num = prevnonblank(cline_num - 1)
     let pline = getline(pline_num)
     "
+    "     cline shall indent here
+    "     |
+    "     v
+    " case XX:           <= pline OR
+    " default:           <= pline
+    "     ...            <= cline (not 'case' or 'default')
+    "
+    if pline =~# '^\s*\(case\s\|default\s*:\)' &&
+    \  cline !~# '^\s*\(case\s\|default\s*:\)'
+        let retv = cindent(pline_num) + 4
+        " echom 'after case/default: ' . retv
+    "
     " cline shall indent here
     " |
     " v
     " xxx ...            <= pline
     " {                  <= cline
     "
-    if cline =~ '^\s*{'
+    elseif cline =~ '^\s*{'
         let retv = cindent(cline_num)
         " echom 'opening brace: ' . retv
     "
@@ -1942,18 +1955,6 @@ function! CppIndentNonComment(cline_num)
     elseif pline =~ '^\s*,'
         let retv = stridx(pline, ',')
         " echom 'opening brace after comma: ' . retv
-    "
-    " cline shall indent here
-    " |
-    " v
-    " NSFX_OPEN_NAMESPACE
-    " ...                  <= cline
-    " NSFX_CLOSE_NAMESPACE
-    " ...                  <= cline
-    "
-    elseif pline =~# '^\s*NSFX\k\+NAMESPACE'
-        let retv = stridx(pline, 'NSFX')
-        " echom 'after NSFX namespace declaration: ' . retv
     "
     "     cline shall indent here
     "     |
