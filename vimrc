@@ -1317,9 +1317,23 @@ nnoremap <silent> <Leader>fj :call FSwitchJ()<CR>
 " Set hotkeys.
 nmap <silent> ga <Plug>(EasyAlign)
 xmap <silent> ga <Plug>(EasyAlign)
-"
+
 " '/': Align C++-style comment.
 " 'c': Align backslash (line continuity).
+" '=': Align =, +, -, *, /, &, |, ^
+let binary_ops = [
+    \ '&&=', '||=',
+    \ '&=', '|=', '\^=',
+    \ '==', '!=', '<=', '>=',
+    \ '+=', '-=', '\*=', '\/=',
+    \ '&&', '||',
+    \ '&', '|', '\^',
+    \ '=', '!', '<', '[^-]>',
+    \ '+', '-[^>]', '\*', '\/',
+    \ '?', ':'
+    \ ]
+let binary_ops_pattern = join(binary_ops, '\|')
+
 let g:easy_align_delimiters = {
     \  '/': { 'pattern'        : '/[/*]\+<\{,1}',
     \         'delimiter_align': 'l',
@@ -1327,8 +1341,15 @@ let g:easy_align_delimiters = {
     \
     \  'c': { 'pattern'        : '\\',
     \         'delimiter_align': 'l',
+    \         'left_margin'    : ' ' },
+    \
+    \  'a': { 'pattern'        : binary_ops_pattern,
+    \         'delimiter_align': 'r',
     \         'left_margin'    : ' ' }
     \ }
+
+unlet binary_ops
+unlet binary_ops_pattern
 
 "---------------------------------------
 " justinmk/vim-sneak
