@@ -6,6 +6,8 @@ syntax keyword cppSTLtype
         \ type_tag_t
         \ size_tag_t
         \ byte_order_t
+        \ same_byte_order_t
+        \ reverse_byte_order_t
         \ native_endian_t
         \ little_endian_t
         \ big_endian_t
@@ -17,6 +19,8 @@ syntax keyword cppSTLconstant
         \ type_tag
         \ size_tag
         \ byte_order
+        \ same_byte_order
+        \ reverse_byte_order
         \ native_endian
         \ little_endian
         \ big_endian
