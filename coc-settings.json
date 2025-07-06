@@ -57,7 +57,8 @@
                 },
                 "client":
                 {
-                  "snippetSupport": false
+                  // Required to add parenthesis for functions automatically.
+                  "snippetSupport": true
                 },
                 "completion":
                 {
