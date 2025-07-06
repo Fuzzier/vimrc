@@ -688,9 +688,7 @@ call plug#begin(repos_path)
     "          Cache for each project.
     "          Starting from `v0.0.82`, coc.nvim uses custom popup menu.
     " Comment: The Vim9 script has problems.
-    " Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-    Plug 'neoclide/coc.nvim', { 'commit': '3381d89d925f004fc13279bdfb7b8de97972e8a8', 'do': 'npm ci' }
-    " Plug 'neoclide/coc.nvim', { 'do': 'yarn install --frozen-lockfile' }
+    Plug 'neoclide/coc.nvim', { 'branch': 'release' }
     " Extended Vim syntax highlighting for C and C++ (C++11/14/17/20).
     " Comment: Not ideal.
     "          e.g., strings are not recognized correctly in macro/function
