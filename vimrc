@@ -1043,6 +1043,8 @@ let g:UltiSnipsSnippetsDir = vimrc_path . '/fuzzier/UltiSnips'
 " Used by :UltiSnipsEdit! command.
 let g:UltiSnipsSnippetDirectories = [vimrc_path . '/fuzzier/UltiSnips']
 
+autocmd VimEnter * silent! delcommand UltiSnipsAddFiletypes
+
 "=======================================
 " Highlighting
 "=======================================
