@@ -780,8 +780,9 @@ call plug#begin(repos_path)
     " Comment: The original plugin has naming conflict with 'machakann/vim-swap'.
     "          As the plugin is no longer maintained by the original author,
     "          it is forked and renamed.
+    "          It does not swap operands correctly sometimes.
     " Plug 'kurkale6ka/vim-swap'
-    Plug 'fuzzier/vim-swap-operands'
+    " Plug 'fuzzier/vim-swap-operands'
     " A Vim alignment plugin.
     Plug 'junegunn/vim-easy-align'
     " The missing motion for Vim 👟.
@@ -1167,18 +1168,6 @@ let g:indent_guides_start_level = 2
 "---------------------------------------
 nnoremap <silent> g< :SidewaysLeft<CR>
 nnoremap <silent> g> :SidewaysRight<CR>
-"
-"---------------------------------------
-" kurkale6ka/vim-swap
-" fuzzier/vim-swap-operands
-"---------------------------------------
-let g:swap_operands_no_default_key_mappings = 1
-"
-" Swap operands
-xnoremap <silent> <Leader>so <Plug>SwapSwapOperands
-
-" Swap operands interactively
-xnoremap <silent> <Leader>si <Plug>SwapSwapPivotOperands
 "
 "---------------------------------------
 " bronson/vim-trailing-whitespace
