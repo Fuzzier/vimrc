@@ -689,6 +689,7 @@ call plug#begin(repos_path)
     "          Starting from `v0.0.82`, coc.nvim uses custom popup menu.
     " Comment: The Vim9 script has problems.
     Plug 'neoclide/coc.nvim', { 'branch': 'release' }
+    " Plug 'neoclide/coc.nvim', { 'branch': 'master', 'do': 'npm ci' }
     " Extended Vim syntax highlighting for C and C++ (C++11/14/17/20).
     " Comment: Not ideal.
     "          e.g., strings are not recognized correctly in macro/function
