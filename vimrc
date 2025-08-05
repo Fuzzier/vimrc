@@ -1312,7 +1312,6 @@ xmap <silent> ga <Plug>(EasyAlign)
 " 'c': Align backslash (line continuity).
 " '=': Align =, +, -, *, /, &, |, ^
 let binary_ops = [
-    \ '&&=', '||=',
     \ '&=', '|=', '\^=',
     \ '==', '!=', '<=', '>=',
     \ '+=', '-=', '\*=', '\/=',
