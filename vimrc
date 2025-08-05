@@ -2775,6 +2775,119 @@ function! GetVisualLines()
     return l:lines
 endfunction
 
+"----------------------------------------
+let s:cpp_bin_op_list = [
+    \ '=',
+    \ '+', '-', '\*', '\/', '%',
+    \ '+=', '-=', '\*=', '\/=', '%=',
+    \ '==', '!=',
+    \ '<', '>', '<=', '>=',
+    \ '>>', '<<', '<<=', '>>=',
+    \ '&', '|', '\^',
+    \ '&=', '|=', '\^=',
+    \ '&&', '||',
+    \ ]
+
+function! SwapOperandsString(text)
+    for op in s:cpp_bin_op_list
+        " zero or more spaces
+        let l:pat_lead_sp = '\(\s*\)'
+        " anything before the operator
+        let l:pat_lhs = '\(.\{-}\)'
+        " the operator, surrounded by spaces
+        let l:pat_op = '\(\s\+' . op . '\s\+\)'
+        " anything after the operator, and before ';'
+        let l:pat_rhs = '\([^;]*\)'
+        " possible trailing ';'
+        let l:pat_colon = '\s*\(;\?\)'
+        let l:pattern = l:pat_lead_sp
+                    \ . l:pat_lhs
+                    \ . l:pat_op
+                    \ . l:pat_rhs
+                    \ . l:pat_colon
+        let l:matches = matchlist(a:text, l:pattern)
+        if !empty(l:matches)
+            " echom l:matches
+            let l:sp    = l:matches[1]
+            let l:lhs   = l:matches[2]
+            let l:op    = l:matches[3]
+            let l:rhs   = l:matches[4]
+            let l:colon = l:matches[5]
+            let l:swapped = l:sp . l:rhs . l:op . l:lhs . l:colon
+            return l:swapped
+        endif
+    endfor
+    return ''
+endfunction
+
+function! SwapOperandsRange0(line_num)
+    let l:line = getline(a:line_num)
+    let l:swapped = SwapOperandsString(l:line)
+    if !empty(l:swapped)
+        call setline(a:line_num, l:swapped)
+    endif
+endfunction
+
+function! SwapOperandsRange1(line_num, beg_col)
+    let l:line = getline(a:line_num)
+    let l:text = strcharpart(l:line, a:beg_col - 1)
+    let l:swapped = SwapOperandsString(l:text)
+    if !empty(l:swapped)
+        let l:head = strcharpart(l:line, 0, a:beg_col - 1)
+        let l:join = l:head . l:swapped
+        call setline(a:line_num, l:join)
+    endif
+endfunction
+
+function! SwapOperandsRange2(line_num, beg_col, end_col)
+    let l:line = getline(a:line_num)
+    let l:text = strcharpart(l:line, a:beg_col - 1, a:end_col - a:beg_col + 1)
+    let l:swapped = SwapOperandsString(l:text)
+    if !empty(l:swapped)
+        let l:head = strcharpart(l:line, 0, a:beg_col - 1)
+        let l:tail = strcharpart(l:line, a:end_col)
+        let l:join = l:head . l:swapped . l:tail
+        call setline(a:line_num, l:join)
+    endif
+endfunction
+
+function! SwapOperandsLine()
+    let l:pos = getpos('.')
+    let l:line_num = l:pos[1]
+    let l:line = getline(l:line_num)
+    let l:swapped = SwapOperandsString(l:line)
+    if !empty(l:swapped)
+        call setline(l:line_num, l:swapped)
+    endif
+    call repeat#set(":call SwapOperandsLine()\<CR>")
+endfunction
+
+function! SwapOperandsVisual() range
+    let l:beg_pos = getpos("'<")
+    let l:end_pos = getpos("'>")
+    let l:beg_line_num = l:beg_pos[1]
+    let l:beg_col      = l:beg_pos[2]
+    let l:end_line_num = l:end_pos[1]
+    let l:end_col      = l:end_pos[2]
+    " For each line.
+    if l:beg_line_num == l:end_line_num
+        call SwapOperandsRange2(l:beg_line_num, l:beg_col, l:end_col)
+    else
+        for l:line_num in range(l:beg_line_num, l:end_line_num)
+            if l:line_num == l:beg_line_num
+                call SwapOperandsRange1(l:line_num, l:beg_col)
+            elseif l:line_num == l:end_line_num
+                call SwapOperandsRange2(l:line_num, 1, l:end_col)
+            else
+                call SwapOperandsRange0(l:line_num)
+            endif
+        endfor
+    endif
+endfunction
+
+nnoremap <Leader>so  :call SwapOperandsLine()<CR>
+vnoremap <Leader>so  :call SwapOperandsVisual()<CR>
+
 "===============================================================================
 " Tags search paths.
 "===============================================================================
