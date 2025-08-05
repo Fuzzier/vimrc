@@ -1248,7 +1248,7 @@ endsnippet
 
 snippet rbuf "std::byte[]"
 alignas(${1:T})
-std::byte ${2:storage_}[sizeof($1)];
+std::byte ${2:`!p snip.rv=type2var(t[1])`Storage_}[sizeof($1)];
 endsnippet
 
 snippet ld "launder()" w
@@ -1771,10 +1771,28 @@ snippet dupush "du.push"
 // 添加分组头部.
 ${1:T}* ${2:hdr} = nullptr;
 {
-    $3->addByteLength(sizeof(`!p snip.rv=t[1].strip()`));
     $2 = ${3:dup}->du().resetAndPush(type_tag<`!p snip.rv=t[1].strip()`>);
-    //
     $0
+    $3->addByteLength(sizeof(`!p snip.rv=t[1].strip()`));
+}
+endsnippet
+
+snippet dupushp "du.push"
+// 添加分组头部.
+{
+    ${1:dup}->du().reset(type_tag<${2:T}>);
+    $1->du().push(${3:`!p snip.rv=type2var(t[2])`}, sizeof($2));
+    $1->addByteLength(sizeof($3));
+}
+endsnippet
+
+snippet dupushb "du.push"
+// 添加分组头部.
+{
+    ${1:dup}->du().reset(type_tag<${2:T}>);
+    uint8_t* buf = $1->du().push(sizeof(${3:`!p snip.rv=t[2].strip()`}), 0);
+    $0
+    $1->addByteLength(sizeof($3));
 }
 endsnippet
 
@@ -1798,7 +1816,7 @@ ${1:T} ${2:hdr};
     Buffer& du = ${3:dup}->du();
     if (du.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        NSFX_LOG_ERROR()("Invalid PDU size {} B", du.size());
         goto exit;
     }
     du.pop(&$2, sizeof($1));
@@ -1815,7 +1833,7 @@ ${1:T} ${2:hdr};
     Buffer& du = ${3:dup}->du();
     if (du.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        NSFX_LOG_ERROR()("Invalid PDU size {} B", du.size());
         goto exit;
     }
     du.pop(&$2, sizeof($1));
@@ -1835,11 +1853,10 @@ const ${1:T}* ${2:hdr} = nullptr;
     const Buffer& du = ${3:dup}->du();
     if (du.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        NSFX_LOG_ERROR()("Invalid PDU size {} B", du.size());
         goto exit;
     }
     $2 = reinterpret_cast<const $1*>(du.data());
-    //
     $0
 }
 endsnippet
@@ -1851,11 +1868,10 @@ ${1:T} ${2:hdr};
     const Buffer& du = ${3:dup}->du();
     if (du.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
+        NSFX_LOG_ERROR()("Invalid PDU size {} B", du.size());
         goto exit;
     }
     du.peep(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1877,7 +1893,6 @@ ${1:T}* ${2:ici} = nullptr;
     par.reset(type_tag<$1>);
     $2 = reinterpret_cast<$1*>(
         par.put(sizeof($1)));
-    //
     $0
 }
 endsnippet
@@ -1889,11 +1904,10 @@ ${1:T} ${2:ici};
     Buffer& par = ${3:dup}->par();
     if (par.size() != sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid ICI size {} B", par.size());
+        NSFX_LOG_ERROR()("Invalid ICI size {} B", par.size());
         goto exit;
     }
     par.pop(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1905,11 +1919,10 @@ const ${1:T}* ${2:ici} = nullptr;
     const Buffer& par = ${3:dup}->par();
     if (par.size() != sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid ICI size {} B", par.size());
+        NSFX_LOG_ERROR()("Invalid ICI size {} B", par.size());
         goto exit;
     }
     $2 = reinterpret_cast<const $1*>(par.data());
-    //
     $0
 }
 endsnippet
@@ -1921,11 +1934,10 @@ ${1:T} ${2:ici};
     const Buffer& par = ${3:dup}->par();
     if (par.size() != sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid ICI size {} B", par.size());
+        NSFX_LOG_ERROR()("Invalid ICI size {} B", par.size());
         goto exit;
     }
     par.peep(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1937,7 +1949,6 @@ ${1:T}* ${2:ssi} = nullptr;
     Buffer& tag = ${3:dup}->tag();
     tag.push(sizeof($1));
     $2 = reinterpret_cast<$1*>(tag.data());
-    //
     $0
 }
 endsnippet
@@ -1949,7 +1960,6 @@ ${1:T}* ${2:ssi} = nullptr;
     Buffer& tag = ${3:dup}->tag();
     tag.put(sizeof($1));
     $2 = reinterpret_cast<$1*>(tag.data());
-    //
     $0
 }
 endsnippet
@@ -1961,11 +1971,10 @@ ${1:T} ${2:ssi};
     Buffer& tag = ${3:dup}->tag();
     if (tag.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        NSFX_LOG_ERROR()("Invalid TAG size {} B", tag.size());
         goto exit;
     }
     tag.pop(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1977,13 +1986,11 @@ ${1:T} ${2:ssi};
     Buffer& tag = ${3:dup}->tag();
     if (tag.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        NSFX_LOG_ERROR()("Invalid TAG size {} B", tag.size());
         goto exit;
     }
     tag.pop(&$2, sizeof($1));
-    //
     $0
-    //
     tag.push(&$2, sizeof($1));
 }
 endsnippet
@@ -1995,11 +2002,10 @@ const ${1:T}* ${2:ssi} = nullptr;
     const Buffer& tag = ${3:dup}->tag();
     if (tag.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        NSFX_LOG_ERROR()("Invalid TAG size {} B", tag.size());
         goto exit;
     }
     $2 = reinterpret_cast<const $1*>(tag.data());
-    //
     $0
 }
 endsnippet
@@ -2011,11 +2017,10 @@ const ${1:T}* ${2:ssi} = nullptr;
     const Buffer& tag = ${3:dup}->tag();
     if (tag.size() < sizeof($1))
     {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
+        NSFX_LOG_ERROR()("Invalid TAG size {} B", tag.size());
         goto exit;
     }
     tag.peep(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -2117,7 +2122,7 @@ $1::const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet isln "IntrusiveSlistNode"
-IntrusiveSlistNode<class ${1:C}C>
+IntrusiveSlistNode<class ${1:C}>
 endsnippet
 
 snippet isl> "IntrusiveSlist"
@@ -2198,6 +2203,8 @@ endsnippet
 
 snippet cont "container"
 bool empty(void) const noexcept { return ${3:map_}.empty(); }
+
+bool full(void) const noexcept { return $3.full(); }
 
 size_t size(void) const noexcept { return $3.size(); }
 
@@ -2572,7 +2579,7 @@ EventId eid = (EventId)(uintptr_t)ev->data();
 switch (eid)
 {
 ${0}case EventId::Xxx : xxx(); break;
-default: NSFX_THROW(LogicError{})("Unknown event");
+default: NSFX_LOG_ERROR()("Unknown event [eid={}]", (int)eid);
 }
 endsnippet
 
@@ -2581,7 +2588,7 @@ PortId pid = (PortId)(uintptr_t)msg->arrivalPort()->data();
 switch (pid)
 {
 ${0}case PortId::Xxx : xxx(msg); break;
-default: NSFX_THROW(LogicError{})("Unknown message");
+default: NSFX_LOG_ERROR()("Unknown message [pid={}]", (int)pid);
 }
 endsnippet
 
