@@ -13,6 +13,7 @@ syntax keyword cppSTLtype
         \ big_endian_t
         \ type_name
         \ proxy
+        \ is_instantiation_of
 
 syntax keyword cppSTLconstant
         \ intrusive_ptr_attach
@@ -24,6 +25,7 @@ syntax keyword cppSTLconstant
         \ native_endian
         \ little_endian
         \ big_endian
+        \ is_instantiation_of_v
 
 syntax keyword cppSTLfunction
         \ make_intrusive
