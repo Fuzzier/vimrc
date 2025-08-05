@@ -771,7 +771,8 @@ call plug#begin(repos_path)
     " General tools
     " =========================
     " A Vim plugin to move function arguments (and other delimited-by-something items) left and right.
-    Plug 'AndrewRadev/sideways.vim'
+    " Comment: It has problem to work with C++ template.
+    " Plug 'AndrewRadev/sideways.vim'
     " Highlights trailing whitespace in red and provides :FixWhitespace to fix it.
     Plug 'bronson/vim-trailing-whitespace'
     " Vim plug for switching between companion source files (e.g. '.h' and '.cpp').
@@ -1166,8 +1167,8 @@ let g:indent_guides_start_level = 2
 "---------------------------------------
 " AndrewRadev/sideways.vim
 "---------------------------------------
-nnoremap <silent> g< :SidewaysLeft<CR>
-nnoremap <silent> g> :SidewaysRight<CR>
+" nnoremap <silent> g< :SidewaysLeft<CR>
+" nnoremap <silent> g> :SidewaysRight<CR>
 "
 "---------------------------------------
 " bronson/vim-trailing-whitespace
@@ -2886,6 +2887,295 @@ endfunction
 
 nnoremap <Leader>so  :call SwapOperandsLine()<CR>
 vnoremap <Leader>so  :call SwapOperandsVisual()<CR>
+
+"----------------------------------------
+" Find the next ')', '>', ']' or ',' from `col`, inclusive.
+function! FindNextDelim(line_num, col)
+    let line_num = a:line_num
+    let col = a:col
+    " Get the current line
+    let line = getline(line_num)
+    " Find the pattern
+    let delim = ')\|>\|\]\|,'
+    let index = match(line, delim, col - 1)
+    let is_comma = v:false
+    if index != -1
+        let char = line[index]
+        if char =~ ','
+            let is_comma = v:true
+        endif
+    endif
+    return [index, is_comma, line_num]
+endfunction
+
+function! FindNextDelimEx(line_num, col, extra_num_lines)
+    let line_num = a:line_num
+    let result = FindNextDelim(line_num, a:col)
+    " Look for additional lines if not found
+    let line_num_cap = line_num + a:extra_num_lines
+    let last_line_num = line('$')
+    if line_num_cap > last_line_num
+        line_num_cap = last_line_num
+    endif
+    let index = result[0]
+    while index == -1 && line_num < line_num_cap
+        let line_num += 1
+        let result = FindNextDelim(line_num, 1)
+        let index = result[0]
+    endwhile
+    return result
+endfunction
+
+" Find the previous '(', '<' or ',' from `col`, inclusive.
+function! FindPrevDelim(line_num, col)
+    let line_num = a:line_num
+    let col = a:col
+    " Get the current line
+    let line = getline(line_num)
+    if col == -1
+        let col = strlen(line)
+    endif
+    let delim = '(\|<\|\[\|,'
+    " Find the pattern
+    let index = -1
+    let next = match(line, delim, index + 1)
+    while next != -1 && next + 1 <= col
+        let index = next
+        let next = match(line, delim, index + 1)
+    endwhile
+    let is_comma = v:false
+    if index != -1
+        let char = line[index]
+        if char =~ ','
+            let is_comma = v:true
+        endif
+    endif
+    return [index, is_comma, line_num]
+endfunction
+
+" Find the previous delimiter from `col`, inclusive.
+function! FindPrevDelimEx(line_num, col, extra_num_lines)
+    let line_num = a:line_num
+    let result = FindPrevDelim(line_num, a:col)
+    " Look for additional lines if not found
+    if line_num > a:extra_num_lines
+        let line_num_cap = line_num - a:extra_num_lines
+    else
+        let line_num_cap = 1
+    endif
+    let index = result[0]
+    while index == -1 && line_num > line_num_cap
+        let line_num -= 1
+        let result = FindPrevDelim(line_num, -1)
+        let index = result[0]
+    endwhile
+    return result
+endfunction
+
+" Find the element from `index`, inclusive.
+" For example, the index is the position after ','.
+function! FindNextElem(line, index)
+    let len = strlen(a:line)
+    let sindex = a:index + 1
+    if sindex > len
+        let sindex = len
+    endif
+    " Skip leading blanks
+    while sindex < len
+        let char = a:line[sindex]
+        if char !~ '\s' | break | endif
+        let sindex += 1
+    endwhile
+    let eindex = sindex
+    " Parse element
+    let parenth_level = 0
+    let chevron_level = 0
+    let bracket_level = 0
+    while eindex < len
+        let char = a:line[eindex]
+        if char =~ ')\|>\|\]\|,'
+            if parenth_level == 0 && chevron_level == 0 && bracket_level == 0
+                break
+            elseif char =~ ')' && parenth_level > 0
+                let parenth_level -= 1
+            elseif char =~ '>' && chevron_level > 0
+                let chevron_level -= 1
+            elseif char =~ '\]' && bracket_level > 0
+                let bracket_level -= 1
+            endif
+        elseif char =~ '('
+            let parenth_level += 1
+        elseif char =~ '<'
+            let chevron_level += 1
+        elseif char =~ '\['
+            let bracket_level += 1
+        endif
+        let eindex += 1
+    endwhile
+    " Skip trailing blanks
+    while eindex > sindex
+        let char = a:line[eindex - 1]
+        if char !~ '\s'
+            break
+        endif
+        let eindex -= 1
+    endwhile
+    return [sindex, eindex]
+endfunction
+
+" Find the element before `index`, exclusive.
+" For example, the index is the position of ','.
+function! FindPrevElem(line, index)
+    let len = strlen(a:line)
+    let eindex = a:index
+    if eindex == -1
+        let eindex = len
+    elseif eindex > len
+        let eindex = len
+    endif
+    " Skip trailing blanks
+    while eindex > 0
+        let char = a:line[eindex - 1]
+        if char !~ '\s' | break | endif
+        let eindex -= 1
+    endwhile
+    let sindex = eindex
+    " Parse element
+    let parenth_level = 0
+    let chevron_level = 0
+    let bracket_level = 0
+    while sindex > 0
+        let char = a:line[sindex - 1]
+        if char =~ '(\|<\|\[\|,'
+            if parenth_level == 0 && chevron_level == 0 && bracket_level == 0
+                break
+            elseif char =~ '(' && parenth_level > 0
+                let parenth_level -= 1
+            elseif char =~ '<' && chevron_level > 0
+                let chevron_level -= 1
+            elseif char =~ '\[' && chevron_level > 0
+                let bracket_level -= 1
+            endif
+        elseif char =~ ')'
+            let parenth_level += 1
+        elseif char =~ '>'
+            let chevron_level += 1
+        elseif char =~ '\]'
+            let bracket_level += 1
+        endif
+        let sindex -= 1
+    endwhile
+    " Skip leading blanks
+    while sindex < eindex
+        let char = a:line[sindex]
+        if char !~ '\s'
+            break
+        endif
+        let sindex += 1
+    endwhile
+    return [sindex, eindex]
+endfunction
+
+function! SwapParams(line_num, index, cursor)
+    " Find lhs
+    let lhs_line_num = a:line_num
+    let lhs_line = getline(lhs_line_num)
+    let lhs_pos = FindPrevElem(lhs_line, a:index)
+    let s0 = lhs_pos[0]
+    let e0 = lhs_pos[1]
+    " If not found, try previous line
+    if s0 >= e0
+        let lhs_line_num -= 1
+        let lhs_line = getline(lhs_line_num)
+        let lhs_pos = FindPrevElem(lhs_line, -1)
+        let s0 = lhs_pos[0]
+        let e0 = lhs_pos[1]
+    endif
+    let lhs = lhs_line[s0 : e0-1]
+    " echo lhs
+    " Find rhs
+    let rhs_line_num = a:line_num
+    let rhs_line = getline(rhs_line_num)
+    let rhs_pos = FindNextElem(rhs_line, a:index + 1)
+    let s1 = rhs_pos[0]
+    let e1 = rhs_pos[1]
+    " If not found, try next line
+    if s1 >= e1
+        let rhs_line_num += 1
+        let rhs_line = getline(rhs_line_num)
+        let rhs_pos = FindNextElem(rhs_line, 0)
+        let s1 = rhs_pos[0]
+        let e1 = rhs_pos[1]
+    endif
+    let rhs = rhs_line[s1 : e1-1]
+    " echo rhs
+    " Swap lhs and rhs
+    if lhs_line_num == rhs_line_num
+        let line  = lhs_line[0 : s0-1]
+        let line .= rhs
+        let line .= lhs_line[e0 : s1-1]
+        " The column of the new rhs
+        let rhs_col = strlen(line) + 1
+        let line .= lhs
+        let line .= lhs_line[e1 : ]
+        " echo line
+        call setline(lhs_line_num, line)
+        if a:cursor == 1
+            call setpos('.', [0, lhs_line_num, rhs_col, 0])
+        else
+            call setpos('.', [0, lhs_line_num, s0+1, 0])
+        endif
+    else
+        let line  = lhs_line[0 : s0-1]
+        let line .= rhs
+        let line .= lhs_line[e0 : ]
+        " echo line
+        call setline(lhs_line_num, line)
+        let line  = rhs_line[0 : s1-1]
+        let line .= lhs
+        let line .= rhs_line[e1 : ]
+        " echo line
+        call setline(rhs_line_num, line)
+        if a:cursor == 1
+            call setpos('.', [0, rhs_line_num, s1+1, 0])
+        else
+            call setpos('.', [0, lhs_line_num, s0+1, 0])
+        endif
+    endif
+endfunction
+
+function! MoveParamToRight()
+    let pos = getpos('.')
+    let line_num = pos[1]
+    let col = pos[2]
+    let num_lines = 1
+    let delim_pos = FindNextDelimEx(line_num, col, 1)
+    let is_comma = delim_pos[1]
+    if is_comma
+        let index = delim_pos[0]
+        let line_num = delim_pos[2]
+        call SwapParams(line_num, index, 1)
+    endif
+    call repeat#set(":call MoveParamToRight()\<CR>")
+endfunction
+
+function! MoveParamToLeft()
+    let pos = getpos('.')
+    let line_num = pos[1]
+    let col = pos[2]
+    let num_lines = 1
+    let delim_pos = FindPrevDelimEx(line_num, col, 1)
+    let is_comma = delim_pos[1]
+    if is_comma
+        let index = delim_pos[0]
+        let line_num = delim_pos[2]
+        call SwapParams(line_num, index, 0)
+    endif
+    call repeat#set(":call MoveParamToLeft()\<CR>")
+endfunction
+
+nnoremap <silent> g> :call MoveParamToRight()<CR>
+nnoremap <silent> g< :call MoveParamToLeft()<CR>
 
 "===============================================================================
 " Tags search paths.
