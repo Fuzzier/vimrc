@@ -10,14 +10,11 @@ vim9script
 #===============================================================================
 
 # Find the next ')', '>', ']' or ',' from `col`, inclusive.
-def FindNextDelim(line_num_: number, col_: number): list<number>
-    var line_num = line_num_
-    var col = col_
-    # Get the current line
-    var line = getline(line_num)
+def FindNextDelim(line: string, col: number): list<number>
     # Find the pattern
-    var delim = ')\|>\|\]\|,'
+    var delim = ')\|-\@<!>\|\]\|,'
     var index = match(line, delim, col - 1)
+    echo line[col - 1 :]
     var is_comma = 0
     var char: string
     if index != -1
@@ -26,12 +23,13 @@ def FindNextDelim(line_num_: number, col_: number): list<number>
             is_comma = 1
         endif
     endif
-    return [index, is_comma, line_num]
+    return [index, is_comma]
 enddef
 
-def FindNextDelimEx(line_num_: number, col: number, extra_num_lines: number): list<any>
+def FindNextDelimEx(line_num_: number, col: number, extra_num_lines: number): list<number>
     var line_num = line_num_
-    var result = FindNextDelim(line_num, col)
+    var line = getline(line_num)
+    var result = FindNextDelim(line, col)
     # Look for additional lines if not found
     var line_num_cap = line_num + extra_num_lines
     var last_line_num = line('$')
@@ -41,18 +39,16 @@ def FindNextDelimEx(line_num_: number, col: number, extra_num_lines: number): li
     var index = result[0]
     while index == -1 && line_num < line_num_cap
         line_num += 1
-        result = FindNextDelim(line_num, 1)
+        line = getline(line_num)
+        result = FindNextDelim(line, 1)
         index = result[0]
     endwhile
-    return result
+    return result + [line_num]
 enddef
 
 # Find the previous '(', '<' or ',' from `col`, inclusive.
-def FindPrevDelim(line_num_: number, col_: number): list<any>
-    var line_num = line_num_
+def FindPrevDelim(line: string, col_: number): list<number>
     var col = col_
-    # Get the current line
-    var line = getline(line_num)
     if col == -1
         col = strlen(line)
     endif
@@ -64,21 +60,22 @@ def FindPrevDelim(line_num_: number, col_: number): list<any>
         index = next
         next = match(line, delim, index + 1)
     endwhile
-    var is_comma = v:false
+    var is_comma = 0
     var char: string
     if index != -1
         char = line[index]
         if char =~ ','
-            is_comma = v:true
+            is_comma = 1
         endif
     endif
-    return [index, is_comma, line_num]
+    return [index, is_comma]
 enddef
 
 # Find the previous delimiter from `col`, inclusive.
-def FindPrevDelimEx(line_num_: number, col: number, extra_num_lines: number): list<any>
+def FindPrevDelimEx(line_num_: number, col: number, extra_num_lines: number): list<number>
     var line_num = line_num_
-    var result = FindPrevDelim(line_num, col)
+    var line = getline(line_num)
+    var result = FindPrevDelim(line, col)
     # Look for additional lines if not found
     var line_num_cap: number
     if line_num > extra_num_lines
@@ -89,59 +86,60 @@ def FindPrevDelimEx(line_num_: number, col: number, extra_num_lines: number): li
     var index = result[0]
     while index == -1 && line_num > line_num_cap
         line_num -= 1
-        result = FindPrevDelim(line_num, -1)
+        line = getline(line_num)
+        result = FindPrevDelim(line, -1)
         index = result[0]
     endwhile
-    return result
+    return result + [line_num]
 enddef
 
 # Find the element from `index`, inclusive.
 # For example, the index is the position after ','.
 def FindNextElem(line: string, index: number): list<number>
     var len = strlen(line)
-    var sindex = index + 1
-    if sindex > len
-        sindex = len
-    endif
     # Skip leading blanks
-    var char: string
-    while sindex < len
-        char = line[sindex]
-        if char !~ '\s' | break | endif
-        sindex += 1
-    endwhile
+    var sindex = match(line, '^\s*\zs', index)
     var eindex = sindex
     # Parse element
     var parenth_level = 0
     var chevron_level = 0
     var bracket_level = 0
+    var token = line[eindex]
     while eindex < len
-        char = line[eindex]
-        if char =~ ')\|>\|\]\|,'
+        #            \(                \)$
+        #              )       >   ]  ,
+        if token =~ '\()\|-\@<!>\|\]\|,\)$'
             if parenth_level == 0 && chevron_level == 0 && bracket_level == 0
                 break
-            elseif char =~ ')' && parenth_level > 0
-                parenth_level -= 1
-            elseif char =~ '>' && chevron_level > 0
-                chevron_level -= 1
-            elseif char =~ '\]' && bracket_level > 0
-                bracket_level -= 1
+            else
+                token = token[1]
+                if token == ')' && parenth_level > 0
+                    parenth_level -= 1
+                elseif token == '>' && chevron_level > 0
+                    chevron_level -= 1
+                elseif token == ']' && bracket_level > 0
+                    bracket_level -= 1
+                endif
             endif
-        elseif char =~ '('
-            parenth_level += 1
-        elseif char =~ '<'
-            chevron_level += 1
-        elseif char =~ '\['
-            bracket_level += 1
+        else
+            token = token[1]
+            if token == '('
+                parenth_level += 1
+            elseif token == '<'
+                chevron_level += 1
+            elseif token == '['
+                bracket_level += 1
+            endif
         endif
         eindex += 1
+        # The token has 2 characters to check operators such as '->'.
+        token = line[eindex - 1 : eindex]
     endwhile
     # Skip trailing blanks
-    while eindex > sindex
-        char = line[eindex - 1]
-        if char !~ '\s' | break | endif
-        eindex -= 1
-    endwhile
+    if eindex > sindex
+        token = line[sindex : eindex - 1]
+        eindex = sindex + match(token, '\zs\s*$')
+    endif
     return [sindex, eindex]
 enddef
 
@@ -150,50 +148,49 @@ enddef
 def FindPrevElem(line: string, index: number): list<number>
     var len = strlen(line)
     var eindex = index
-    if eindex == -1
-        eindex = len
-    elseif eindex > len
+    if eindex == -1 || eindex > len
         eindex = len
     endif
     # Skip trailing blanks
-    var char: string
-    while eindex > 0
-        char = line[eindex - 1]
-        if char !~ '\s' | break | endif
-        eindex -= 1
-    endwhile
+    var token: string
+    if eindex > 0
+        token = line[0 : eindex - 1]
+        eindex = match(token, '\zs\s*$')
+    endif
     var sindex = eindex
     # Parse element
     var parenth_level = 0
     var chevron_level = 0
     var bracket_level = 0
     while sindex > 0
-        char = line[sindex - 1]
-        if char =~ '(\|<\|\[\|,'
+        token = line[sindex - 1]
+        if token =~ '(\|<\|\[\|,'
             if parenth_level == 0 && chevron_level == 0 && bracket_level == 0
                 break
-            elseif char =~ '(' && parenth_level > 0
+            elseif token == '(' && parenth_level > 0
                 parenth_level -= 1
-            elseif char =~ '<' && chevron_level > 0
+            elseif token == '<' && chevron_level > 0
                 chevron_level -= 1
-            elseif char =~ '\[' && chevron_level > 0
+            elseif token == '[' && bracket_level > 0
                 bracket_level -= 1
             endif
-        elseif char =~ ')'
+        elseif token == ')'
             parenth_level += 1
-        elseif char =~ '>'
-            chevron_level += 1
-        elseif char =~ '\]'
+        elseif token == '>'
+            if sindex > 1 && line[sindex - 2] == '-'
+            else
+                chevron_level += 1
+            endif
+        elseif token == ']'
             bracket_level += 1
         endif
         sindex -= 1
     endwhile
     # Skip leading blanks
-    while sindex < eindex
-        char = line[sindex]
-        if char !~ '\s' | break | endif
-        sindex += 1
-    endwhile
+    if sindex < eindex
+        token = line[sindex : eindex - 1]
+        sindex += match(token, '^\s*\zs')
+    endif
     return [sindex, eindex]
 enddef
 
