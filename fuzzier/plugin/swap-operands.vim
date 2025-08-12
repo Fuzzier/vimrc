@@ -10,7 +10,7 @@ vim9script
 #===============================================================================
 
 # Supported binary operators
-var bin_op_list = [
+const bin_op_list = [
     '=',
     '+', '-', '\*', '\/', '%',
     '+=', '-=', '\*=', '\/=', '%=',
@@ -26,29 +26,36 @@ var bin_op_list = [
 def SwapOperandsString(text: string): string
     for bin_op in bin_op_list
         # zero or more spaces
-        var pat_lead_sp = '\(\s*\)'
+        const pat_lead_sp = '\(\s*\)'
         # anything before the operator
-        var pat_lhs = '\(.\{-}\)'
+        const pat_lhs = '\(.\{-}\)'
         # the operator, surrounded by spaces
-        var pat_op = '\(\s\+' .. bin_op .. '\s\+\)'
+        const pat_op = '\(\s\+' .. bin_op .. '\s\+\)'
         # anything after the operator, and before ';'
-        var pat_rhs = '\([^;]*\)'
+        const pat_rhs = '\([^;]*\)'
         # possible trailing ';'
-        var pat_colon = '\s*\(;\?\)'
-        var pattern = pat_lead_sp
-                   .. pat_lhs
-                   .. pat_op
-                   .. pat_rhs
-                   .. pat_colon
-        var matches = matchlist(text, pattern)
+        const pat_colon = '\s*\(;\?\)'
+        const pattern = pat_lead_sp
+                     .. pat_lhs
+                     .. pat_op
+                     .. pat_rhs
+                     .. pat_colon
+        const matches = matchlist(text, pattern)
         if !empty(matches)
-            # echom matches
-            var sp    = matches[1]
-            var lhs   = matches[2]
-            var op    = matches[3]
-            var rhs   = matches[4]
-            var colon = matches[5]
-            var swapped = sp .. rhs .. op .. lhs .. colon
+            # echo matches
+            const sp  = matches[1]
+            const lhs = matches[2]
+            var op  = matches[3]
+            const lt = (op =~# '<')
+            const gt = (op =~# '>')
+            if lt && !gt
+                op = substitute(op, '<', '>', 'g')
+            elseif gt && !lt
+                op = substitute(op, '>', '<', 'g')
+            endif
+            const rhs   = matches[4]
+            const colon = matches[5]
+            const swapped = sp .. rhs .. op .. lhs .. colon
             return swapped
         endif
     endfor
@@ -56,55 +63,55 @@ def SwapOperandsString(text: string): string
 enddef
 
 def SwapOperandsRange0(line_num: number)
-    var line = getline(line_num)
-    var swapped = SwapOperandsString(line)
+    const line = getline(line_num)
+    const swapped = SwapOperandsString(line)
     if !empty(swapped)
         setline(line_num, swapped)
     endif
 enddef
 
 def SwapOperandsRange1(line_num: number, beg_col: number)
-    var line = getline(line_num)
-    var text = strcharpart(line, beg_col - 1)
-    var swapped = SwapOperandsString(text)
+    const line = getline(line_num)
+    const text = strcharpart(line, beg_col - 1)
+    const swapped = SwapOperandsString(text)
     if !empty(swapped)
-        var head = strcharpart(line, 0, beg_col - 1)
-        var join = head .. swapped
+        const head = strcharpart(line, 0, beg_col - 1)
+        const join = head .. swapped
         setline(line_num, join)
     endif
 enddef
 
 def SwapOperandsRange2(line_num: number, beg_col: number, end_col: number)
-    var line = getline(line_num)
-    var text = strcharpart(line, beg_col - 1, end_col - beg_col + 1)
-    var swapped = SwapOperandsString(text)
+    const line = getline(line_num)
+    const text = strcharpart(line, beg_col - 1, end_col - beg_col + 1)
+    const swapped = SwapOperandsString(text)
     if !empty(swapped)
-        var head = strcharpart(line, 0, beg_col - 1)
-        var tail = strcharpart(line, end_col)
-        var join = head .. swapped .. tail
+        const head = strcharpart(line, 0, beg_col - 1)
+        const tail = strcharpart(line, end_col)
+        const join = head .. swapped .. tail
         setline(line_num, join)
     endif
 enddef
 
 def SwapOperandsLine()
-    var pos = getpos('.')
-    var line_num = pos[1]
-    var line = getline(line_num)
-    var swapped = SwapOperandsString(line)
+    const pos = getpos('.')
+    const line_num = pos[1]
+    const line = getline(line_num)
+    const swapped = SwapOperandsString(line)
     if !empty(swapped)
         setline(line_num, swapped)
     endif
-    repeat#set(":call SwapOperandsLine()\<CR>")
+    repeat#set("\<Plug>(SwapOperandsLine)")
 enddef
 
 def SwapOperandsVisual()
-    var beg_pos = getpos("'<")
-    var end_pos = getpos("'>")
-    var beg_line_num = beg_pos[1]
-    var beg_col      = beg_pos[2]
-    var end_line_num = end_pos[1]
-    var end_col      = end_pos[2]
-    var mode = visualmode()
+    const beg_pos = getpos("'<")
+    const end_pos = getpos("'>")
+    const beg_line_num = beg_pos[1]
+    const beg_col      = beg_pos[2]
+    const end_line_num = end_pos[1]
+    const end_col      = end_pos[2]
+    const mode = visualmode()
     # For each line.
     if mode == 'v' || mode == 'V'
         if beg_line_num == end_line_num
@@ -121,14 +128,16 @@ def SwapOperandsVisual()
             endfor
         endif
     else # mode == '<CTRL-V>'
-        echom beg_pos
-        echom end_pos
+        # echo beg_pos
+        # echo end_pos
         for line_num in range(beg_line_num, end_line_num)
             SwapOperandsRange2(line_num, beg_col, end_col)
         endfor
     endif
 enddef
 
-nnoremap <Leader>ss  :<C-U>call <SID>SwapOperandsLine()<CR>
-vnoremap <Leader>ss  :<C-U>call <SID>SwapOperandsVisual()<CR>
+nnoremap <silent> <Plug>(SwapOperandsLine)    :<C-U>call <SID>SwapOperandsLine()<CR>
+vnoremap <silent> <Plug>(SwapOperandsVisual)  :<C-U>call <SID>SwapOperandsVisual()<CR>
+nnoremap <silent> <Leader>ss  <Plug>(SwapOperandsLine)
+vnoremap <silent> <Leader>ss  <Plug>(SwapOperandsVisual)
 
