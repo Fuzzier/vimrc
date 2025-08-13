@@ -129,7 +129,6 @@ def SetWinWidth()
     elseif node[0] ==# 'row'
         SetWinWidthForRow(node, id, total_width)
     endif
-    repeat#set(":call \<Plug>(SetWinWidth)")
 enddef
 
 nnoremap <silent> <Plug>(SetWinWidth)  :<C-U>call <SID>SetWinWidth()<CR>
