@@ -406,6 +406,12 @@ autocmd TerminalOpen * setlocal nonumber norelativenumber signcolumn=no
 endif
 
 "-------------------------------------------------------------------------------
+" Shorcut.
+"-------------------------------------------------------------------------------
+" Save all.
+nnoremap <Leader>w  :noh<CR>:wall<CR>
+
+"-------------------------------------------------------------------------------
 " Tab navigation.
 "-------------------------------------------------------------------------------
 " Shortcuts for navigating tabs.
@@ -1065,49 +1071,6 @@ nnoremap gk <Cmd>Hi<<CR>
 nnoremap gl <Cmd>Hi}<CR>
 nnoremap gh <Cmd>Hi{<CR>
 
-"---------------------------------------
-" ayuanx/vim-mark-standalone
-" fuzzier/vim-mark-standalone
-"---------------------------------------
-" Disable default mapping.
-" let g:mark_maps = 0
-"
-" Set hotkeys.
-" nnoremap <silent> <Leader>m <Plug>MarkSet
-" nnoremap <silent> <Leader>M <Plug>MarkAllClear
-"
-" 1. Jump to marked words; OR
-" 2. Search.
-" nnoremap <silent> n :<C-u>if ! mark#SearchCurrentMark(0)<Bar>execute 'normal! nzv'<Bar>endif<CR>
-" nnoremap <silent> N :<C-u>if ! mark#SearchCurrentMark(1)<Bar>execute 'normal! Nzv'<Bar>endif<CR>
-"
-" 1. Search; OR
-" 2. Mark.
-" nnoremap <silent> * <Plug>MarkSearchNext
-" nnoremap <silent> # <Plug>MarkSearchPrev
-
-" --------------------------------------
-" lfv89/vim-interestingwords
-" --------------------------------------
-" Disable default mapping.
-" let g:interestingWordsDefaultMappings = 0
-"
-" Set hotkeys.
-" nnoremap <silent> <Leader>m :call InterestingWords('n')<CR>
-" vnoremap <silent> <Leader>m :call InterestingWords('v')<CR>
-" nnoremap <silent> <Leader>M :call UncolorAllWords()<CR>
-"
-" Navigate highlighted word, works with VIM's search highlight.
-" nnoremap <silent> n :call WordNavigation(1)<CR>
-" nnoremap <silent> N :call WordNavigation(0)<CR>
-"
-" Randomise the colors.
-" let g:interestingWordsRandomiseColors = 1
-"
-" Custom colors.
-" let g:interestingWordsGUIColors = ['#8CCBEA', '#A4E57E', '#FFDB72', '#FF7272', '#FFB3FF', '#9999FF']
-" let g:interestingWordsTermColors = ['Cyan', 'Green', 'Yellow', 'Red', 'Magenta', 'Blue']
-
 " ======================================
 " Indent guides
 " ======================================
@@ -1134,30 +1097,6 @@ let g:indent_guides_guide_size = 1
 " Show guides from the second indent level.
 let g:indent_guides_start_level = 2
 
-"---------------------------------------
-" tweekmonster/local-indent.vim
-"---------------------------------------
-" Enable for file types.
-" autocmd FileType c,cpp,py,json  LocalIndentGuide +hl +cc
-"
-" Set color.
-" hi LocalIndentGuide ctermfg=8 ctermbg=0 cterm=inverse
-
-"---------------------------------------
-" Yggdroot/indentLine
-"---------------------------------------
-" Use custom colors.
-" let g:indentLine_color_term = 22
-" let g:indentLine_color_gui = '#005F00'
-"
-" Do not change conceal options.
-" let g:indentLine_setConceal = 0
-
-"---------------------------------------
-" norcalli/nvim-colorizer.lua
-"---------------------------------------
-" lua require 'colorizer'.setup()
-
 "=======================================
 " Colorschemes
 "=======================================
@@ -1165,12 +1104,6 @@ let g:indent_guides_start_level = 2
 "=======================================
 " General tools
 "=======================================
-"---------------------------------------
-" AndrewRadev/sideways.vim
-"---------------------------------------
-" nnoremap <silent> g< :SidewaysLeft<CR>
-" nnoremap <silent> g> :SidewaysRight<CR>
-"
 "---------------------------------------
 " bronson/vim-trailing-whitespace
 "---------------------------------------
@@ -1316,11 +1249,11 @@ xmap <silent> ga <Plug>(EasyAlign)
 let binary_ops = [
     \ '&=', '|=', '\^=',
     \ '==', '!=', '<=', '>=',
-    \ '+=', '-=', '\*=', '\/=',
+    \ '+=', '-=', '\*=', '\/=', '%=',
     \ '&&', '||',
     \ '&', '|', '\^',
     \ '=', '!', '<', '[^-]>',
-    \ '+', '-[^>]', '\*', '\/',
+    \ '+', '-[^>]', '\*', '\/', '%',
     \ '?', ':'
     \ ]
 let binary_ops_pattern = join(binary_ops, '\|')
@@ -1351,10 +1284,6 @@ let g:sneak#label = 1
 highlight link Sneak      Search
 highlight link SneakScope Visual
 highlight link SneakLabel Search
-
-"---------------------------------------
-" machakann/vim-swap
-"---------------------------------------
 
 "---------------------------------------
 " tomtom/quickfixsigns_vim
@@ -2075,13 +2004,6 @@ endif
 "===============================================================================
 " Coding functions
 "===============================================================================
-"
-" Source visually selected codes.
-xmap <Leader>sc  y:@"<CR>
-"
-" Remove trailing whitespaces
-nnoremap <Leader>w  :noh<CR>:wall<CR>
-
 " Delete C/C++ style comments.
 " function! DeleteComments()
 "     let @"=substitute(@", '^\_s*\/\*\_.\{-}\*\/\n', '', 'g')
