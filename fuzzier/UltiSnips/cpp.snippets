@@ -839,24 +839,24 @@ explicit
 ${1:`!v getreg('c')`}(${2:void})
 endsnippet
 
-snippet dtor "~Dtor(void) noexcept"
-~${1:`!v getreg('c')`}(void) noexcept
+snippet dtor "~Dtor(void)"
+~${1:`!v getreg('c')`}(void)
 endsnippet
 
-snippet vdtor "virtual ~Dtor(void) noexcept"
-virtual ~${1:`!v getreg('c')`}(void) noexcept
+snippet vdtor "virtual ~Dtor(void)"
+virtual ~${1:`!v getreg('c')`}(void)
 endsnippet
 
 snippet xtor "Ctor & Dtor"
 explicit
 ${1:`!v getreg('c')`}(${2:void});
-~$1(void) noexcept;
+~$1(void);
 endsnippet
 
 snippet vxtor "Ctor & Dtor"
 explicit
 ${1:`!v getreg('c')`}(${2:void});
-virtual ~$1(void) noexcept;
+virtual ~$1(void);
 endsnippet
 
 snippet fn "void Function(args)"
@@ -2342,7 +2342,7 @@ class ${1:Xxx}
 public:
     explicit
     `!p snip.rv=unqualify(t[1])`(void);
-    virtual ~`!p snip.rv=unqualify(t[1])`(void) noexcept;
+    virtual ~`!p snip.rv=unqualify(t[1])`(void);
 
     // Module
 public:
