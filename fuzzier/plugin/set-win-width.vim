@@ -9,6 +9,10 @@ vim9script
 # @date 2025-08-08
 #===============================================================================
 
+# The previous window id
+g:set_win_width_prev_wid = 0
+g:set_win_width_prev_wid_time = 0
+
 def CalcTotalWidth(node: list<any>): number
     var total_width: number = 0
     var id: number
@@ -37,6 +41,15 @@ def ContainsWin(node: list<any>, id: number): bool
         endfor
     endif
     return succ
+enddef
+
+def VerticalResizeWindow(id: number, width: number)
+    var cmd = printf('vertical resize %d', width)
+    win_execute(id, cmd)
+enddef
+
+def DelayedVerticalResizeWindow(timer: number, id: number, width: number)
+    VerticalResizeWindow(id, width)
 enddef
 
 def SetWinWidthForRow(node: list<any>, id: number, total_width: number): bool
@@ -76,8 +89,7 @@ def SetWinWidthForRow(node: list<any>, id: number, total_width: number): bool
                          ? float2nr(floor(total_width / (num_sibls + 1)))
                          : float2nr(floor((total_width - 88) / num_sibls))
         const main_width = total_width - num_sibls * sibl_width
-        var main_cmd = printf('vertical resize %d', main_width)
-        var sibl_cmd = printf('vertical resize %d', sibl_width)
+        var count = 0
         var wid: number
         var cmd: string
         for ch in node[1]
@@ -92,11 +104,30 @@ def SetWinWidthForRow(node: list<any>, id: number, total_width: number): bool
                     endif
                 endfor
             endif
-            if wid != 0
-                cmd = (wid == id) ? main_cmd : sibl_cmd
-                win_execute(wid, cmd)
-                # num_sibls -= 1
-                # if num_sibls == 0 | break | endif
+            if wid == id
+                var width = winwidth(win_id2win(id))
+                # Adjust active window width if its width is not `main_width`.
+                if width != main_width
+                    # If there are only 2 windows in a row, then timer is not
+                    # used to avoid visual inconvenience.
+                    if num_sibls == 1
+                        VerticalResizeWindow(id, main_width)
+                    # Timer is used to force the `context` plugin to adjust
+                    # its width in the sibling window accordingly.
+                    else
+                        VerticalResizeWindow(id, main_width - 1)
+                        timer_start(0, (timer) =>
+                            DelayedVerticalResizeWindow(timer, id, main_width))
+                    endif
+                endif
+                count += 1
+            elseif wid != 0
+                VerticalResizeWindow(wid, sibl_width)
+                count += 1
+            endif
+            # Do not adjust the width of the last window in the row.
+            if count == num_sibls
+                break
             endif
         endfor
     endif
@@ -121,13 +152,21 @@ enddef
 def SetWinWidth()
     var node = winlayout()
     var id = win_getid()
-    var total_width = CalcTotalWidth(node)
-    if node[0] ==# 'leaf'
-        # No need to resize the only window.
-    elseif node[0] ==# 'col'
-        SetWinWidthForCol(node, id, total_width)
-    elseif node[0] ==# 'row'
-        SetWinWidthForRow(node, id, total_width)
+    if g:set_win_width_prev_wid != id
+        g:set_win_width_prev_wid = id
+        g:set_win_width_prev_wid_time = 0
+    else
+        g:set_win_width_prev_wid_time += 1
+    endif
+    if g:set_win_width_prev_wid_time == 0
+        var total_width = CalcTotalWidth(node)
+        if node[0] ==# 'leaf'
+            # No need to resize the only window.
+        elseif node[0] ==# 'col'
+            SetWinWidthForCol(node, id, total_width)
+        elseif node[0] ==# 'row'
+            SetWinWidthForRow(node, id, total_width)
+        endif
     endif
 enddef
 
