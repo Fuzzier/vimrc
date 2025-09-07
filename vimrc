@@ -141,9 +141,9 @@ set colorcolumn=81
 " Set the minimum windows width.
 " Reserve 4 columns for showing line number, plus 1 column for visibility.
 " set winwidth=88
-if has('nvim')
-    " autocmd WinEnter * :set winwidth=88
-endif
+" if has('nvim')
+"     autocmd WinEnter * :set winwidth=88
+" endif
 
 " Show more lines.
 set linespace=1

@@ -11,12 +11,6 @@
 "-------------------------------------------------------------------------------
 " GUI (window only)
 "-------------------------------------------------------------------------------
-" Reserve 4 columns for showing line number, plus 1 column for visibility.
-set winwidth=88
-if has('nvim')
-    autocmd WinEnter * :set winwidth=88
-endif
-
 if !has('nvim')
     " Support 2 vertically split windows.
     set columns=177
