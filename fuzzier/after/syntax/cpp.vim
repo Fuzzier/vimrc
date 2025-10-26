@@ -14,6 +14,7 @@ syntax keyword cppSTLtype
         \ type_name
         \ proxy
         \ is_instantiation_of
+        \ is_raw_pointer_to
 
 syntax keyword cppSTLconstant
         \ intrusive_ptr_attach
@@ -26,6 +27,7 @@ syntax keyword cppSTLconstant
         \ little_endian
         \ big_endian
         \ is_instantiation_of_v
+        \ is_raw_pointer_to_v
 
 syntax keyword cppSTLfunction
         \ make_intrusive
