@@ -5,7 +5,7 @@
   // Select first item on completion start.
   "suggest.noselect": false,
   // The indicator that shows a complete item can be expanded as a snippet.
-  "suggest.snippetIndicator": "🐼",
+  "suggest.snippetIndicator": "🐼✨",
   // The maximum number of completion items shown.
   "suggest.maxCompleteItemCount": 20,
   // Floating window style.
@@ -46,28 +46,29 @@
     {
       "enable": true,
       "command": "ccls",
-      // "args": [ "--log-file=z:/ccls.log", "-v=1" ],
+      // "args": [ "--log-file=Z:/ccls.log", "-v=1" ],
       "filetypes": [ "c", "cpp", "cuda", "objc", "objcpp" ],
-      "rootPatterns": [ ".ccls", "compile_commands.json" ],
+      "rootPatterns": [ ".ccls-root", "compile_commands.json" ],
+      "requireRootPattern": true,
       "initializationOptions":
       {
         "cache":
         {
           "directory": ".ccls-cache",
-          "retainInMemory": 1
+          "retainInMemory": 1,
         },
         "client":
         {
           // Required to add parenthesis for functions automatically.
-          "snippetSupport": true
+          "snippetSupport": true,
         },
         "completion":
         {
           "placeholder": false,
           "filterAndSort": false,
-          "detailedLabel": false
+          "detailedLabel": false,
         },
-        "highlight": { "lsRanges": true },
+        "highlight": { "lsRanges": true, },
         "clang": {
           "extraArgs": [
             "-I..",
