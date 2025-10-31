@@ -411,6 +411,10 @@ endif
 " Save all.
 nnoremap <Leader>w  :noh<CR>:wall<CR>
 
+" Insert blank line and change to insert mode with proper indentation.
+nnoremap ]<Space>  o<C-U><Esc>cc
+nnoremap [<Space>  O
+
 "-------------------------------------------------------------------------------
 " Tab navigation.
 "-------------------------------------------------------------------------------
