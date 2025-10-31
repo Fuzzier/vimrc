@@ -1,5 +1,6 @@
 syntax keyword cppSTLnamespace
         \ nsfx
+        \ cda
 
 syntax keyword cppSTLtype
         \ intrusive_ref_counter intrusive_ptr
@@ -15,6 +16,9 @@ syntax keyword cppSTLtype
         \ proxy
         \ is_instantiation_of
         \ is_raw_pointer_to
+        \ dereference_type
+        \ dereference_type_t
+        \ is_movable_iterator
 
 syntax keyword cppSTLconstant
         \ intrusive_ptr_attach
@@ -28,6 +32,7 @@ syntax keyword cppSTLconstant
         \ big_endian
         \ is_instantiation_of_v
         \ is_raw_pointer_to_v
+        \ is_movable_iterator_v
 
 syntax keyword cppSTLfunction
         \ make_intrusive
