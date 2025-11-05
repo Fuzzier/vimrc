@@ -265,6 +265,15 @@ execu 'syn region doxyFormulaEnv matchgroup=doxyCommand '
   \ . 'end=+}{+ '
   \ . 'contained keepend contains=doxyContinue'
 
+execu 'syn match doxyConditional '
+  \ . '+[@\\]\%(cond\|if\|ifnot\|elseif\)\>+ '
+  \ . 'display contained skipwhite nextgroup=doxyName'
+
+execu 'syn match doxyConditional '
+  \ . '+[@\\]\%(endcond\|else\|endif\)\>+ '
+  \ . 'display contained'
+
+
 """"""""""""""""""""""""""""""""""""""""
 " Text sections
 """"""""""""""""""""""""""""""""""""""""
@@ -826,7 +835,7 @@ syn cluster doxyInline contains=@doxyInword,doxyFont,@doxyMdInline
 syn cluster doxyIntext contains=
   \ @doxyInline,doxyContinue,doxyPar,
   \ doxyCodeBlock,doxyDot,doxyVerbatim,doxyInternal,
-  \ doxyHtmlonly,doxyLatexonly,doxyFormula,
+  \ doxyHtmlonly,doxyLatexonly,doxyFormula,doxyConditional,
   \ @doxyHtml
 
 " Anything that can appear within doxyBody.
@@ -976,11 +985,12 @@ hi def link doxyPaging         doxyCommand
 hi def link doxyCodeBlock      doxyCodeWord
 hi def link doxyDot            doxyCode
 hi def link doxyVerbatim       doxyCode
-hi def link doxyInternal       doxyText
+hi def link doxyInternal       doxyCommand
 hi def link doxyLatexonly      doxyCode
 hi def link doxyHtmlonly       doxyText
 hi def link doxyFormula        doxyCode
 hi def link doxyFormulaEnv     doxyHeading
+hi def link doxyConditional    doxyCommand
 
 hi def link doxyMdDelimiter       doxyDelimiter
 hi def link doxyMdItalic          doxyItalic

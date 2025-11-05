@@ -98,6 +98,17 @@ C-style comment block
  * a + b = c
  * @f}
  *
+ * @cond Label
+ * @endcond
+ *
+ * @if Label
+ * @else
+ * @endif
+ *
+ * @if Label1
+ * @elseif Label2
+ * @endif
+ *
  * =====
  * Class
  * =====
