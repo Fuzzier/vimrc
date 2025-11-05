@@ -229,10 +229,9 @@ execu 'syn region doxyVerbatim matchgroup=doxyCommand '
   \ . 'end=+[@\\]endverbatim$+ '
   \ . 'contained keepend contains=doxyContinue'
 
-execu 'syn region doxyInternal matchgroup=doxyCommand '
-  \ . 'start=+[@\\]internal$+ '
-  \ . 'end=+[@\\]endinternal$+ '
-  \ . 'contained keepend contains=doxyContinue,@doxyInbody'
+execu 'syn match doxyInternal '
+  \ . '+[@\\]\%(internal\|endinternal\)\>+ '
+  \ . 'display contained'
 
 execu 'syn region doxyLatexonly matchgroup=doxyCommand '
   \ . 'start=+[@\\]latexonly$+ '
