@@ -805,7 +805,7 @@ call plug#begin(repos_path)
     " Speed up Vim by updating folds only when just.
     Plug 'Konfekt/FastFold'
     " Vim motions on speed!
-    Plug 'Lokaltog/vim-easymotion'
+    " Plug 'Lokaltog/vim-easymotion'
     " A Vim text editor plugin to swap delimited items.
     Plug 'machakann/vim-swap'
     " Argumentative aids with manipulating and moving between function arguments.
