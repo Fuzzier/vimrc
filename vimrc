@@ -618,7 +618,7 @@ inoremap <C-S-BS> <BS><BS><BS><BS>
 " g0   : C++ public, protected, private are indented as class brace.
 " N-1s : C++ namespace scope has no additional indent.
 " E-1s : C++ extern scope has no additional indent.
-set cino=>1s,e0,n0,f0,{0,}0,^0,L4,:0,=1s,l1,b0,g0,h1s,N-1s,E-s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1
+set cino=>1s,e0,n0,f0,{0,}0,^0,Ls,:0,=1s,l1,b0,g0,h1s,N-1s,E-s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1
 "
 " nnoremap <Leader><Leader>sa :set cino=>1s,e0,n0,f0,{0,}0,^0,L-1,:0,=1s,l1,b0,g0,h1s,N-1s,E-1s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1<CR>:set tabstop=4<CR>:set shiftwidth=4<CR>
 "
