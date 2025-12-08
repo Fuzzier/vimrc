@@ -454,6 +454,12 @@ $0
 #endif // __cplusplus
 endsnippet
 
+snippet #ifcon "has concept"
+#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+#else // !(defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+#endif // defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+endsnippet
+
 ########################################
 # Pragma
 ########################################
@@ -507,36 +513,31 @@ endsnippet
 # Conditional
 ########################################
 snippet if "if"
-if (${1:condition})
-{
+if (${1:condition}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet ifc "if constexpr"
-if constexpr (${1:condition})
-{
+if constexpr (${1:condition}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet elif "else if"
-else if (${1:condition})
-{
+else if (${1:condition}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet else "else"
-else
-{
+else {
     ${1:${VISUAL}}
 }
 endsnippet
 
 snippet switch "switch"
-switch (${1:v})
-{
+switch (${1:v}) {
 $0
 default:
     break;
@@ -545,9 +546,7 @@ endsnippet
 
 snippet case "case"
 case ${1:value}:
-    {
-        ${2:${VISUAL}}
-    }
+    ${2:${VISUAL}}
     break;
 
 endsnippet
@@ -556,95 +555,81 @@ endsnippet
 # Loop
 ########################################
 snippet for "for (++)"
-for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
-{
+for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
 
 snippet foru "for (++)"
-for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
-{
+for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
 
 snippet fori "for (++)"
-for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
-{
+for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
 
 snippet for16 "for (uint16_t ++)"
-for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1)
-{
+for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for32 "for (uint32_t ++)"
-for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1)
-{
+for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for64 "for (uint64_t ++)"
-for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1)
-{
+for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort "for (iterator)"
-for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ++$1)
-{
+for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort+ "for (iterator)"
-for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); )
-{
+for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort> "for (iterator)"
-for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ++$1)
-{
+for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for>+ "for (iterator)"
-for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); )
-{
+for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet forr "for (x : C)"
-for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:items_})
-{
+for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:items_}) {
     ${4:${VISUAL}}
 }
 endsnippet
 
 snippet while "while"
-while (${1:true})
-{
+while (${1:true}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet dow "do while"
-do // while ($1)
-{
+do { // while ($1)
     ${2:${VISUAL}}
-}
-while (${1:false});
+} while (${1:false});
 endsnippet
 
 snippet be "begin(), end()" w
@@ -659,58 +644,47 @@ endsnippet
 # Error handling
 ########################################
 snippet try "try"
-try
-{
+try {
     ${1:${VISUAL}}$0
 }
 endsnippet
 
 snippet catch "catch"
-catch (${1:Exception}& e)
-{
+catch (${1:Exception}& e) {
     ${1:${VISUAL}}$0
 }
 endsnippet
 
 snippet cats "catch (std::exception &)"
-catch (std::exception& e)
-{
+catch (std::exception& e) {
     fmt::println(stderr, "{}", e.what());
 }
 endsnippet
 
 snippet trys "try/catch"
-try
-{
+try {
     ${1:${VISUAL}}$0
-}
-catch (std::exception& e)
-{
+} catch (std::exception& e) {
     fmt::println(stderr, "{}", e.what());
 }
 endsnippet
 
 snippet try. "try/catch"
-try
-{
+try {
     ${1:${VISUAL}}$0
-}
-catch (...)
-{
+} catch (...) {
     throw;
 }
 endsnippet
 
 snippet cata "catch (bad_alloc)"
-catch (std::bad_alloc&)
-{
+catch (std::bad_alloc&) {
     $0
 }
 endsnippet
 
 snippet cat. "catch (...)"
-catch (...)
-{
+catch (...) {
     $0
     throw;
 }
@@ -1479,6 +1453,15 @@ formatx(FormatContext& ctx, const FormatSpec<$1>& spec,
     auto out = ctx.out();
     FormatHelper::writeAligned(out, spec, );
     return out;
+}
+endsnippet
+
+snippet os<< "os<<"
+template<class Char, class Traits>
+friend std::basic_ostream<Char, Traits>&
+operator<<(std::basic_ostream<Char, Traits>& os, const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
+{
+    return os << $2;
 }
 endsnippet
 
@@ -2529,5 +2512,13 @@ endsnippet
 
 snippet sev "ev->scheduleAt()"
 scheduleAt(${1:timer}, ${2:t});
+endsnippet
+
+snippet jj "" w
+JsonValue& jv, 
+endsnippet
+
+snippet cj "" w
+const JsonValue& jv, 
 endsnippet
 
