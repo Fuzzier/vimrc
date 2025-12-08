@@ -1,6 +1,9 @@
 syntax keyword cppSTLnamespace
+        \ pmr
         \ nsfx
         \ cda
+        \ tag
+        \ mpl
 
 syntax keyword cppSTLtype
         \ intrusive_ref_counter intrusive_ptr
