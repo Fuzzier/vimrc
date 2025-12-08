@@ -1285,9 +1285,10 @@ unlet binary_ops_pattern
 " Use label-mode to jump fast.
 let g:sneak#label = 1
 "
-highlight link Sneak      Search
-highlight link SneakScope Visual
-highlight link SneakLabel Search
+highlight link Sneak        Search
+highlight link SneakScope   Visual
+highlight link SneakLabel   Search
+highlight link SneakCurrent Search
 
 "---------------------------------------
 " tomtom/quickfixsigns_vim
