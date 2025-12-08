@@ -1774,10 +1774,10 @@ function! CppIndentNonComment(cline_num)
     "     v
     " case XX:           <= pline OR
     " default:           <= pline
-    "     ...            <= cline (not 'case' or 'default')
+    "     ...            <= cline (not 'case' or 'default' or '}')
     "
-    if pline =~# '^\s*\(case\s\|default\s*:\)' &&
-    \  cline !~# '^\s*\(case\s\|default\s*:\)'
+    if pline =~# '^\s*\(case\s\|default\>\)' &&
+    \  cline !~# '^\s*\(case\s\|default\>\|}\)'
         let retv = cindent(pline_num) + 4
         " echom 'after case/default: ' . retv
     "
