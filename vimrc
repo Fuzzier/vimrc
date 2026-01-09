@@ -2703,6 +2703,62 @@ function! GetVisualLines()
     return l:lines
 endfunction
 
+"----------------------------------------
+function! CppUseBaseType()
+    exec 'normal! 0f=lDByiwf=a typename MyBase::pa;'
+    " Allow repeat by '.'
+    silent! call repeat#set(":call CppUseBaseType()\<CR>")
+endfunction
+
+"----------------------------------------
+function! CppFieldToGetter()
+    " Move to ';', and go back to start of var
+    execute 'normal! t;'
+    " Cut var to reg"v
+    execute 'normal! "vdb'
+    let l:v= @v
+    " Cut type to reg"t, and remove trailing content
+    execute 'normal! ge"tdv^D'
+    let l:T = @t
+    execute 'normal! a'. printf('%s %s(void) const noexcept {', l:T, l:v)
+    execute 'normal! o'. printf('return getb<%s>(buf_.data() + offsetof_%s());', l:T, l:v)
+    execute 'normal! o}'
+    execute 'normal! o'. printf('constexpr size_t offsetof_%s(void) const noexcept {', l:v)
+    execute 'normal! o'. printf('return off_p0_ + offsetof(p0, %s_);', l:v)
+    execute 'normal! o}'
+    execute 'normal! o'
+    execute 'normal! j'
+    " Allow repeat by '.'
+    silent! call repeat#set(":call CppFieldToGetter()\<CR>")
+endfunction
+
+"----------------------------------------
+function! CppFieldToSetter()
+    " Move to ';', and go back to start of var
+    execute 'normal! t;'
+    " Cut var to reg"v
+    execute 'normal! "vdb'
+    let l:v= @v
+    " Cut type to reg"t, and remove trailing content
+    execute 'normal! ge"tdv^D'
+    let l:T = @t
+    execute 'normal! a'. printf('void put_%s(%s %s) noexcept {', l:v, l:T, l:v)
+    execute 'normal! o'. printf('assert(buf_.pos_ == beg_ + offsetof_%s());', l:v)
+    execute 'normal! o'. printf('buf_.pos_ = putb(buf_.pos_, %s);', l:v)
+    execute 'normal! o}'
+    execute 'normal! o'. printf('void set_%s(%s %s) noexcept {', l:v, l:T, l:v)
+    execute 'normal! o'. printf('assert(buf_.pos_ >= beg_ + offsetof_%s() + sizeof(%s));', l:v, l:v)
+    execute 'normal! o'. printf('putb(beg_ + offsetof_%s(), %s);', l:v, l:v)
+    execute 'normal! o}'
+    execute 'normal! o'. printf('constexpr size_t offsetof_%s(void) const noexcept {', l:v)
+    execute 'normal! o'. printf('return off_p0_ + offsetof(p0, %s_);', l:v)
+    execute 'normal! o}'
+    execute 'normal! o'
+    execute 'normal! j'
+    " Allow repeat by '.'
+    silent! call repeat#set(":call CppFieldToSetter()\<CR>")
+endfunction
+
 "===============================================================================
 " Tags search paths.
 "===============================================================================
