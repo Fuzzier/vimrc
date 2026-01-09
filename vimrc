@@ -2299,17 +2299,17 @@ function! CppDefineMemberFunction()
         " }   <= cline_num
         "
         " ... <= nline_num
-        let nline_num = nline_num + 1
-        let nline = getline(nline_num)
-        " Add another blank line before 'NSFX_...' or '//' or '}'
-        if nline =~# '\s*\(NSFX\|//\|}\)'
-            call append(cline_num, [''])
-            " }   <= cline_num
-            "
-            "
-            " ... <= nline_num ('NSFX_...' or '//' or '}')
-            let nline_num = nline_num + 1
-        endif
+        " let nline_num = nline_num + 1
+        " let nline = getline(nline_num)
+        " " Add another blank line before 'NSFX_...' or '//' or '}'
+        " if nline =~# '\s*\(NSFX\|//\|}\)'
+        "     call append(cline_num, [''])
+        "     " }   <= cline_num
+        "     "
+        "     "
+        "     " ... <= nline_num ('NSFX_...' or '//' or '}')
+        "     let nline_num = nline_num + 1
+        " endif
     endif
     let cline_num = nline_num
     call cursor([nline_num, 0])
