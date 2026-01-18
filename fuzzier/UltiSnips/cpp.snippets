@@ -460,6 +460,20 @@ snippet #ifcon "has concept"
 #endif // defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
 endsnippet
 
+snippet #ifwin "#if defined(_WIN32)"
+#if defined(_WIN32)
+$0
+#else // !defined(_WIN32)
+#endif // defined(_WIN32)
+endsnippet
+
+snippet #ifnix "#if defined(__linux__)"
+#if defined(__linux__)
+$0
+#else // !defined(__linux__)
+#endif // defined(__linux__)
+endsnippet
+
 ########################################
 # Pragma
 ########################################
@@ -557,8 +571,8 @@ for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
 }
 endsnippet
 
-snippet foru "for (++)"
-for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
+snippet for1 "for (++)"
+for (${1:size_t} ${2:i} = ${3:1u}; $2 <= ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
@@ -1451,9 +1465,8 @@ inline typename FormatContext::iterator
 formatx(FormatContext& ctx, const FormatSpec& spec,
         const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
 {
-    auto out = ctx.out();
-    FormatHelper::writeAligned(out, spec, ${3:str, len});
-    fmt::format_to(out, "{}", $2);
+    FormatHelper::writeAligned(ctx.out(), spec, ${3:to_string($2)});
+    fmt::format_to(ctx.out(), "{}", $2);
     return out;
 }
 endsnippet
@@ -2103,6 +2116,10 @@ bool full(void) const noexcept { return $3.full(); }
 
 size_t size(void) const noexcept { return $3.size(); }
 
+size_t capacity(void) const noexcept { return $3.capacity(); }
+
+void reserve(size_t n) { $3.reserve(n); }
+
 void resize(size_t n) { $3.resize(n); }
 
 $1*
@@ -2273,16 +2290,14 @@ private:
 
     // 定时器.
 private:
-    enum class EventId
-    {
+    enum class EventId {
         None,
         Last,
     };
 
     // 端口.
 private:
-    enum class PortId
-    {
+    enum class PortId {
         None,
         Last,
     };
@@ -2362,6 +2377,7 @@ if ($1.contains("log level")) {
 endsnippet
 
 snippet carray "cfg array"
+//
 if (${1:cfg}.contains("$2")) {
     if (!$1("$2").isArray()) {
         NSFX_THROW(ConfigError{})(
@@ -2376,6 +2392,7 @@ if (${1:cfg}.contains("$2")) {
 endsnippet
 
 snippet caddr "cfg addr"
+//
 if (${1:cfg}.contains("$3")) {
     ${2:addr} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:I32}();
     if ($2 == AddrValue::None) {
@@ -2387,6 +2404,7 @@ if (${1:cfg}.contains("$3")) {
 endsnippet
 
 snippet cnum "cfg numeric"
+//
 if (${1:cfg}.contains("$3")) {
     ${2:v} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:U32}();
     if ($2 <= 0) {
@@ -2398,6 +2416,7 @@ if (${1:cfg}.contains("$3")) {
 endsnippet
 
 snippet cdbl "cfg dbl"
+//
 if (${1:cfg}.contains("$3")) {
     ${2:v} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").asDouble();
     if ($2 <= 0) {
@@ -2409,8 +2428,9 @@ if (${1:cfg}.contains("$3")) {
 endsnippet
 
 snippet ctime "cfg time"
+//
 if (${1:cfg}.contains("$2")) {
-    int64_t ns;
+    int64_t ns{};
     unit::str_to_nanosec($1("${2:name}"), &ns);
     if (ns <= 0) {
         NSFX_THROW(ConfigError{})(
@@ -2421,8 +2441,9 @@ if (${1:cfg}.contains("$2")) {
 endsnippet
 
 snippet cmeter "cfg meters"
+//
 if (${1:cfg}.contains("$2")) {
-    double meters;
+    double meters{};
     unit::str_to_meters($1("${2:name}"), &meters);
     if (meters <= 0) {
         NSFX_THROW(ConfigError{})(
@@ -2432,9 +2453,23 @@ if (${1:cfg}.contains("$2")) {
 }
 endsnippet
 
-snippet cbps "cfg bps"
+snippet cbyte "cfg Byte"
+//
 if (${1:cfg}.contains("$2")) {
-    double bps;
+    int64_t bytes{};
+    unit::str_to_bytes($1("${2:name}"), &bytes);
+    if (bytes <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}", $1("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet cbps "cfg bps"
+//
+if (${1:cfg}.contains("$2")) {
+    double bps{};
     unit::str_to_bps($1("${2:name}"), &bps);
     if (bps <= 0) {
         NSFX_THROW(ConfigError{})(
@@ -2445,14 +2480,30 @@ if (${1:cfg}.contains("$2")) {
 endsnippet
 
 snippet cwatt "cfg watt"
+//
 if (${1:cfg}.contains("$2")) {
-    double watts;
+    double watts{};
     unit::str_to_watts($1("${2:name}"), &watts);
     if (watts <= 0) {
         NSFX_THROW(ConfigError{})(
             "Invalid '$2': {}", $1("$2"));
     }
     $0
+}
+endsnippet
+
+snippet csock "cfg sock"
+//
+if (${1:cfg}.contains("${2:name}")) {
+    const JsonVar& jv = cfg("$2");
+    InetSocketAddress sockAddr{};
+    if (!sockAddr.parse(jv.asString())) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}, failed to parse", jv);
+    }
+    $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
