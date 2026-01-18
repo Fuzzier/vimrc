@@ -8,7 +8,7 @@
 # @date    2019-05-05
 #
 # @copyright Copyright (c) 2019.
-#   National Key Laboratory of Science and Technology on Communications,
+#   National Key Laboratory of Wireless Communications,
 #   University of Electronic Science and Technology of China.
 #   All rights reserved.
 ################################################################################
@@ -95,6 +95,9 @@ def str2delim(x, delim):
         x = x[0].lower() + (x[1:] if len(x) > 1 else '')
     return y
 
+def upperFirst(x):
+    return x[0].upper() + (x[1:] if len(x) > 1 else '')
+
 def lowerFirst(x):
     return x[0].lower() + (x[1:] if len(x) > 1 else '')
 
@@ -160,6 +163,14 @@ def camel2snake(x, u):
     z = re.sub(r'([0-9a-z])([A-Z])', r'\1_\2', y)
     a = z.upper() if u else z.lower()
     return a
+
+# @brief Convert camel-case identifier to snake-case identifier.
+# @param[in] x The string.
+# @param[in] u In uppercase.
+def camel2snake_timer(x, u):
+    y = camel2snake(x, u)
+    z = re.sub('_timeout', '', y, flags=re.IGNORECASE)
+    return z
 
 # @brief Convert camel-case identifier to delimited identifier.
 # @param[in] x The string.
@@ -230,7 +241,7 @@ snippet fileinfo "file header"
  * @date    `!p snip.rv = date()`
  *
  * @copyright Copyright (c) `!p snip.rv = year()`.
- *   National Key Laboratory of Science and Technology on Communications,
+ *   National Key Laboratory of Wireless Communications,
  *   University of Electronic Science and Technology of China.
  *   All rights reserved.
  */
@@ -443,15 +454,25 @@ $0
 #endif // __cplusplus
 endsnippet
 
+snippet #ifcon "has concept"
+#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+#else // !(defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
+#endif // defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+endsnippet
+
 ########################################
 # Pragma
 ########################################
 snippet pack1 "#pragma pack"
-#pragma pack(push, 1)
-
-$0
-
+#pragma pack(push, 1)$0
 #pragma pack(pop)
+endsnippet
+
+################################################################################
+# Attributes
+################################################################################
+snippet fall "[[fallthrough]]"
+NSFX_FALLTHROUGH
 endsnippet
 
 ################################################################################
@@ -489,36 +510,31 @@ endsnippet
 # Conditional
 ########################################
 snippet if "if"
-if (${1:condition})
-{
+if (${1:condition}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet ifc "if constexpr"
-if constexpr (${1:condition})
-{
+if constexpr (${1:condition}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet elif "else if"
-else if (${1:condition})
-{
+else if (${1:condition}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet else "else"
-else
-{
+else {
     ${1:${VISUAL}}
 }
 endsnippet
 
 snippet switch "switch"
-switch (${1:v})
-{
+switch (${1:v}) {
 $0
 default:
     break;
@@ -527,9 +543,7 @@ endsnippet
 
 snippet case "case"
 case ${1:value}:
-    {
-        ${2:${VISUAL}}
-    }
+    ${2:${VISUAL}}
     break;
 
 endsnippet
@@ -538,95 +552,81 @@ endsnippet
 # Loop
 ########################################
 snippet for "for (++)"
-for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
-{
+for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
 
-snippet foru "for (++)"
-for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
-{
+snippet for1 "for (++)"
+for (${1:size_t} ${2:i} = ${3:1u}; $2 <= ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
 
 snippet fori "for (++)"
-for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2)
-{
+for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
 
 snippet for16 "for (uint16_t ++)"
-for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1)
-{
+for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for32 "for (uint32_t ++)"
-for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1)
-{
+for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for64 "for (uint64_t ++)"
-for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1)
-{
+for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort "for (iterator)"
-for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ++$1)
-{
+for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort+ "for (iterator)"
-for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); )
-{
+for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort> "for (iterator)"
-for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ++$1)
-{
+for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for>+ "for (iterator)"
-for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); )
-{
+for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet forr "for (x : C)"
-for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:items_})
-{
+for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:items_}) {
     ${4:${VISUAL}}
 }
 endsnippet
 
 snippet while "while"
-while (${1:condition})
-{
+while (${1:1}) {
     ${2:${VISUAL}}
 }
 endsnippet
 
 snippet dow "do while"
-do // while ($1)
-{
+do { // while ($1)
     ${2:${VISUAL}}
-}
-while (${1:false});
+} while (${1:0});
 endsnippet
 
 snippet be "begin(), end()" w
@@ -641,84 +641,55 @@ endsnippet
 # Error handling
 ########################################
 snippet try "try"
-try
-{
+try {
     ${1:${VISUAL}}$0
 }
 endsnippet
 
 snippet catch "catch"
-catch (${1:Exception}& e)
-{
+catch (${1:Exception}& e) {
     ${1:${VISUAL}}$0
 }
 endsnippet
 
 snippet cats "catch (std::exception &)"
-catch (std::exception& e)
-{
-    ${1:std::cerr << e.what() << std::endl;}
-}
-endsnippet
-
-snippet catb "catch (boost::exception &)"
-catch (boost::exception& e)
-{
-    ${1:std::cerr << diagnostic_information(e) << std::endl;}
-}
-endsnippet
-
-snippet catbs "catch (boost & std)"
-catch (boost::exception& e)
-{
-    ${2:std::cerr << diagnostic_information(e) << std::endl;}
-}
-catch (std::exception& e)
-{
-    ${1:std::cerr << e.what() << std::endl;}
+catch (std::exception& e) {
+    fmt::println(stderr, "{}", e.what());
 }
 endsnippet
 
 snippet trys "try/catch"
-try
-{
+try {
     ${1:${VISUAL}}$0
-}
-catch (std::exception& e)
-{
-    std::cerr << e.what() << std::endl;
+} catch (std::exception& e) {
+    fmt::println(stderr, "{}", e.what());
 }
 endsnippet
 
 snippet try. "try/catch"
-try
-{
+try {
     ${1:${VISUAL}}$0
-}
-catch (...)
-{
+} catch (...) {
     throw;
 }
 endsnippet
 
 snippet cata "catch (bad_alloc)"
-catch (std::bad_alloc&)
-{
+catch (std::bad_alloc&) {
     $0
 }
 endsnippet
 
 snippet cat. "catch (...)"
-catch (...)
-{
+catch (...) {
     $0
     throw;
 }
 endsnippet
 
 # Unindent 4 spaces.
-# 6 = 2 (length of 'e:') + 4 (indent width)
-pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-6); snip.cursor.set(snip.line, snip.column)"
+# 2 = 2 (length of 'e:')
+pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-2); snip.cursor.set(snip.line, snip.column)"
 snippet e: "exit:" b
 exit:
 endsnippet
@@ -743,7 +714,7 @@ endsnippet
 # Namespace
 ########################################
 snippet ns "namespace"
-namespace ${1:${VISUAL:mpl}} {
+namespace ${1:${VISUAL:nsfx}} {
 $0} // namespace $1
 endsnippet
 
@@ -803,6 +774,26 @@ snippet no "noexcept"
 noexcept
 endsnippet
 
+snippet icx "inline constexpr"
+inline constexpr
+endsnippet
+
+snippet scx "static constexpr"
+static constexpr
+endsnippet
+
+snippet scxb "static constexpr bool"
+static constexpr bool
+endsnippet
+
+snippet cx "constexpr" w
+constexpr
+endsnippet
+
+snippet cxb "constexpr bool" w
+constexpr bool
+endsnippet
+
 snippet co "const" w
 const
 endsnippet
@@ -819,28 +810,25 @@ explicit
 endsnippet
 
 snippet ctor "Ctor(args)"
-explicit
-${1:`!v getreg('c')`}(${2:void})
+${1:`!v getreg('c')`}(${2:void}) noexcept = default;
 endsnippet
 
-snippet dtor "~Dtor(void) noexcept"
-~${1:`!v getreg('c')`}(void) noexcept
+snippet dtor "~Dtor(void)"
+~${1:`!v getreg('c')`}(void) noexcept = default;
 endsnippet
 
-snippet vdtor "virtual ~Dtor(void) noexcept"
-virtual ~${1:`!v getreg('c')`}(void) noexcept
+snippet vdtor "virtual ~Dtor(void)"
+virtual ~${1:`!v getreg('c')`}(void) noexcept = default;
 endsnippet
 
 snippet xtor "Ctor & Dtor"
-explicit
-${1:`!v getreg('c')`}(${2:void});
-~$1(void) noexcept;
+${1:`!v getreg('c')`}(${2:void}) noexcept = default;
+~$1(void) noexcept = default;
 endsnippet
 
 snippet vxtor "Ctor & Dtor"
-explicit
-${1:`!v getreg('c')`}(${2:void});
-virtual ~$1(void) noexcept;
+${1:`!v getreg('c')`}(${2:void}) noexcept = default;
+virtual ~$1(void) = default;
 endsnippet
 
 snippet fn "void Function(args)"
@@ -870,14 +858,20 @@ endsnippet
 ########################################
 # Operators
 ########################################
+# // Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet cpy "Copyable"
-// Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 ${1:`!v getreg('c')`}(const $1& rhs);
 $1& operator=(const $1& rhs);
 endsnippet
 
+# // Copyable.`!p snip << 1; snip += snip.mkline('public:')`
+snippet cpyd "Copyable"
+${1:`!v getreg('c')`}(const $1& ) noexcept = default;
+$1& operator=(const $1& ) noexcept = default;
+endsnippet
+
+# // Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet cpy.d "Copyable" m
-// Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 ${1:`!v getreg('c')`}(const $1& rhs)
     : $0
 {
@@ -885,22 +879,27 @@ ${1:`!v getreg('c')`}(const $1& rhs)
 
 $1& operator=(const $1& rhs)
 {
-    if (this != &rhs)
-    {
+    if (this != std::addressof(rhs)) {
         $0
     }
     return *this;
 }
 endsnippet
 
+# // Movable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet mov "Movable"
-// Movable.`!p snip << 1; snip += snip.mkline('public:')`
 ${1:`!v getreg('c')`}($1&& rhs) noexcept;
 $1& operator=($1&& rhs) noexcept;
 endsnippet
 
+# // Movable.`!p snip << 1; snip += snip.mkline('public:')`
+snippet movd "Movable"
+${1:`!v getreg('c')`}($1&& rhs) noexcept = default;
+$1& operator=($1&& rhs) noexcept = default;
+endsnippet
+
+# // Movable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet mov.d "Movable" m
-// Movable.`!p snip << 1; snip += snip.mkline('public:')`
 ${1:`!v getreg('c')`}($1&& rhs) noexcept
     : $0
 {
@@ -908,116 +907,108 @@ ${1:`!v getreg('c')`}($1&& rhs) noexcept
 
 $1& operator=($1&& rhs) noexcept
 {
-    if (this != &rhs)
-    {
+    if (this != std::addressof(rhs)) {
         $0
     }
     return *this;
 }
 endsnippet
 
+# // Non-copyable.`!p snip << 1; snip += snip.mkline('private:')`
 snippet ncpy "Non-copyable"
-// Non-copyable.`!p snip << 1; snip += snip.mkline('private:')`
 ${1:`!v getreg('c')`}(const $1&) = delete;
 $1& operator=(const $1&) = delete;
 endsnippet
 
+# // Non-movable.`!p snip << 1; snip += snip.mkline('private:')`
 snippet nmov "Non-movable"
-// Non-movable.`!p snip << 1; snip += snip.mkline('private:')`
 ${1:`!v getreg('c')`}($1&&) = delete;
 $1& operator=($1&&) = delete;
 endsnippet
 
-snippet opb "operator bool()" m
-// Boolean operators.`!p snip << 1; snip += 'public:'`
-bool operator!(void) const noexcept
-{
-    return !${1:p_};
-}
-
-explicit operator bool() const noexcept
-{
-    return !!$1;
-}
+snippet opb "operator bool()"
+// Boolean operator.`!p snip << 1; snip += snip.mkline('public:')`
+constexpr     bool operator!(void) const noexcept { return !${1:p_};  }
+constexpr explicit operator bool() const noexcept { return !!$1; }
 endsnippet
 
 snippet opc "unary operator>"
-bool operator==(const ${1:`!v getreg('c')`}& rhs) const noexcept;
-bool operator!=(const $1& rhs) const noexcept;
-bool operator<(const $1& rhs) const noexcept;
-bool operator<=(const $1& rhs) const noexcept;
-bool operator>(const $1& rhs) const noexcept;
-bool operator>=(const $1& rhs) const noexcept;
+constexpr bool operator==(const ${1:`!v getreg('c')`}& rhs) const noexcept;
+constexpr bool operator!=(const $1& rhs) const noexcept;
+constexpr bool operator<(const $1& rhs) const noexcept;
+constexpr bool operator<=(const $1& rhs) const noexcept;
+constexpr bool operator>(const $1& rhs) const noexcept;
+constexpr bool operator>=(const $1& rhs) const noexcept;
 endsnippet
 
 snippet opc.d "unary operator>" m
-bool operator==(const ${1:`!v getreg('c')`}& rhs) const noexcept
+constexpr bool operator==(const ${1:`!v getreg('c')`}& rhs) const noexcept
 {
     return ${2:v_} == rhs.$2;
 }
 
-bool operator!=(const $1& rhs) const noexcept
+constexpr bool operator!=(const $1& rhs) const noexcept
 {
     return $2 != rhs.$2;
 }
 
-bool operator<(const $1& rhs) const noexcept
+constexpr bool operator<(const $1& rhs) const noexcept
 {
     return $2 < rhs.$2;
 }
 
-bool operator<=(const $1& rhs) const noexcept
+constexpr bool operator<=(const $1& rhs) const noexcept
 {
     return $2 <= rhs.$2;
 }
 
-bool operator>(const $1& rhs) const noexcept
+constexpr bool operator>(const $1& rhs) const noexcept
 {
     return $2 > rhs.$2;
 }
 
-bool operator>=(const $1& rhs) const noexcept
+constexpr bool operator>=(const $1& rhs) const noexcept
 {
     return $2 >= rhs.$2;
 }
 endsnippet
 
 snippet opc2 "binary operator>"
-bool operator==(const ${1:`!v getreg('c')`}& lhs, ${2:$1}& rhs) noexcept;
-bool operator!=(const $1& lhs, const $2& rhs) noexcept;
-bool operator<(const $1&lhs, const $2&  rhs) noexcept;
-bool operator<=(const $1&lhs, const $2&  rhs) noexcept;
-bool operator>(const $1&lhs, const $2&  rhs) noexcept;
-bool operator>=(const $1&lhs, const $2&  rhs) noexcept;
+constexpr bool operator==(const ${1:`!v getreg('c')`}& lhs, ${2:$1}& rhs) noexcept;
+constexpr bool operator!=(const $1& lhs, const $2& rhs) noexcept;
+constexpr bool operator<(const $1&lhs, const $2&  rhs) noexcept;
+constexpr constexpr bool operator<=(const $1&lhs, const $2&  rhs) noexcept;
+constexpr constexpr bool operator>(const $1&lhs, const $2&  rhs) noexcept;
+constexpr constexpr bool operator>=(const $1&lhs, const $2&  rhs) noexcept;
 endsnippet
 
 snippet opc2.d "binary operator>"
-bool operator==(const ${1:`!v getreg('c')`}& lhs, ${2:$1}& rhs) noexcept
+constexpr constexpr bool operator==(const ${1:`!v getreg('c')`}& lhs, ${2:$1}& rhs) noexcept
 {
     return lhs.${3:v_} == rhs.$3;
 }
 
-bool operator!=(const $1& lhs, const $2& rhs) noexcept
+constexpr constexpr bool operator!=(const $1& lhs, const $2& rhs) noexcept
 {
     return lhs.$3 != rhs.$3;
 }
 
-bool operator<(const $1& lhs, const $2& rhs) noexcept
+constexpr constexpr bool operator<(const $1& lhs, const $2& rhs) noexcept
 {
     return lhs.$3 > rhs.$3;
 }
 
-bool operator<=(const $1& lhs, const $2& rhs) noexcept
+constexpr constexpr bool operator<=(const $1& lhs, const $2& rhs) noexcept
 {
     return lhs.$3 >= rhs.$3;
 }
 
-bool operator>(const $1& lhs, const $2& rhs) noexcept
+constexpr constexpr bool operator>(const $1& lhs, const $2& rhs) noexcept
 {
     return lhs.$3 < rhs.$3;
 }
 
-bool operator>=(const $1& lhs, const $2& rhs) noexcept
+constexpr constexpr bool operator>=(const $1& lhs, const $2& rhs) noexcept
 {
     return lhs.$3 <= rhs.$3;
 }
@@ -1030,6 +1021,34 @@ endsnippet
 snippet fw "std::forward()" w
 std::forward<${1:T}>(${2:`!p snip.rv=type2var(t[1])`})
 endsnippet
+
+snippet fw. "std::forward()..." w
+std::forward<${1:Args}>(${2:`!p snip.rv=type2var(t[1])`})...
+endsnippet
+
+########################################
+# Template
+########################################
+snippet temp "template"
+template<$0>
+endsnippet
+
+snippet c. "class... Args" w
+class... Args
+endsnippet
+
+snippet ta. "template<class... Args>"
+template<class... Args>
+endsnippet
+
+snippet A. "Args..." w
+Args...
+endsnippet
+
+snippet a. "Args&&... args" w
+Args&&... args
+endsnippet
+
 
 ########################################
 # Custom new/delete
@@ -1074,18 +1093,6 @@ ${1:T}* ${2:`!p snip.rv=type2var(t[1])`} = new $1(${3:});
 auto $2_guard = std::unique_ptr<$1>($2);
 endsnippet
 
-snippet nnd "NSFX_NO_POOL_NEW_DELETE()"
-NSFX_NO_POOL_NEW_DELETE_OPERATORS(${1:`!v getreg('c')`});
-endsnippet
-
-# Unindent 4 spaces.
-# 7 = 3 (length of 'dnd') + 4 (indent width)
-pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-7); snip.cursor.set(snip.line, snip.column)"
-snippet dnd "NSFX_DSA_NEW_DELETE()"
-public:
-    NSFX_DSA_NEW_DELETE_OPERATORS(${1:`!v getreg('c')`});
-endsnippet
-
 ########################################
 # Smart pointers
 ########################################
@@ -1093,12 +1100,16 @@ snippet u> "std::unique_ptr<T>" w
 std::unique_ptr<${1:${VISUAL:T}}>
 endsnippet
 
-snippet u>m "std::make_unique<T>(...)"
+snippet u>m "auto p = std::make_unique<T>(...)"
 auto ${3:`!p snip.rv=type2var(t[1])`} = std::make_unique<${1:T}>(${2:});
 endsnippet
 
 snippet mu "std::make_unique<T>(...)" w
 std::make_unique<${1:T}>(${2:})
+endsnippet
+
+snippet u>> "std::unique_ptr<T>{ new T{...} }" w
+std::unique_ptr<${1:${VISUAL:T}}>{ new $1{${2:}} };
 endsnippet
 
 snippet u>n "std::unique_ptr<T> p { new T{...} }"
@@ -1125,6 +1136,10 @@ endsnippet
 
 snippet w> "std::weak_ptr<T>" w
 std::weak_ptr<${1:${VISUAL:T}}>
+endsnippet
+
+snippet irc "intrusive_ref_counter"
+intrusive_ref_counter<${1:T}>
 endsnippet
 
 snippet i> "intrusive_ptr<T>" w
@@ -1217,6 +1232,15 @@ ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} =
     ($1)(${3:$2});
 endsnippet
 
+snippet rbuf "std::byte[]"
+alignas(${1:T})
+std::byte ${2:`!p snip.rv=type2var(t[1])`Storage_}[sizeof($1)];
+endsnippet
+
+snippet ld "launder()" w
+std::launder(${1:${VISUAL:T}})
+endsnippet
+
 ########################################
 # Assignment, etc.
 ########################################
@@ -1229,7 +1253,7 @@ ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet t= "T v ="
-${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet rv "T& v" w
@@ -1241,7 +1265,7 @@ ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet r= "T& v =" w
-${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet pv "T* v" w
@@ -1253,7 +1277,7 @@ ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet p= "T* v = nullptr"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr}
+${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
 endsnippet
 
 snippet v= "value ="
@@ -1269,7 +1293,7 @@ const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
 snippet c= "const T v ="
-const ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+const ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet crv "const T& v" w
@@ -1277,7 +1301,7 @@ const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
 snippet cr= "const T& v" w
-const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2}
+const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet cpv "const T* v" w
@@ -1285,7 +1309,7 @@ const ${1:${VISUAL}}* ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
 snippet cp= "const T* v = nullptr"
-const ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr}
+const ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
 endsnippet
 
 ########################################
@@ -1350,6 +1374,10 @@ snippet ipt  "intptr_t" w
 intptr_t
 endsnippet
 
+snippet zt  "size_t" w
+size_t
+endsnippet
+
 snippet nu  "NULL" w
 NULL
 endsnippet
@@ -1377,6 +1405,10 @@ snippet wstr& "const std::wstring&" w
 const std::wstring&
 endsnippet
 
+snippet strv "std::string_view" w
+std::string_view
+endsnippet
+
 snippet cc "const char*"
 const char*
 endsnippet
@@ -1393,6 +1425,48 @@ std::cerr << $0 << std::endl;
 endsnippet
 
 ########################################
+# Format
+########################################
+snippet fmt "format"
+template<> struct fmt::formatter<nsfx::${1:T}>
+    : formatter<${2:std::string_view}>
+{
+    template<class FormatContext> constexpr typename FormatContext::iterator
+    format(const nsfx::$1& v, FormatContext& ctx) const {
+        return formatter<$2>::format_to(ctx.out(),
+            "{}", v);
+    }
+};
+endsnippet
+
+snippet fmts "format"
+template<>
+struct fmt::formatter<nsfx::${1:T}>
+    :   nsfx::Formatx<nsfx::$1> {};
+endsnippet
+
+snippet fmtx "format"
+template<class FormatContext, class FormatSpec>
+inline typename FormatContext::iterator
+formatx(FormatContext& ctx, const FormatSpec& spec,
+        const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
+{
+    FormatHelper::writeAligned(ctx.out(), spec, ${3:to_string($2)});
+    fmt::format_to(ctx.out(), "{}", $2);
+    return out;
+}
+endsnippet
+
+snippet os<< "os<<"
+template<class Char, class Traits>
+friend std::basic_ostream<Char, Traits>&
+operator<<(std::basic_ostream<Char, Traits>& os, const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
+{
+    return os << $2;
+}
+endsnippet
+
+########################################
 # Atomic
 ########################################
 snippet ato "std::atomic" w
@@ -1402,9 +1476,13 @@ endsnippet
 ########################################
 # Containers
 ########################################
-snippet itbe "begin,end" w
-${1:T}::iterator begin(void) noexcept { return ${2:x}.begin(); }
-$1::iterator end(void)   noexcept { return $2.end();   }
+snippet itbe "begin,end"
+using iterator       = ${1:Map}::iterator;
+using const_iterator = $1::const_iterator;
+iterator begin(void) noexcept { return ${2:`!p snip.rv=type2var(t[1])`_}.begin(); }
+iterator end(void)   noexcept { return $2.end();   }
+const_iterator begin(void) const noexcept { return $2.begin(); }
+const_iterator end(void)   const noexcept { return $2.end();   }
 endsnippet
 
 ########################################
@@ -1445,55 +1523,47 @@ ByteIterator bio{${1:buf}.end() - ${2:size}, $1.end()};
 endsnippet
 
 snippet cbio "ConstByteIterator"
-ConstByteIterator bio=${1:buf}.begin(), $1.end()};
+ConstByteIterator bio{${1:buf}.begin(), $1.end()};
 endsnippet
 
 snippet cbiot "ConstByteIterator"
-ConstByteIterator bio=${1:buf}.end() - ${2:size}, $1.end()};
+ConstByteIterator bio{${1:buf}.end() - ${2:size}, $1.end()};
 endsnippet
 
 ########################################
 # Exception handling
 ########################################
-snippet ass "assert()"
+snippet as "assert()"
 assert(${1:${VISUAL:predicate}});
 endsnippet
 
-snippet na "NSFX_ASSERT()"
-NSFX_ASSERT(${1:${VISUAL:predicate}});
+snippet sas "static_assert()"
+static_assert(${1:${VISUAL:predicate}});
 endsnippet
 
-snippet nam "NSFX_ASSERT_MSG()"
-NSFX_ASSERT_MSG(${1:${VISUAL:predicate}}, ${2:message});
+snippet nb "NSFX_ABORT()"
+NSFX_ABORT()
+endsnippet
+
+snippet na "NSFX_ASSERT()"
+NSFX_ASSERT(${1:${VISUAL:predicate}})
 endsnippet
 
 snippet nv "NSFX_VERIFY()"
-NSFX_VERIFY(${1:${VISUAL:predicate}});
-endsnippet
-
-snippet nvm "NSFX_VERIFY_MSG()"
-NSFX_VERIFY_MSG(${1:${VISUAL:predicate}}, ${2:message});
+NSFX_VERIFY(${1:${VISUAL:predicate}})
 endsnippet
 
 snippet ntl "NSFX_THROW()(fmt)"
-NSFX_THROW(${1:LogicError}())("${2:Unknown message}");
-endsnippet
-
-snippet ntl< "NSFX_THROW()<<fmt"
-NSFX_THROW(${1:LogicError}()) << "${2:msg}";
+NSFX_THROW(${1:LogicError}{})("${2:Unknown message}");
 endsnippet
 
 snippet ntc "NSFX_THROW()(fmt)"
-NSFX_THROW(ConfigError())(
+NSFX_THROW(ConfigError{})(
     "Invalid '${1:name}' {}", ${2:cfg("$1")});
 endsnippet
 
 snippet nt "NSFX_THROW()(fmt)"
-NSFX_THROW(${1:RuntimeError}())("${2:msg}");
-endsnippet
-
-snippet nt< "NSFX_THROW()<<fmt"
-NSFX_THROW(${1:RuntimeError}()) << "${2:msg}";
+NSFX_THROW(${1:RuntimeError}{})("${2:msg}");
 endsnippet
 
 ########################################
@@ -1600,7 +1670,7 @@ endsnippet
 ########################################
 # Callback
 ########################################
-snippet ev "Delegate"
+snippet del "Delegate"
 using ${1:}Cb = void(${2:Ts});
 Delegate<$1Cb> ${3:`!p snip.rv=type2var(t[1])`}Ev_;
 endsnippet
@@ -1666,70 +1736,55 @@ endsnippet
 ########################################
 # Message
 ########################################
-snippet cdm "cancel & delete message"
-cancelAndDelete(${1:msg});
+snippet cev "const ev" w
+const Event& ev
 endsnippet
 
-snippet cmsg "const msg" w
-const Message* msg
+snippet bf "buffer"
+Buffer ${1:buf}{type_tag<${2:type}>};
 endsnippet
 
-snippet cpkt "const pkt" w
-const Packet* pkt
+snippet nmsg "Message msg"
+Message msg;
 endsnippet
 
-snippet nbuf "new buffer"
-static pstring_t cate("${1:xxx}");
-Buffer ${2:msg}(cate);
-endsnippet
-
-snippet nmsg "new msg"
-static pstring_t cate("${1:xxx}");
-std::unique_ptr<Message> ${2:msg} { new Message(cate) };
-endsnippet
-
-snippet npkt "new pkt"
-static pstring_t cate("${1:xxx}");
-std::unique_ptr<Packet> ${2:pkt} { new Packet(cate) };
-endsnippet
-
-snippet dmsg "dup msg"
-std::unique_ptr<Message> ${1:dup} { ${2:msg}->dup() };
-endsnippet
-
-snippet dpkt "dup pkt"
-std::unique_ptr<Packet> ${1:dup} { ${2:pkt}->dup() };
-endsnippet
-
-snippet m2p "message to packet"
-NSFX_ASSERT_MSG($2->isPacket(),
-    "Invalid message, which must be a packet");
-const Packet* ${1:pkt} = static_cast<const Packet*>(${2:msg});
+snippet rmsg "Message& msg" w
+Message& msg
 endsnippet
 
 snippet dupush "du.push"
 // 添加分组头部.
 ${1:T}* ${2:hdr} = nullptr;
 {
-    Buffer& du = ${3:dup}->du();
-    du.push(sizeof($1));
-    $3->addByteLength(sizeof($1));
-    $2 = reinterpret_cast<$1*>(du.data());
-    //
+    $2 = ${3:msg}.du().resetAndPush(type_tag<$1>);
     $0
+    $3->addByteLength(sizeof($1));
 }
 endsnippet
 
-snippet duput "du.put"
+snippet dupushv "du.push"
 // 添加分组头部.
-${1:T}* ${2:hdr} = nullptr;
 {
-    Buffer& du = ${3:dup}->du();
-    du.put(sizeof($1));
-    $3->addByteLength(sizeof($1));
-    $2 = reinterpret_cast<$1*>(du.data());
-    //
+    ${1:msg}.du().resetAndPush(${2:hdr});
+    $1->addByteLength(sizeof(${3:`!p snip.rv=var2type(t[2])`}));
+}
+endsnippet
+
+snippet dupushp "du.push"
+// 添加分组头部.
+{
+    ${1:msg}.du().resetAndPush(${2:p});
+    $1->addByteLength(sizeof($2));
+}
+endsnippet
+
+snippet dupushb "du.push"
+// 添加分组头部.
+{
+    ${1:msg}.du().reset(type_tag<${2:T}>);
+    uint8_t* buf = $1->du().push(sizeof(${3:`!p snip.rv=t[2].strip()`}), 0);
     $0
+    $1->addByteLength(sizeof($3));
 }
 endsnippet
 
@@ -1737,36 +1792,13 @@ snippet dupop "du.pop"
 // 提取分组头部.
 ${1:T} ${2:hdr};
 {
-    Buffer& du = ${3:dup}->du();
-    if (du.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
-        goto exit;
-    }
+    Buffer& du = ${3:msg}.du();
+    NSFX_ASSERT(du.size() >= sizeof($1))(
+        "Invalid $1 size {} B, expected no less than {} B",
+        du.size(), sizeof($1));
     du.pop(&$2, sizeof($1));
-    $3->addByteLength(0-sizeof($1));
-    //
     $0
-}
-endsnippet
-
-snippet dumod "du.modify"
-// 修改分组头部.
-${1:T} ${2:hdr};
-{
-    Buffer& du = ${3:dup}->du();
-    if (du.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
-        goto exit;
-    }
-    du.pop(&$2, sizeof($1));
     $3->addByteLength(0-sizeof($1));
-    //
-    $0
-    //
-    du.pop(&$2, sizeof($1));
-    $3->addByteLength(sizeof($1));
 }
 endsnippet
 
@@ -1774,14 +1806,11 @@ snippet duptr "du.ptr"
 // 读取分组头部.
 const ${1:T}* ${2:hdr} = nullptr;
 {
-    const Buffer& du = ${3:dup}->du();
-    if (du.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
-        goto exit;
-    }
+    const Buffer& du = ${3:msg}.du();
+    NSFX_ASSERT(du.size() >= sizeof($1))(
+        "Invalid $1 size {} B, expected no less than {} B",
+        du.size(), sizeof($1));
     $2 = reinterpret_cast<const $1*>(du.data());
-    //
     $0
 }
 endsnippet
@@ -1790,14 +1819,11 @@ snippet dupeep "du.peep"
 // 读取分组头部.
 ${1:T} ${2:hdr};
 {
-    const Buffer& du = ${3:dup}->du();
-    if (du.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid PDU size {} B", du.size());
-        goto exit;
-    }
+    const Buffer& du = ${3:msg}.du();
+    NSFX_ASSERT(du.size() >= sizeof($1))(
+        "Invalid $1 size {} B, expected no less than {} B",
+        du.size(), sizeof($1));
     du.peep(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1806,25 +1832,15 @@ snippet icipush "ici.push"
 // 设置ICI.
 ${1:T}* ${2:ici} = nullptr;
 {
-    Buffer& par = ${3:dup}->par();
-    par.clear();
-    par.push(sizeof($1));
-    $2 = reinterpret_cast<$1*>(par.data());
-    //
+    $2 = ${3:msg}.par().resetAndPush(type_tag<$1>);
     $0
 }
 endsnippet
 
-snippet iciput "ici.put"
-// 设置ICI.
-${1:T}* ${2:ici} = nullptr;
+snippet icipushv "ici.push"
+// 添加分组头部.
 {
-    Buffer& par = ${3:dup}->par();
-    par.clear();
-    par.put(sizeof($1));
-    $2 = reinterpret_cast<$1*>(par.data());
-    //
-    $0
+    ${1:msg}.par().resetAndPush(${2:ici});
 }
 endsnippet
 
@@ -1832,13 +1848,11 @@ snippet icipop "ici.pop"
 // 提取ICI.
 ${1:T} ${2:ici};
 {
-    Buffer& par = ${3:dup}->par();
-    if (par.size() != sizeof($1))
-    {
-        NSFX_THROW(LogicError())("Invalid ICI size {} B", par.size());
-    }
+    Buffer& par = ${3:msg}.par();
+    NSFX_ASSERT(par.size() != sizeof($1))(
+        "Invalid $1 size {} B, expected {} B",
+        par.size(), sizeof($1));
     par.pop(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1847,13 +1861,11 @@ snippet iciptr "ici.ptr"
 // 读取ICI.
 const ${1:T}* ${2:ici} = nullptr;
 {
-    const Buffer& par = ${3:dup}->par();
-    if (par.size() != sizeof($1))
-    {
-        NSFX_THROW(LogicError())("Invalid ICI size {} B", par.size());
-    }
+    const Buffer& par = ${3:msg}.par();
+    NSFX_ASSERT(par.size() != sizeof($1))(
+        "Invalid $1 size {} B, expected {} B",
+        par.size(), sizeof($1));
     $2 = reinterpret_cast<const $1*>(par.data());
-    //
     $0
 }
 endsnippet
@@ -1862,103 +1874,11 @@ snippet icipeep "ici.peep"
 // 读取ICI.
 ${1:T} ${2:ici};
 {
-    const Buffer& par = ${3:dup}->par();
-    if (par.size() != sizeof($1))
-    {
-        NSFX_THROW(LogicError())("Invalid ICI size {} B", par.size());
-    }
+    const Buffer& par = ${3:msg}.par();
+    NSFX_ASSERT(par.size() != sizeof($1))(
+        "Invalid $1 size {} B, expected {} B",
+        par.size(), sizeof($1));
     par.peep(&$2, sizeof($1));
-    //
-    $0
-}
-endsnippet
-
-snippet tagpush "tag.push"
-// 添加标签.
-${1:T}* ${2:info} = nullptr;
-{
-    Buffer& tag = ${3:dup}->tag();
-    tag.push(sizeof($1));
-    $2 = reinterpret_cast<$1*>(tag.data());
-    //
-    $0
-}
-endsnippet
-
-snippet tagput "tag.put"
-// 添加标签.
-${1:T}* ${2:info} = nullptr;
-{
-    Buffer& tag = ${3:dup}->tag();
-    tag.put(sizeof($1));
-    $2 = reinterpret_cast<$1*>(tag.data());
-    //
-    $0
-}
-endsnippet
-
-snippet tagpop "tag.pop"
-// 提取标签.
-${1:T} ${2:info};
-{
-    Buffer& tag = ${3:dup}->tag();
-    if (tag.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
-        goto exit;
-    }
-    tag.pop(&$2, sizeof($1));
-    //
-    $0
-}
-endsnippet
-
-snippet tagmod "tag.modify"
-// 修改标签.
-${1:T} ${2:info};
-{
-    Buffer& tag = ${3:dup}->tag();
-    if (tag.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
-        goto exit;
-    }
-    tag.pop(&$2, sizeof($1));
-    //
-    $0
-    //
-    tag.push(&$2, sizeof($1));
-}
-endsnippet
-
-snippet tagptr "tag.ptr"
-// 读取标签.
-const ${1:T}* ${2:info} = nullptr;
-{
-    const Buffer& tag = ${3:dup}->tag();
-    if (tag.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
-        goto exit;
-    }
-    $2 = reinterpret_cast<const $1*>(tag.data());
-    //
-    $0
-}
-endsnippet
-
-snippet tagpeep "tag.peep"
-// 读取标签.
-const ${1:T}* ${2:info} = nullptr;
-{
-    const Buffer& tag = ${3:dup}->tag();
-    if (tag.size() < sizeof($1))
-    {
-        NSFX_LOG_WARN()("Invalid TAG size {} B", tag.size());
-        goto exit;
-    }
-    tag.peep(&$2, sizeof($1));
-    //
     $0
 }
 endsnippet
@@ -1991,7 +1911,7 @@ endsnippet
 snippet less "Less"
 struct ${1:Less}
 {
-    const bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
+    constexpr bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
     {
         return ${3:lhs < rhs};
     }
@@ -2001,7 +1921,7 @@ endsnippet
 snippet comp "Comp"
 struct ${1:Comp}
 {
-    bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
+    constexpr bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
     {
         return lhs.${3:time_} < rhs.$3;
     }
@@ -2009,12 +1929,9 @@ struct ${1:Comp}
 endsnippet
 
 snippet lexc "lex comp"
-if (lhs.${1:k0} != rhs.$1)
-{
+if (lhs.${1:k0} != rhs.$1) {
     return lhs.$1 < rhs.$1;
-}
-else
-{
+} else {
     return lhs.${2:k1} < rhs.$2;
 }
 endsnippet
@@ -2024,23 +1941,29 @@ IntrusiveTreeNode<class ${1:C}>
 endsnippet
 
 snippet iat> "IntrusiveAvlTree"
-using ${4:Map} = IntrusiveAvlTree<${1:T}, class ${2:C},
-                 multi_set_t<false>, ${3:Key}, Keyper, Comp>;
-$4  ${5:`!p snip.rv = type2var(t[4])`_};`!p snip << 1; snip += snip.mkline()`
-$4::iterator begin(void) noexcept { return $5.begin(); }
-$4::iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
-$4::const_iterator begin(void) const noexcept { return $5.begin(); }
-$4::const_iterator end(void)   const noexcept { return $5.end();   }
+using ${1:Map} = IntrusiveAvlTreeBuilder<${2:T}, class ${3:C}>
+                ::set_key<${4:Key}, ${5:Keyper}>
+                ::build;
+$1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $5.begin(); }
+iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $5.begin(); }
+const_iterator end(void)   const noexcept { return $5.end();   }
 endsnippet
 
 snippet irt> "IntrusiveRbTree"
-using ${4:Map} = IntrusiveRbTree<${1:T}, class ${2:C},
-                 multi_set_t<false>, ${3:Key}, Keyper, Comp>;
-$4  ${5:`!p snip.rv = type2var(t[4])`_};`!p snip << 1; snip += snip.mkline()`
-$4::iterator begin(void) noexcept { return $5.begin(); }
-$4::iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
-$4::const_iterator begin(void) const noexcept { return $5.begin(); }
-$4::const_iterator end(void)   const noexcept { return $5.end();   }
+using ${1:Map} = IntrusiveRbTreeBuilder<${2:T}, class ${3:C}>
+                ::set_key<${4:Key}, ${5:Keyper}>
+                ::build;
+$1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $5.begin(); }
+iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $5.begin(); }
+const_iterator end(void)   const noexcept { return $5.end();   }
 endsnippet
 
 snippet iln "IntrusiveListNode"
@@ -2048,25 +1971,31 @@ IntrusiveListNode<class ${1:C}>
 endsnippet
 
 snippet il> "IntrusiveList"
-using ${3:List} = IntrusiveList<${1:T}, class ${2:C}>;
-$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
-$3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
-$3::const_iterator begin(void) const noexcept { return $4.begin(); }
-$3::const_iterator end(void)   const noexcept { return $4.end();   }
+using ${1:List} = IntrusiveListBuilder<${2:T}, class ${3:C}>
+                ::build;`!p snip << 1; snip += snip.mkline()`
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $4.begin(); }
+iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $4.begin(); }
+const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet isln "IntrusiveSlistNode"
-IntrusiveSlistNode<class ${1:C}C>
+IntrusiveSlistNode<class ${1:C}>
 endsnippet
 
 snippet isl> "IntrusiveSlist"
-using ${3:List} = IntrusiveSlist<${1:T}, class ${2:C}>;
-$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
-$3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
-$3::const_iterator begin(void) const noexcept { return $4.begin(); }
-$3::const_iterator end(void)   const noexcept { return $4.end();   }
+using ${1:List} = IntrusiveSlistBuilder<${2:T}, class ${3:C}>
+                ::build;
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $4.begin(); }
+iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $4.begin(); }
+const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet ihn "IntrusiveHeapNode"
@@ -2074,13 +2003,17 @@ IntrusiveHeapNode<class ${1:C}>
 endsnippet
 
 snippet ih> "IntrusiveHeap"
-using ${3:Heap} = IntrusiveHeap<${1:T}, class ${2:C},
-                  max_heap_t<false>, Comp>;
-$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
-$3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
-$3::const_iterator begin(void) const noexcept { return $4.begin(); }
-$3::const_iterator end(void)   const noexcept { return $4.end();   }
+using ${1:Heap} = IntrusiveHeapBuilder<${2:T}, class ${3:C}>
+                ::set_comp<Comp>
+                ::min_heap
+                ::build;
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $4.begin(); }
+iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $4.begin(); }
+const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet issn "IntrusiveSlistSetNode"
@@ -2088,13 +2021,16 @@ IntrusiveSlistSetNode<class ${1:C}>
 endsnippet
 
 snippet iss> "IntrusiveSlistSet"
-using ${3:Set} = IntrusiveSlistSet<${1:T}, class ${2:C},
-                 ${3:Key}, Keyper, Hash>;
-$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
-$3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
-$3::const_iterator begin(void) const noexcept { return $4.begin(); }
-$3::const_iterator end(void)   const noexcept { return $4.end();   }
+using ${1:Set} = IntrusiveSlistSetBuilder<${2:T}, class ${3:C}>
+                 ::set_key<${4:Key}, ${5:Keyper}, ${6:Hash}>
+                 ::build;
+$1  ${7:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline()`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $7.begin(); }
+iterator end(void)   noexcept { return $7.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $7.begin(); }
+const_iterator end(void)   const noexcept { return $7.end();   }
 endsnippet
 
 snippet ivn "IntrusiveVectorNode"
@@ -2108,6 +2044,28 @@ $3::iterator begin(void) noexcept { return $4.begin(); }
 $3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
 $3::const_iterator begin(void) const noexcept { return $4.begin(); }
 $3::const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet vec> "Vector"
+using ${1:Vector} = VectorBuilder<${2:T}>::base_index<${3:1}>::build;
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline()`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $4.begin(); }
+iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $4.begin(); }
+const_iterator end(void)   const noexcept { return $4.end();   }
+endsnippet
+
+snippet vv> "VectorView"
+using ${1:Vector} = VectorViewBuilder<${2:T}>::base_index<${3:1}>::build;
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline()`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $4.begin(); }
+iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $4.begin(); }
+const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet ifskn "IntrusiveFixedSkipListNode"
@@ -2127,36 +2085,28 @@ endsnippet
 snippet sk> "SkipList"
 using ${3:Map} = SkipList<${1:T}, ${2:Key}, Keyper, Comp>;
 $3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
-$3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
-$3::const_iterator begin(void) const noexcept { return $4.begin(); }
-$3::const_iterator end(void)   const noexcept { return $4.end();   }
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+iterator begin(void) noexcept { return $4.begin(); }
+iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+const_iterator begin(void) const noexcept { return $4.begin(); }
+const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet cont "container"
+void initialize(void);
+
 bool empty(void) const noexcept { return ${3:map_}.empty(); }
+
+bool full(void) const noexcept { return $3.full(); }
 
 size_t size(void) const noexcept { return $3.size(); }
 
+size_t capacity(void) const noexcept { return $3.capacity(); }
+
+void reserve(size_t n) { $3.reserve(n); }
+
 void resize(size_t n) { $3.resize(n); }
-
-$1*
-find($2) noexcept;
-
-const ${1:T}*
-find(${2:key}) const noexcept;
-
-bool has($2) const noexcept;
-
-$1* add($2);
-
-$1* addOrGet($2);
-
-$1* addOrUpdate($2);
-
-void remove($2) noexcept;
-
-void remove($1* `!p snip.rv=type2var(t[1])`) noexcept;
 
 $1*
 front(void) noexcept { return $3.front(); }
@@ -2164,8 +2114,23 @@ front(void) noexcept { return $3.front(); }
 const $1*
 front(void) const noexcept { return $3.front(); }
 
-const $1*
-push_back($2);
+size_t count($2) const noexcept;
+
+bool contains($2) const noexcept;
+
+$1*
+find($2) noexcept;
+
+const ${1:T}*
+find(${2:key}) const noexcept;
+
+$1* add($2);
+
+$1* addOrGet($2);
+
+$1* addOrUpdate($2);
+
+$1* push_back($2);
 
 std::unique_ptr<$1>
 pop_front(void) noexcept
@@ -2173,9 +2138,11 @@ pop_front(void) noexcept
     return std::unique_ptr<$1>{ $3.pop_front() };
 }
 
-void clear(void) noexcept { $3.destroy(); }
+void remove($2) noexcept;
 
-void checkTimeout(simtime_t time) noexcept;
+void remove($1* `!p snip.rv=type2var(t[1])`) noexcept;
+
+void clear(void) noexcept { $3.destroy(); }
 endsnippet
 
 snippet mfindc "find"
@@ -2249,6 +2216,19 @@ while (!${1:list_}.empty())
 }
 endsnippet
 
+snippet vvi "VectorView init"
+${1:T}* data = tib_->arena_->allocate(
+    type_tag<$1>, ${2:n});
+{
+    $1* item = data;
+    for (size_t i = 0; i < $2; ++i)
+    {
+        ::new (item++) $1{${3:args}};
+    }
+    ${4:vec_} = Vector{std::launder(data), $2};
+}
+endsnippet
+
 ########################################
 # sim time
 ########################################
@@ -2274,108 +2254,95 @@ class ${1:Xxx}
 public:
     explicit
     `!p snip.rv=unqualify(t[1])`(void);
-    virtual ~`!p snip.rv=unqualify(t[1])`(void) noexcept;
+    virtual ~`!p snip.rv=unqualify(t[1])`(void);
+
+    // Object
+public:
+    virtual std::string_view className(void) const noexcept override
+    {
+        return Object::className(this);
+    }
 
     // Module
 public:
-    virtual void use(const char* iid, void* p) override;
+    virtual void* query(std::string_view iid) noexcept override;
+    virtual void use(std::string_view iid, void* p) override;
     virtual void initialize(const JsonVar& cfg) override;
-    virtual void handle(const Message* msg) override;
+    virtual void on(const Event& ev) override;
+    virtual void handle(Message msg) override;
 
+    // 参数及数据结构.
 private:
-    enum TimerId
+
+    // 定时器.
+private:
+    enum class EventId
     {
-        TIMER_ID_NONE,
-        TIMER_ID_LAST,
+        None,
+        Last,
     };
 
-    enum PortId
+    // 端口.
+private:
+    enum class PortId
     {
-        PORT_ID_NONE,
-        PORT_ID_LAST,
+        None,
+        Last,
     };
 
 };
 endsnippet
 
-snippet dsubm "declare submodule"
-class ${1:Xxx}
-    : public SubModule
+snippet cname "cname"
+// Object`!p snip << 1; snip += snip.mkline('public:')`
+virtual std::string_view className(void) const noexcept override
 {
-public:
-    explicit
-    `!p snip.rv=unqualify(t[1])`(${0});
-    virtual ~`!p snip.rv=unqualify(t[1])`(void) noexcept;
-
-    // SubModule
-public:
-    virtual void initialize(const JsonVar& cfg) override;
-    virtual void handle(const Message* msg) override;
-
-private:
-    enum TimerId
-    {
-        TIMER_ID_NONE,
-        TIMER_ID_LAST,
-    };
-
-};
+    return Object::className(this);
+}
 endsnippet
 
-snippet dtid "enum TimerId"
-enum TimerId
+snippet deid "enum EventId"
+// 定时器.`!p snip << 1; snip += snip.mkline('private:')`
+enum class EventId
 {
-    TIMER_ID_NONE,
-    TIMER_ID_LAST,
+    None,
+    Last,
 };
 endsnippet
 
 snippet dpid "enum PortId"
-enum PortId
+// 端口.`!p snip << 1; snip += snip.mkline('private:')`
+enum class PortId
 {
-    PORT_ID_NONE,
-    PORT_ID_LAST,
+    None,
+    Last,
 };
 endsnippet
 
-snippet csm "create sub-module"
-${1:o} = createObjectAs<Module>(${2:cfg}("cid").asString().data());
+snippet ccm "create child module"
+${1:o} = createModule(${2:cfg}("cid"));
 take($1);
 $1->setName(${3:name});
 $1->setLogLevel(logLevel());
 $1->useI<Xxx>(this);
-connect(this, "<xxx-data.req", $1, ">xxx-data.req");
-connect(this, ">xxx-data.ind", $1, "<xxx-data.ind");
+Module::connect(this, "<xxx-data.req", $1, ">xxx-data.req");
+Module::connect(this, ">xxx-data.ind", $1, "<xxx-data.ind");
 $1->initialize($2);
 endsnippet
 
-snippet dtimer "declare timer"
-std::unique_ptr<Message> $2;
-    `!p snip.rv=str2snake(t[1],True)`,
-${2:`!p snip.rv=str2camel(t[1],False)`_} = std::make_unique<Message>("${1:name}");
-$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`);
+snippet dtimer "define timer"
+    `!p snip.rv=var2type(var2type(t[1]))`,
+Event ${1:timer}Tmo_ {EventId::`!p snip.rv=var2type(t[1])`};
 endsnippet
 
-snippet ctm "create timer to module"
-${2:`!p snip.rv=str2camel(t[1],False)`_} = std::make_unique<Message>("${1:name}");
-$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`);
-endsnippet
-
-snippet dport "declare port"
-Port* $2;
-    `!p snip.rv=str2snake(t[1],True)`_PORT,
-${2:`!p snip.rv=str2camel(t[1],False)`Port_} = addPort("${1:name}");
-$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`_PORT);
-endsnippet
-
-snippet apm "add port for module"
-${2:`!p snip.rv=str2camel(t[1],False)`} = addPort("${1:name}");
-$2 ->setData((void*)`!p snip.rv=str2snake(t[1],True)`_PORT);
+snippet dport "define port"
+    `!p snip.rv=str2camel(t[1],True)`,
+Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_ {this, "${1:name}", PortId::`!p snip.rv=str2camel(t[1],True)`};
 endsnippet
 
 snippet cpm "connect ports for modules"
-connect(${1:this}, "<${2:net-data}.req", ${3:o}, ">$2.req");
-connect($1, ">$2.ind", $3, "<$2.ind");
+Module::connect(${1:this}, "<${2:net-data}.req", ${3:o}, ">$2.req");
+Module::connect($1, ">$2.ind", $3, "<$2.ind");
 endsnippet
 
 ########################################
@@ -2384,84 +2351,123 @@ endsnippet
 snippet cmis "miss init"
 if (!${1:v})
 {
-    NSFX_THROW(LogicError())("Missing '$1'");
+    NSFX_THROW(LogicError{})("Missing '$1'");
 }
 endsnippet
 
 snippet cinit "cfg init"
-if (cfg.has("name"))
-{
-    setName(cfg["name"].asStdString());
+if (${1:cfg}.contains("name")) {
+    setName($1("name"));
 }
-if (cfg.has("log level"))
-{
-    LogLevel level = (LogLevel)cfg["log level"].asI32();
-    setLogLevel(level);
+if ($1.contains("log level")) {
+    setLogLevel($1("log level"));
+}
+endsnippet
+
+snippet carray "cfg array"
+if (${1:cfg}.contains("$2")) {
+    if (!$1("$2").isArray()) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2', which must be an array");
+    }
+    ${3:size} = $1("$2").size();
+    if (!$3) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2', which must not be empty");
+    }
 }
 endsnippet
 
 snippet caddr "cfg addr"
-if (cfg.has("$2"))
-{
-    ${1:addr} = (aint_t)cfg("${2:`!p snip.rv=camel2delim(t[1],False,' ')`}").as${3:I16}();
-    if ($1 == ADDR_NONE)
-    {
-        NSFX_THROW(ConfigError())(
-            "Invalid '$2': {}", cfg("$2"));
+if (${1:cfg}.contains("$3")) {
+    ${2:addr} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:I32}();
+    if ($2 == AddrValue::None) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$3': {}", $1("$3"));
     }
     $0
 }
 endsnippet
 
 snippet cnum "cfg numeric"
-if (cfg.has("$2"))
-{
-    ${1:v} = cfg("${2:`!p snip.rv=camel2delim(t[1],False,' ')`}").as${3:U16}();
-    if ($1 <= 0)
-    {
-        NSFX_THROW(ConfigError())(
-            "Invalid '$2': {}", cfg("$2"));
+if (${1:cfg}.contains("$3")) {
+    ${2:v} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:U32}();
+    if ($2 <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$3': {}", $1("$3"));
     }
     $0
 }
 endsnippet
 
 snippet cdbl "cfg dbl"
-if (cfg.has("$2"))
-{
-    double = cfg("${2:name}").asDouble();
-    if ($1 <= 0)
-    {
-        NSFX_THROW(ConfigError())(
-            "Invalid '$2': {}", cfg("$2"));
+if (${1:cfg}.contains("$3")) {
+    ${2:v} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").asDouble();
+    if ($2 <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$3': {}", $1("$3"));
     }
     $0
 }
 endsnippet
 
 snippet ctime "cfg time"
-if (cfg.has("$1"))
-{
+if (${1:cfg}.contains("$2")) {
     int64_t ns;
-    unit::str_to_nanosec(cfg("${1:name}"), &ns);
-    if (ns <= 0)
-    {
-        NSFX_THROW(ConfigError())(
-            "Invalid '$1': {}", cfg("$1"));
+    unit::str_to_nanosec($1("${2:name}"), &ns);
+    if (ns <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}", $1("$2"));
     }
-    ${2:`!p snip.rv=str2camel(t[1],False)`} = simtime_t(ns, SIMTIME_NS);
+    ${3:`!p snip.rv=str2camel(t[2],False)`} = simtime_t::nano(ns);
 }
 endsnippet
 
-snippet cpower "cfg power"
-if (cfg.has("$1"))
-{
-    double f64;
-    unit::str_to_watts(cfg("${1:name}"), &f64);
-    if (f64 <= 0)
-    {
-        NSFX_THROW(ConfigError())(
-            "Invalid '$1': {}", cfg("$1"));
+snippet cmeter "cfg meters"
+if (${1:cfg}.contains("$2")) {
+    double meters;
+    unit::str_to_meters($1("${2:name}"), &meters);
+    if (meters <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}", $1("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet cbps "cfg bps"
+if (${1:cfg}.contains("$2")) {
+    double bps;
+    unit::str_to_bps($1("${2:name}"), &bps);
+    if (bps <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}", $1("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet cwatt "cfg watt"
+if (${1:cfg}.contains("$2")) {
+    double watts;
+    unit::str_to_watts($1("${2:name}"), &watts);
+    if (watts <= 0) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}", $1("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet csock "cfg sock"
+if (!${1:cfg}.contains("${2:name}")) {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
+} else {
+    const JsonVar& jv = cfg("$2");
+    InetSocketAddress sockAddr;
+    if (!sockAddr.parse(jv.asString())) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}, failed to parse", jv);
     }
     $0
 }
@@ -2470,42 +2476,66 @@ endsnippet
 snippet cmod "cfg module"
 {
     const JsonVar& $2J = cfg("${2:`!p snip.rv=var2type(t[1]).lower()`}");
-    ${1:v} = createObjectAs<Module>($2J("cid"));
+    ${1:v} = createModule($2J("cid"));
     take($1);
     $1->initialize($2J);
 }
 endsnippet
 
-########################################
-# module handle(msg)
-########################################
-snippet hmsg "handle msg"
-if (msg->isSelf())
-{
-    TimerId tid = (TimerId)(uintptr_t)msg->data();
-    switch (tid)
-    {
-    case XXX_TIMER : xxx(); break;
-    default: NSFX_THROW(LogicError())("Unknown self message");
-    }
+snippet hev "handle ev"
+EventId eid = (EventId)ev.id();
+switch (eid) {
+${0}case EventId::Xxx : xxx(); break;
+default: NSFX_LOG_ERROR()("Unknown event [eid={}]", (int)eid);
 }
-else
-{
-    Port* port = msg->arrivalPort();
-    PortId pid = (PortId)(uintptr_t)port->data();
-    switch (pid)
-    {
-    case XXX_PORT : xxx(msg); break;
-    default: NSFX_THROW(LogicError())("Unknown message");
-    }
+endsnippet
+
+snippet hmsg "handle msg"
+PortId pid = (PortId)msg.arrivalPort()->id();
+switch (pid) {
+${0}case PortId::Xxx : xxx(msg); break;
+default: NSFX_LOG_ERROR()("Unknown message [pid={}]", (int)pid);
 }
 endsnippet
 
 snippet caset "case timer"
-case ${2:`!p snip.rv=camel2snake(t[1],True)`}_TIMER : on${1:Xxx}(); break;
+case EventId::${2:`!p snip.rv=upperFirst(t[1])`} : on${1:Xxx}(); break;
 endsnippet
 
 snippet casep "case port"
-case ${2:`!p snip.rv=camel2snake(t[1],True)`}_PORT : on${1:Xxx}(${3:msg}); break;
+case PortId::${2:`!p snip.rv=upperFirst(t[1])`} : on${1:Xxx}(${3:msg}); break;
+endsnippet
+
+snippet sev "ev->scheduleAt()"
+scheduleAt(${1:timer}, ${2:t});
+endsnippet
+
+snippet jj "" w
+JsonValue& jv, 
+endsnippet
+
+snippet cj "" w
+const JsonValue& jv, 
+endsnippet
+
+########################################
+snippet mfg "message field getter"
+${1:T} ${2:var}(void) const noexcept {
+    return getb<$1>(buf_.data() + offsetof_$2());
+}
+constexpr size_t offsetof_$2(void) const noexcept {
+    return off_$3_ + offsetof(${3:p0}, $2_);
+}
+endsnippet
+
+snippet mdg "message dynamic field getter"
+${1:T}::Parser ${2:var}(void) const noexcept {
+    $1::Parser parser{buf_.pop(offsetof_$2())};
+    parser.parse();
+    return parser;
+}
+constexpr size_t offsetof_$2(void) const noexcept {
+    return off_$3_ + offsetof($3, $2_);
+}
 endsnippet
 

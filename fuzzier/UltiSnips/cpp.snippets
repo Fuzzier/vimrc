@@ -557,8 +557,8 @@ for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
 }
 endsnippet
 
-snippet foru "for (++)"
-for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
+snippet for1 "for (++)"
+for (${1:size_t} ${2:i} = ${3:1u}; $2 <= ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
@@ -1451,9 +1451,8 @@ inline typename FormatContext::iterator
 formatx(FormatContext& ctx, const FormatSpec& spec,
         const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
 {
-    auto out = ctx.out();
-    FormatHelper::writeAligned(out, spec, ${3:str, len});
-    fmt::format_to(out, "{}", $2);
+    FormatHelper::writeAligned(ctx.out(), spec, ${3:to_string($2)});
+    fmt::format_to(ctx.out(), "{}", $2);
     return out;
 }
 endsnippet
@@ -2103,6 +2102,10 @@ bool full(void) const noexcept { return $3.full(); }
 
 size_t size(void) const noexcept { return $3.size(); }
 
+size_t capacity(void) const noexcept { return $3.capacity(); }
+
+void reserve(size_t n) { $3.reserve(n); }
+
 void resize(size_t n) { $3.resize(n); }
 
 $1*
@@ -2451,6 +2454,20 @@ if (${1:cfg}.contains("$2")) {
     if (watts <= 0) {
         NSFX_THROW(ConfigError{})(
             "Invalid '$2': {}", $1("$2"));
+    }
+    $0
+}
+endsnippet
+
+snippet csock "cfg sock"
+if (!${1:cfg}.contains("${2:name}")) {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
+} else {
+    const JsonVar& jv = cfg("$2");
+    InetSocketAddress sockAddr;
+    if (!sockAddr.parse(jv.asString())) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2': {}, failed to parse", jv);
     }
     $0
 }
