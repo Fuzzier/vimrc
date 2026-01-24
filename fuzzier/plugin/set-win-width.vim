@@ -118,6 +118,8 @@ class LayoutParser
         # used to avoid visual inconvenience.
         if num_sibls == 1
             VerticalResizeWindow(this.id_list[0], main_width)
+            timer_start(0, (timer) => DelayedVerticalResizeWindow(
+                timer, this.main_id, main_width))
             return
         endif
         var i = 0
