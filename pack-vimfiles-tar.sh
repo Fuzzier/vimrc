@@ -19,6 +19,6 @@ tarfile=vimfiles-$vim_majorminor.$vim_patch-$D
 
 pushd .. > /dev/null
 
-tar -acf $tarfile.tar.gz --totals --exclude=.vim/bak --exclude=.vim/swp --exclude=.vim/tags --exclude=.vim/session --exclude=.vim/sessions --exclude=.vim/undo --exclude=.vim/nvim --exclude=.ccls-cache .vim .config/nvim
+tar -acf $tarfile.tar.xz --totals --exclude=.vim/bak --exclude=.vim/swp --exclude=.vim/tags --exclude=.vim/session --exclude=.vim/sessions --exclude=.vim/undo --exclude=.vim/nvim --exclude=.ccls-cache .vim .config/nvim
 
 popd > /dev/null
