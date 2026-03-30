@@ -9,6 +9,10 @@ vim9script
 # @date 2025-08-08
 #===============================================================================
 
+if !exists('g:set_win_width_enabled')
+    g:set_win_width_enabled = 1
+endif
+
 # The previous window id
 g:set_win_width_prev_wid = 0
 g:set_win_width_prev_wid_time = 0
@@ -142,6 +146,9 @@ endclass
 # defcompile LayoutParser
 
 def SetWinWidth()
+    if !g:set_win_width_enabled
+        return
+    endif
     var id = win_getid()
     if g:set_win_width_prev_wid != id
         g:set_win_width_prev_wid = id
