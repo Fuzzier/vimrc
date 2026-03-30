@@ -59,7 +59,7 @@
         },
         "client":
         {
-          // Required to add parenthesis for functions automatically.
+          // Effect: add parenthesis for functions automatically.
           "snippetSupport": true,
         },
         "completion":
