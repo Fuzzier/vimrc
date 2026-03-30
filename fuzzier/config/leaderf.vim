@@ -26,7 +26,7 @@ let g:Lf_CacheDirectory = g:vimrc_path
 " * Fallback to current directory.
 let g:Lf_WorkingDirectoryMode = 'Ac'
 " Root markers.
-let g:Lf_RootMarkers = ['compile_commands.json', '.git']
+let g:Lf_RootMarkers = ['compile_commands.json', '.svn', '.git', '.hg']
 " Use [0-9] to select entry.
 let g:Lf_QuickSelect = 0
 "
