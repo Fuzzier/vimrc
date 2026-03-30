@@ -81,7 +81,7 @@ if isdirectory(repos_path.'/coc.nvim')
     "
     " Highlight symbol under cursor.
     autocmd CursorHold * silent call CocActionAsync('highlight')
-    hi def link CocHighlightText Pmenu
+    highlight! def link CocHighlightText Pmenu
     "
     " Show in status line.
     function! CocStatusDiagnostic() abort
