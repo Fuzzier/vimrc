@@ -112,7 +112,6 @@ def type2var(x):
         z = y[0].lower() + (y[1:] if len(y) > 1 else '')
     z = z.replace('buffer',  'buf')
     z = z.replace('message', 'msg')
-    z = z.replace('packet',  'pkt')
     z = z.replace('header',  'hdr')
     z = z.replace('vector',  'vec')
     z = z.replace('array',   'arr')
@@ -131,6 +130,7 @@ def var2type(x):
 # @param[in] u The first character in uppercase.
 def str2camel(x, u):
     z = ''
+    x = x.replace('_', ' ')
     tokens = re.split(r'\W+', x)
     for y in tokens:
         if not len(y): continue
@@ -455,9 +455,9 @@ $0
 endsnippet
 
 snippet #ifcon "has concept"
-#if defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
-#else // !(defined(__cpp_concepts) && (__cpp_concepts >= 201907L))
-#endif // defined(__cpp_concepts) && (__cpp_concepts >= 201907L)
+#if (__cpp_concepts >= 201907L)
+#else // !(__cpp_concepts >= 201907L)
+#endif // (__cpp_concepts >= 201907L)
 endsnippet
 
 snippet #ifwin "#if defined(_WIN32)"
@@ -472,6 +472,48 @@ snippet #ifnix "#if defined(__linux__)"
 $0
 #else // !defined(__linux__)
 #endif // defined(__linux__)
+endsnippet
+
+snippet #ifcpp98 "#if (__cplusplus >= 199711L)"
+#if (cplusplus >= 199711L) // Since C++98
+$0
+#else // !(cplusplus >= 199711L)
+#endif // (cplusplus >= 199711L)
+endsnippet
+
+snippet #ifcpp11 "#if (__cplusplus >= 201103L)"
+#if (cplusplus >= 201103L) // Since C++11
+$0
+#else // !(cplusplus >= 201103L)
+#endif // (cplusplus >= 201103L)
+endsnippet
+
+snippet #ifcpp14 "#if (__cplusplus >= 201402L)"
+#if (cplusplus >= 201402L) // Since C++14
+$0
+#else // !(cplusplus >= 201402L)
+#endif // (cplusplus >= 201402L)
+endsnippet
+
+snippet #ifcpp17 "#if (__cplusplus >= 201703L)"
+#if (cplusplus >= 201703L) // Since C++17
+$0
+#else // !(cplusplus >= 201703L)
+#endif // (cplusplus >= 201703L)
+endsnippet
+
+snippet #ifcpp20 "#if (__cplusplus >= 202002L)"
+#if (cplusplus >= 202002L) // Since C++20
+$0
+#else // !(cplusplus >= 202002L)
+#endif // (cplusplus >= 202002L)
+endsnippet
+
+snippet #ifcpp23 "#if (__cplusplus >= 202302L)"
+#if (cplusplus >= 202302L) // Since C++23
+$0
+#else // !(cplusplus >= 202302L)
+#endif // (cplusplus >= 202302L)
 endsnippet
 
 ########################################
@@ -556,17 +598,16 @@ default:
 endsnippet
 
 snippet case "case"
-case ${1:value}:
-    ${2:${VISUAL}}
+case ${1:value} :
+    $0
     break;
-
 endsnippet
 
 ########################################
 # Loop
 ########################################
 snippet for "for (++)"
-for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
+for (${1:size_t} ${2:i} = ${3:0u}; $2 < ${4:N}; ++$2) {
     ${5:${VISUAL}}
 }
 endsnippet
@@ -583,51 +624,69 @@ for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
 }
 endsnippet
 
+snippet foru "for (++)"
+for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {
+    ${5:${VISUAL}}
+}
+endsnippet
+
 snippet for16 "for (uint16_t ++)"
-for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
+for (uint16_t ${1:i} = 0u; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for32 "for (uint32_t ++)"
-for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
+for (uint32_t ${1:i} = 0u; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for64 "for (uint64_t ++)"
-for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1) {
+for (uint64_t ${1:i} = 0u; $1 < ${2:N}; ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort "for (iterator)"
-for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ++$1) {
+for (auto ${1:it} = ${2:cont}.begin(); $1 != $2.end(); ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort+ "for (iterator)"
-for (auto ${1:it} = ${2:items_}.begin(); $1 != $2.end(); ) {
+for (auto ${1:it} = ${2:cont}.begin(); $1 != $2.end(); ) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet fort> "for (iterator)"
-for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ++$1) {
+for (auto ${1:it} = ${2:cont}->begin(); $1 != $2->end(); ++$1) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet for>+ "for (iterator)"
-for (auto ${1:it} = ${2:items_}->begin(); $1 != $2->end(); ) {
+for (auto ${1:it} = ${2:cont}->begin(); $1 != $2->end(); ) {
     ${3:${VISUAL}}
 }
 endsnippet
 
 snippet forr "for (x : C)"
-for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:items_}) {
+for (${1:T} ${2:`!p snip.rv=type2var(t[1])`} : ${3:cont}) {
     ${4:${VISUAL}}
+}
+endsnippet
+
+snippet fora "for (auto& : C)"
+for (auto& ${1:x} : ${2:$1Set}) {
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet forc "for (const auto& : C)"
+for (const auto& ${1:x} : ${2:$1Set}) {
+    ${3:${VISUAL}}
 }
 endsnippet
 
@@ -644,11 +703,11 @@ do { // while ($1)
 endsnippet
 
 snippet be "begin(), end()" w
-${1:${VISUAL:container}}.begin(), $1.end()
+${1:${VISUAL:vec_}}.begin(), $1.end()
 endsnippet
 
 snippet cbe "cbegin(), cend()" w
-${1:${VISUAL:container}}.cbegin(), $1.cend()
+${1:${VISUAL:vec_}}.cbegin(), $1.cend()
 endsnippet
 
 ########################################
@@ -812,6 +871,14 @@ snippet co "const" w
 const
 endsnippet
 
+snippet car "const auto&" w
+const auto&
+endsnippet
+
+snippet ar "auto&" w
+auto&
+endsnippet
+
 snippet cno "const noexcept"
 const noexcept
 endsnippet
@@ -823,26 +890,29 @@ snippet exp "explicit"
 explicit
 endsnippet
 
+snippet =d "= default"
+= default;
+endsnippet
+
 snippet ctor "Ctor(args)"
+${1:`!v getreg('c')`}(${2:void}) noexcept$0
+{}
+endsnippet
+
+snippet ctord "Ctor(args)"
 ${1:`!v getreg('c')`}(${2:void}) noexcept = default;
 endsnippet
 
 snippet dtor "~Dtor(void)"
+~${1:`!v getreg('c')`}(void) noexcept$0
+endsnippet
+
+snippet dtord "~Dtor(void)"
 ~${1:`!v getreg('c')`}(void) noexcept = default;
 endsnippet
 
-snippet vdtor "virtual ~Dtor(void)"
+snippet vdtord "virtual ~Dtor(void)"
 virtual ~${1:`!v getreg('c')`}(void) noexcept = default;
-endsnippet
-
-snippet xtor "Ctor & Dtor"
-${1:`!v getreg('c')`}(${2:void}) noexcept = default;
-~$1(void) noexcept = default;
-endsnippet
-
-snippet vxtor "Ctor & Dtor"
-${1:`!v getreg('c')`}(${2:void}) noexcept = default;
-virtual ~$1(void) = default;
 endsnippet
 
 snippet fn "void Function(args)"
@@ -928,14 +998,14 @@ $1& operator=($1&& rhs) noexcept
 }
 endsnippet
 
-# // Non-copyable.`!p snip << 1; snip += snip.mkline('private:')`
 snippet ncpy "Non-copyable"
+// Non-copyable.`!p snip << 1; snip += snip.mkline('private:')`
 ${1:`!v getreg('c')`}(const $1&) = delete;
 $1& operator=(const $1&) = delete;
 endsnippet
 
-# // Non-movable.`!p snip << 1; snip += snip.mkline('private:')`
 snippet nmov "Non-movable"
+// Non-movable.`!p snip << 1; snip += snip.mkline('private:')`
 ${1:`!v getreg('c')`}($1&&) = delete;
 $1& operator=($1&&) = delete;
 endsnippet
@@ -1038,6 +1108,10 @@ endsnippet
 
 snippet fw. "std::forward()..." w
 std::forward<${1:Args}>(${2:`!p snip.rv=type2var(t[1])`})...
+endsnippet
+
+snippet ao "std::addressof()" w
+std::addressof(${1:${VISUAL:value}})
 endsnippet
 
 ########################################
@@ -1197,7 +1271,7 @@ endsnippet
 # Type cast
 ########################################
 snippet sc> "static_cast" w
-static_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+static_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
 endsnippet
 
 snippet sc>= "static_cast"
@@ -1206,7 +1280,7 @@ ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
 endsnippet
 
 snippet cc> "const_cast" w
-const_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+const_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
 endsnippet
 
 snippet cc>= "const_cast"
@@ -1215,7 +1289,7 @@ ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
 endsnippet
 
 snippet dc> "dynamic_cast" w
-dynamic_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+dynamic_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
 endsnippet
 
 snippet dc>= "dynamic_cast"
@@ -1224,7 +1298,7 @@ ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
 endsnippet
 
 snippet rc> "reinterpret_cast" w
-reinterpret_cast<${1:${VISUAL:T}}*>(${2:`!p snip.rv=type2var(t[1])`})
+reinterpret_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
 endsnippet
 
 snippet rc>= "reinterpret_cast"
@@ -1262,7 +1336,7 @@ snippet tv "T v" w
 ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
-snippet t_ "T v_" w
+snippet tm "T v_" w
 ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
@@ -1271,22 +1345,22 @@ ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet rv "T& v" w
-${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}
+${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
-snippet r_ "T& v_" w
-${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}_
+snippet rm "T& v_" w
+${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
 snippet r= "T& v =" w
-${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
+${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 snippet pv "T* v" w
 ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
-snippet p_ "T* v_" w
+snippet pm "T* v_" w
 ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
@@ -1298,43 +1372,35 @@ snippet v= "value ="
 ${1:v} = ${2:$1}
 endsnippet
 
-snippet _= "value_ ="
+snippet m= "value_ ="
 ${1:v}_ = ${2:$1}
 endsnippet
 
-snippet cv "const T v" w
+snippet cv "const T v =" w
 const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
+snippet cm "const T v_ =" w
+const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}_
+endsnippet
+
 snippet c= "const T v ="
-const ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
-endsnippet
-
-snippet crv "const T& v" w
-const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`}
-endsnippet
-
-snippet cr= "const T& v" w
-const ${1:${VISUAL}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
-endsnippet
-
-snippet cpv "const T* v" w
-const ${1:${VISUAL}}* ${2:`!p snip.rv=type2var(t[1])`}
-endsnippet
-
-snippet cp= "const T* v = nullptr"
-const ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
+const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
 endsnippet
 
 ########################################
 # Initialization list
 ########################################
-snippet i_ "x_(x)"
-${1:x}_(${2:$1}),
+snippet im "x_{x}"
+${1:x}_{${2:$1}}
 endsnippet
 
-snippet ir_ "x_(rhs.x)"
-${1:x}_(rhs.${2:$1}),
+snippet ip "x_{&x}"
+${1:x}_{&${2:$1}}
+endsnippet
+
+snippet irm "x_{rhs.x}"
+${1:x}_{rhs.${2:$1}}
 endsnippet
 
 ########################################
@@ -1439,24 +1505,49 @@ std::cerr << $0 << std::endl;
 endsnippet
 
 ########################################
+# error_code
+########################################
+snippet sec "std::error_code" w
+std::error_code ${1:ec}
+endsnippet
+
+snippet sec& "const std::error_code&" w
+const std::error_code& ${1:ec}
+endsnippet
+
+########################################
 # Format
 ########################################
 snippet fmt "format"
-template<> struct fmt::formatter<nsfx::${1:T}>
+template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
+    using value_type = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const nsfx::$1& v, FormatContext& ctx) const {
-        return formatter<$2>::format_to(ctx.out(),
-            "{}", v);
+    format(const value_type& v, FormatContext& ctx) const {
+        return formatter<$2>::format(to_string(v), ctx);
+        return format_to(ctx.out(), "{}", v);
+    }
+};
+endsnippet
+
+snippet fmte "format enum"
+template<> struct formatter<nsfx::${1:T}>
+    : formatter<${2:std::string_view}>
+{
+    using value_type = nsfx::$1;
+    template<class FormatContext> constexpr typename FormatContext::iterator
+    format(const value_type& v, FormatContext& ctx) const {
+        using Y = std::underlying_type_t<value_type>;
+        return format_to(ctx.out(), "{}({})", to_string(v), static_cast<Y>(v));
     }
 };
 endsnippet
 
 snippet fmts "format"
 template<>
-struct fmt::formatter<nsfx::${1:T}>
-    :   nsfx::Formatx<nsfx::$1> {};
+struct formatter<nsfx::${1:T}>
+    : nsfx::Formatx<nsfx::$1> {};
 endsnippet
 
 snippet fmtx "format"
@@ -1553,10 +1644,6 @@ endsnippet
 
 snippet sas "static_assert()"
 static_assert(${1:${VISUAL:predicate}});
-endsnippet
-
-snippet nb "NSFX_ABORT()"
-NSFX_ABORT()
 endsnippet
 
 snippet na "NSFX_ASSERT()"
@@ -1758,12 +1845,12 @@ snippet bf "buffer"
 Buffer ${1:buf}{type_tag<${2:type}>};
 endsnippet
 
-snippet nmsg "Message msg"
-Message msg;
+snippet ds "data, size" w
+${1:buf}.data(), $1.size()
 endsnippet
 
-snippet rmsg "Message& msg" w
-Message& msg
+snippet mdu "du = msg.du()"
+Buffer& du = msg.du();
 endsnippet
 
 snippet dupush "du.push"
@@ -1863,7 +1950,7 @@ snippet icipop "ici.pop"
 ${1:T} ${2:ici};
 {
     Buffer& par = ${3:msg}.par();
-    NSFX_ASSERT(par.size() != sizeof($1))(
+    NSFX_ASSERT(par.size() == sizeof($1))(
         "Invalid $1 size {} B, expected {} B",
         par.size(), sizeof($1));
     par.pop(&$2, sizeof($1));
@@ -1876,7 +1963,7 @@ snippet iciptr "ici.ptr"
 const ${1:T}* ${2:ici} = nullptr;
 {
     const Buffer& par = ${3:msg}.par();
-    NSFX_ASSERT(par.size() != sizeof($1))(
+    NSFX_ASSERT(par.size() == sizeof($1))(
         "Invalid $1 size {} B, expected {} B",
         par.size(), sizeof($1));
     $2 = reinterpret_cast<const $1*>(par.data());
@@ -1889,7 +1976,7 @@ snippet icipeep "ici.peep"
 ${1:T} ${2:ici};
 {
     const Buffer& par = ${3:msg}.par();
-    NSFX_ASSERT(par.size() != sizeof($1))(
+    NSFX_ASSERT(par.size() == sizeof($1))(
         "Invalid $1 size {} B, expected {} B",
         par.size(), sizeof($1));
     par.peep(&$2, sizeof($1));
@@ -1901,48 +1988,70 @@ endsnippet
 # Data structures
 ########################################
 snippet key "Key"
-union ${1:Key}
-{
-    struct Fields
-    {
+union ${1:Key} {
+    $1() noexcept
+    {}
+
+    struct {
         $0
-    } s_;
+    };
     uint64_t u_;
     static_assert(sizeof(s_) <= sizeof(u_), "Invalid key type");
 };
 endsnippet
 
-snippet keyper "Keyper"
-struct ${1:Keyper}
-{
-    ${2:Key} operator()(const ${3:T}& ${4:`!p snip.rv=type2var(t[3])`}) const noexcept
-    {
-        return $4.${5:`!p snip.rv=type2var(t[2])`_};
+snippet kof "keyof"
+using Key = ${1:addr_t};
+struct ${2:KeyOf} {
+    constexpr ${3:Key} operator()(const ${4:T}& ${5:`!p snip.rv=type2var(t[4])`}) const noexcept {
+        return $5.${6:`!p snip.rv=type2var(t[3])`_};
     }
 };
 endsnippet
 
-snippet less "Less"
-struct ${1:Less}
-{
-    constexpr bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
-    {
-        return ${3:lhs < rhs};
+snippet kcomp "Comp"
+struct ${1:Comp} {
+    using is_transparent = void;
+    constexpr bool operator()(${2:Key} lhs, $2 rhs) const noexcept {
+        return lhs < rhs;
+    }
+    constexpr bool operator()(const ${3:T}& lhs, $2 key) const noexcept {
+        return lhs.${4:`!p snip.rv=type2var(t[2])`_} < key;
+    }
+    constexpr bool operator()($2 key, const $3& rhs) const noexcept {
+        return key < rhs.$4;
+    }
+    constexpr bool operator()(const $3& lhs, const $3& rhs) const noexcept {
+        return lhs.$4 < rhs.$4;
     }
 };
 endsnippet
 
-snippet comp "Comp"
-struct ${1:Comp}
-{
-    constexpr bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept
-    {
-        return lhs.${3:time_} < rhs.$3;
+snippet keq "KeyEqual"
+struct ${1:KeyEqual} {
+    using is_transparent = void;
+    constexpr bool operator()(const ${2:T}& lhs, const $2& rhs) const noexcept {
+        return lhs.${3:key_} == rhs.$3;
+    }
+    constexpr bool operator()(const $2& lhs, ${4:Key} ${5:`!p snip.rv=t[3].rstrip('_')`}) const noexcept {
+        return lhs.$3 == $5;
+    }
+    constexpr bool operator()($4 $5, const $2& rhs) const noexcept {
+        return $5 == rhs.$3;
     }
 };
 endsnippet
 
-snippet lexc "lex comp"
+snippet khash "Hash"
+struct ${1:Hash} {
+    using is_transparent = void;
+    constexpr size_t operator()(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) const noexcept {
+        return hash_aux::moremur($3);
+    }
+};
+endsnippet
+
+snippet lcomp "lex comp"
 if (lhs.${1:k0} != rhs.$1) {
     return lhs.$1 < rhs.$1;
 } else {
@@ -1950,32 +2059,73 @@ if (lhs.${1:k0} != rhs.$1) {
 }
 endsnippet
 
+snippet vecs> "sorted vector"
+kof
+kcomp
+using ${1:Map} = std::vector<${2:T}>;
+/// 管理表项生命期.
+$1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;
+iterator begin(void) noexcept { return $5.begin(); }
+iterator end(void)   noexcept { return $5.end();   }
+const_iterator begin(void) const noexcept { return $5.begin(); }
+const_iterator end(void)   const noexcept { return $5.end();   }
+endsnippet
+
+snippet sthm> "SwissTableHashMap"
+kof
+keq
+khash
+using ${1:Map} = SwissTableHashMapBuilder<${2:T}>
+            ::set_key<${4:Key}, ${5:KeyOf}, ${6:Hash}>
+            ::build;
+/// 管理表项生命期.
+$1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+using iterator       = $1::iterator;
+using const_iterator = $1::const_iterator;
+iterator begin(void) noexcept { return $5.begin(); }
+iterator end(void)   noexcept { return $5.end();   }
+const_iterator begin(void) const noexcept { return $5.begin(); }
+const_iterator end(void)   const noexcept { return $5.end();   }
+endsnippet
+
 snippet itn "IntrusiveTreeNode"
 IntrusiveTreeNode<class ${1:C}>
 endsnippet
 
 snippet iat> "IntrusiveAvlTree"
+kof
+keq
 using ${1:Map} = IntrusiveAvlTreeBuilder<${2:T}, class ${3:C}>
-                ::set_key<${4:Key}, ${5:Keyper}>
-                ::build;
+            ::set_key<${4:Key}, ${5:KeyOf}>
+            ::build;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
 $1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $5.begin(); }
-iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $5.end();   }
 const_iterator begin(void) const noexcept { return $5.begin(); }
 const_iterator end(void)   const noexcept { return $5.end();   }
 endsnippet
 
 snippet irt> "IntrusiveRbTree"
+kof
+keq
 using ${1:Map} = IntrusiveRbTreeBuilder<${2:T}, class ${3:C}>
-                ::set_key<${4:Key}, ${5:Keyper}>
-                ::build;
+            ::set_key<${4:Key}, ${5:KeyOf}>
+            ::build;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
 $1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $5.begin(); }
-iterator end(void)   noexcept { return $5.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $5.end();   }
 const_iterator begin(void) const noexcept { return $5.begin(); }
 const_iterator end(void)   const noexcept { return $5.end();   }
 endsnippet
@@ -1986,12 +2136,15 @@ endsnippet
 
 snippet il> "IntrusiveList"
 using ${1:List} = IntrusiveListBuilder<${2:T}, class ${3:C}>
-                ::build;`!p snip << 1; snip += snip.mkline()`
+             ::build;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $4.end();   }
 const_iterator begin(void) const noexcept { return $4.begin(); }
 const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
@@ -2003,11 +2156,14 @@ endsnippet
 snippet isl> "IntrusiveSlist"
 using ${1:List} = IntrusiveSlistBuilder<${2:T}, class ${3:C}>
                 ::build;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $4.end();   }
 const_iterator begin(void) const noexcept { return $4.begin(); }
 const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
@@ -2017,15 +2173,20 @@ IntrusiveHeapNode<class ${1:C}>
 endsnippet
 
 snippet ih> "IntrusiveHeap"
+kof
+kcomp
 using ${1:Heap} = IntrusiveHeapBuilder<${2:T}, class ${3:C}>
                 ::set_comp<Comp>
                 ::min_heap
                 ::build;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $4.end();   }
 const_iterator begin(void) const noexcept { return $4.begin(); }
 const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
@@ -2036,13 +2197,16 @@ endsnippet
 
 snippet iss> "IntrusiveSlistSet"
 using ${1:Set} = IntrusiveSlistSetBuilder<${2:T}, class ${3:C}>
-                 ::set_key<${4:Key}, ${5:Keyper}, ${6:Hash}>
+                 ::set_key<${4:Key}, ${5:KeyOf}, ${6:Hash}>
                  ::build;
-$1  ${7:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline()`
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
+$1  ${7:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $7.begin(); }
-iterator end(void)   noexcept { return $7.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $7.end();   }
 const_iterator begin(void) const noexcept { return $7.begin(); }
 const_iterator end(void)   const noexcept { return $7.end();   }
 endsnippet
@@ -2053,31 +2217,34 @@ endsnippet
 
 snippet iv> "IntrusiveVector"
 using ${3:Vector} = IntrusiveVector<${1:T}, class ${2:C}>;
-$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 $3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+$3::iterator end(void)   noexcept { return $4.end();   }
 $3::const_iterator begin(void) const noexcept { return $4.begin(); }
 $3::const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet vec> "Vector"
 using ${1:Vector} = VectorBuilder<${2:T}>::base_index<${3:1}>::build;
-$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline()`
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $4.end();   }
 const_iterator begin(void) const noexcept { return $4.begin(); }
 const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet vv> "VectorView"
 using ${1:Vector} = VectorViewBuilder<${2:T}>::base_index<${3:1}>::build;
-$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline()`
+$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $4.end();   }
 const_iterator begin(void) const noexcept { return $4.begin(); }
 const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
@@ -2088,21 +2255,24 @@ endsnippet
 
 snippet ifsk> "IntrusiveFixedSkipList"
 using ${5:Map} = IntrusiveFixedSkipList<${1:t}, ${2:3}, class ${3:C},
-                 ${4:Key}, Keyper, Comp>;
-$5  ${6:`!p snip.rv = type2var(t[5])`_};`!p snip << 1; snip += snip.mkline()`
+                 ${4:Key}, KeyOf, Comp>;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
+$5  ${6:`!p snip.rv = type2var(t[5])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 $5::iterator begin(void) noexcept { return $6.begin(); }
-$5::iterator end(void)   noexcept { return $6.end();   }`!p snip << 1; snip += snip.mkline()`
+$5::iterator end(void)   noexcept { return $6.end();   }
 $5::const_iterator begin(void) const noexcept { return $6.begin(); }
 $5::const_iterator end(void)   const noexcept { return $6.end();   }
 endsnippet
 
 snippet sk> "SkipList"
-using ${3:Map} = SkipList<${1:T}, ${2:Key}, Keyper, Comp>;
-$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline()`
+using ${3:Map} = SkipList<${1:T}, ${2:Key}, KeyOf, Comp>;
+$3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;`!p snip << 1; snip += snip.mkline()`
+using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }`!p snip << 1; snip += snip.mkline()`
+iterator end(void)   noexcept { return $4.end();   }
 const_iterator begin(void) const noexcept { return $4.begin(); }
 const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
@@ -2152,94 +2322,621 @@ pop_front(void) noexcept
     return std::unique_ptr<$1>{ $3.pop_front() };
 }
 
-void remove($2) noexcept;
+void erase($2) noexcept;
 
-void remove($1* `!p snip.rv=type2var(t[1])`) noexcept;
+void erase($1* `!p snip.rv=type2var(t[1])`) noexcept;
 
 void clear(void) noexcept { $3.destroy(); }
 endsnippet
 
-snippet mfindc "find"
-return const_cast<${1:`!v getreg('c')`}*>(this)->find(${2:key});
-endsnippet
+snippet contv "vector-based container"
+bool empty(void) const noexcept { return ${1:vec_}.empty(); }
 
-snippet mfind "find"
-${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
-Key key = $0;
-auto it = ${3:map_}.find(key);
-if (it != $3.end())
-{
-    $2 = *it;
-}
-return $2;
-endsnippet
+size_t size(void) const noexcept { return $1.size(); }
 
-snippet madd "add"
-${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
-Key key = $0;
-auto it = ${3:map_}.find(key);
-NSFX_ASSERT(it != $3.end());
-$2 = new $1(this, );
-$3.insert($2);
-return $2;
-endsnippet
+void reserve(size_t count) { $1.reserve(count); }
 
-snippet maog "addOrGet"
-${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
-Key key$0;
-auto it = ${3:map_}.find(key);
-if (it != $3.end())
-{
-    $2 = *it;
-}
-else
-{
-    $2 = new $1(this, );
-    $3.insert($2);
-}
-return $2;
-endsnippet
+void resize(size_t count) { $1.resize(count); }
 
-snippet maou "addOrUpdate"
-${1:T}* ${2:`!p snip.rv = type2var(t[1])`} = nullptr;
-Key key$0;
-auto it = ${3:map_}.find(key);
-if (it != $3.end())
-{
-    $2 = *it;
+${4:T}* find(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) noexcept {
+    const auto& self = *this;
+    return const_cast<$4*>(self.find($3));
 }
-else
-{
-    $2 = new $1(this, );
-    $3.insert($2);
-}
-return $2;
-endsnippet
 
-snippet mct "checkTimeout"
-while (!${1:list_}.empty())
-{
-    ${2:T}* ${3:`!p snip.rv = type2var(t[2])`} = $1.front();
-    if ($3->time_ <= time)
-    {
-        $1.pop_front();
-        delete $3;
-        continue;
+const $4* find($2 $3) const noexcept {
+    for (const $4& ${5:`!p snip.rv=type2var(t[4])`} : $1) {
+        if ($5.$3_ == $3) {
+            return std::addressof($5);
+        }
     }
-    break;
+    return nullptr;
+}
+
+$4& at(size_t index) noexcept {
+    return $1.at(index);
+}
+
+const $4& at(size_t index) const noexcept {
+    return $1.at(index);
+}
+
+$4& front(void) noexcept { return $1.front(); }
+
+const $4& front(void) const noexcept { return $1.front(); }
+
+$4& back(void) noexcept { return $1.back(); }
+
+const $4& back(void) const noexcept { return $1.back(); }
+
+$4& _emplace_back($2 $3) {
+    return $1.emplace_back($3);
+}
+
+void _pop_back(void) noexcept { return $1.pop_back(); }
+
+struct AddResult {
+    $4& value(void) const noexcept { return *value_; }
+    $4* value_;
+    bool added_;
+};
+
+AddResult _addOrGet($2 $3) {
+    $4* $5 = find($3);
+    if ($5) {
+        return {$5, false};
+    } else {
+        return {std::addressof(_emplace_back($3)), true};
+    }
+}
+
+void _clear(void) noexcept {
+    $1.clear();
 }
 endsnippet
 
-snippet vvi "VectorView init"
-${1:T}* data = tib_->arena_->allocate(
-    type_tag<$1>, ${2:n});
-{
-    $1* item = data;
-    for (size_t i = 0; i < $2; ++i)
-    {
-        ::new (item++) $1{${3:args}};
+snippet contvs "sorted vector-based container"
+bool empty(void) const noexcept { return ${1:map_}.empty(); }
+
+size_t size(void) const noexcept { return $1.size(); }
+
+void reserve(size_t count) { $1.reserve(count); }
+
+void resize(size_t count) { $1.resize(count); }
+
+size_t count($2 $3) const noexcept {
+    return !!find($3);
+}
+
+bool contains($2 $3) const noexcept {
+    return !!find($3);
+}
+
+bool contains(const $4& $5) const noexcept {
+    const Comp comp{};
+    auto it = std::lower_bound($1.begin(), $1.end(), $5, comp);
+    if (it != $1.end()) {
+        const $4& value = *it;
+        if (!comp($5, value)) {
+            return true;
+        }
     }
-    ${4:vec_} = Vector{std::launder(data), $2};
+    return false;
+}
+
+$4* find($2 $3) noexcept {
+    const auto& self = *this;
+    return const_cast<$4*>(self.find($3));
+}
+
+const ${4:T}* find(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) const noexcept {
+    const Comp comp{};
+    auto it = std::lower_bound($1.begin(), $1.end(), $3, comp);
+    if (it != $1.end()) {
+        const $4& ${5:`!p snip.rv=type2var(t[4])`} = *it;
+        if (!comp($3, $5)) {
+            return std::addressof($5);
+        }
+    }
+    return nullptr;
+}
+
+$4& at($2 $3) noexcept {
+    const auto& self = *this;
+    return const_cast<$4&>(self.at($3));
+}
+
+const $4& at($2 $3) const noexcept {
+    const $4* $5 = find($3);
+    NSFX_ASSERT($5);
+    return *$5;
+}
+
+$4& _add($2 $3) {
+    NSFX_ASSERT(!contains($3));
+    const Comp comp{};
+    auto it = std::lower_bound($1.begin(), $1.end(), $3, comp);
+    return *$1.emplace(it, $3);
+}
+
+struct AddResult {
+    $4& value(void) const noexcept { return *value_; }
+    $4* value_;
+    bool added_;
+};
+
+AddResult _addOrGet($2 $3) {
+    const Comp comp{};
+    auto it = std::lower_bound($1.begin(), $1.end(), $3, comp);
+    if (it != $1.end()) {
+        $4& $5 = *it;
+        if (!comp($3, $5)) {
+            return {std::addressof($5), false};
+        }
+    }
+    $4& $5 = *$1.emplace(it, $3);
+    return {std::addressof($5), true};
+}
+
+size_t _erase($2 $3) noexcept {
+    const Comp comp{};
+    auto it = std::lower_bound($1.begin(), $1.end(), $3, comp);
+    if (it != $1.end()) {
+        const $4& $5 = *it;
+        if (!comp($3, $5)) {
+            $1.erase(it);
+            return 1u;
+        }
+    }
+    return 0u;
+}
+
+void _erase(const $4& $5) noexcept {
+    NSFX_ASSERT(contains($5));
+    const Comp comp{};
+    auto it = std::lower_bound($1.begin(), $1.end(), $5, comp);
+    $1.erase(it);
+}
+
+void _clear(void) noexcept {
+    $1.clear();
+}
+
+void sort(void) noexcept {
+    std::sort($1.begin(), $1.end(), Comp{});
+}
+endsnippet
+
+snippet contm "map-based container"
+bool empty(void) const noexcept { return ${1:map_}.empty(); }
+
+size_t size(void) const noexcept { return $1.size(); }
+
+size_t count($2 $3) const noexcept {
+    return $1.count($3);
+}
+
+bool contains($2 $3) const noexcept {
+    return $1.contains($3);
+}
+
+${4:T}* find(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) noexcept {
+    const auto& self = *this;
+    return const_cast<$4*>(self.find($3));
+}
+
+const $4* find($2 $3) const noexcept {
+    auto it = $1.find($3);
+    return (it != $1.end()) ? std::addressof(*it) : nullptr;
+}
+
+$4& at($2 $3) noexcept {
+    const auto& self = *this;
+    return const_cast<$4&>(self.at($3));
+}
+
+const $4& at($2 $3) const noexcept {
+    const $4* ${5:`!p snip.rv=type2var(t[4])`} = find($3);
+    NSFX_ASSERT($5);
+    return *$5;
+}
+
+$4& _add($2 $3) {
+    std::unique_ptr<$4> $5 {
+        new $4{*this, $3} };
+    auto result = $1.insert(*$5);
+    NSFX_ASSERT(result.second);
+    return *$5.release();
+}
+
+struct AddResult {
+    $4& value(void) const noexcept { return *value_; }
+    $4* value_;
+    bool added_;
+};
+
+AddResult _addOrGet($2 $3) {
+    auto ins = map_.insert_check($3);
+    if (ins.has_value()) {
+        return {std::addressof(ins.value()), false};
+    } else {
+        std::unique_ptr<$4> $5 {
+            new $4{*this, $3} };
+        $1.insert_commit(*$5, ins);
+        return {std::addressof(*$5.release()), true};
+    }
+}
+
+void _erase($2 $3) noexcept {
+    size_t count = $1.erase_and_dispose($3,
+        [] ($4* $5) noexcept {
+            delete $5;
+        });
+    NSFX_ASSERT(count);
+}
+
+void _erase($4& $5) noexcept {
+    $1.unlink_and_dispose($5, [] ($4* $5) noexcept {
+        delete $5;
+    });
+}
+
+void _link($4& $5) {
+    auto result = $1.insert($5);
+    NSFX_ASSERT(result.second);
+}
+
+void _unlink($4& $5) noexcept {
+    $1.unlink($5);
+}
+
+void _clear(void) noexcept {
+    $1.clear_and_dispose([] ($4* $5) noexcept {
+        delete $5;
+    });
+    // FIXME
+    $1.clear();
+}
+endsnippet
+
+snippet contst "swiss-table container"
+bool empty(void) const noexcept { return ${1:map_}.empty(); }
+
+size_t size(void) const noexcept { return $1.size(); }
+
+size_t count($2 $3) const noexcept {
+    return $1.count($3);
+}
+
+bool contains($2 $3) const noexcept {
+    return $1.contains($3);
+}
+
+${4:T}* find(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) noexcept {
+    const auto& self = *this;
+    return const_cast<$4*>(self.find($3));
+}
+
+const $4* find($2 $3) const noexcept {
+    auto it = $1.find($3);
+    return (it != $1.end()) ? std::addressof(*it) : nullptr;
+}
+
+$4& at($2 $3) noexcept {
+    const auto& self = *this;
+    return const_cast<$4&>(self.at($3));
+}
+
+const $4& at($2 $3) const noexcept {
+    auto it = $1.find($3);
+    NSFX_ASSERT(it != $1.end());
+    return *it;
+}
+
+$4& _add($2 $3) {
+    auto result = $1.try_emplace($3, $3);
+    NSFX_ASSERT(result.second);
+    return *result.first;
+}
+
+struct AddResult {
+    $4& value(void) const noexcept { return *value_; }
+    $4* value_;
+    bool added_;
+};
+
+AddResult _addOrGet($2 $3) {
+    auto result = $1.try_emplace($3, $3);
+    return {std::addressof(*result.first), result.second};
+}
+
+void _erase($2 $3) noexcept {
+    size_t count = $1.erase($3);
+    NSFX_ASSERT(count);
+}
+
+void _clear(void) noexcept {
+    $1.clear();
+}
+endsnippet
+
+snippet contl "list-based container"
+bool empty(void) const noexcept { return ${1:list_}.empty(); }
+
+size_t size(void) const noexcept { return $1.size(); }
+
+size_t count($2 $3) const noexcept {
+    return !!find($3);
+}
+
+bool contains($2 $3) const noexcept {
+    return !!find($3);
+}
+
+${4:T}* find(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) noexcept {
+    const auto& self = *this;
+    return const_cast<$4*>(self.find($3));
+}
+
+const $4* find($2 $3) const noexcept {
+    Equal eq;
+    for (const $4& ${5:`!p snip.rv=type2var(t[4])`} : $1) {
+        if (eq($5, $3)) {
+            return std::addressof($5);
+        }
+    }
+    return nullptr;
+}
+
+$4& front(void) noexcept { return $1.front(); }
+
+const $4& front(void) const noexcept { return $1.front(); }
+
+$4& back(void) noexcept { return $1.back(); }
+
+const $4& back(void) const noexcept { return $1.back(); }
+
+$4& _add($2 $3) {
+    NSFX_ASSERT(!contains($3));
+    std::unique_ptr<$4> $5 {
+        new $4{*this, $3} };
+    $1.push_back(*$5);
+    return *$5.release();
+}
+
+struct AddResult {
+    $4& value(void) const noexcept { return *value_; }
+    $4* value_;
+    bool added_;
+};
+
+AddResult _addOrGet($2 $3) {
+    $4* $5 = find($3);
+    if ($5) {
+        return {$5, false};
+    } else {
+        return {std::addressof(_add($3)), true};
+    }
+}
+
+void _erase($2 $3) noexcept {
+    $4* $5 = find($3);
+    NSFX_ASSERT($5);
+    $1.unlink_and_dispose(*$5, [] ($4* $5) noexcept {
+        delete $5;
+    });
+}
+
+void _erase($4& $5) noexcept {
+    $1.unlink_and_dispose($5, [] ($4* $5) noexcept {
+        delete $5;
+    });
+}
+
+$4& _emplace_back($2 $3) {
+    NSFX_ASSERT(!contains($3));
+    std::unique_ptr<$4> $5 {
+        new $4{*this, $3} };
+    $1.push_back(*$5);
+    return *$5.release();
+}
+
+void _pop_back(void) noexcept {
+    $1.pop_back_and_dispose([] ($4* $5) noexcept {
+        delete $5;
+    });
+    // FIXME
+    $1.pop_back();
+}
+
+void _link($4& $5) {
+    $1.push_back($5);
+}
+
+void _unlink($4& $5) noexcept {
+    $1.unlink($5);
+}
+
+void _clear(void) noexcept {
+    $1.clear_and_dispose([] ($4* $5) noexcept {
+        delete $5;
+    });
+    // FIXME
+    $1.clear();
+}
+endsnippet
+
+snippet contlq "list-based queue"
+size_t max_size(void) const noexcept { return kMaxSize; };
+
+bool empty(void) const noexcept { return ${1:list_}.empty(); }
+
+bool full(void) const noexcept { return $1.size() == max_size(); }
+
+size_t size(void) const noexcept { return $1.size(); }
+
+$4& front(void) noexcept { return $1.front(); }
+
+const $4& front(void) const noexcept { return $1.front(); }
+
+$4& back(void) noexcept { return $1.back(); }
+
+const $4& back(void) const noexcept { return $1.back(); }
+
+${4:T}& emplace_front(${2:Arg} ${3:`!p snip.rv=type2var(t[2])`}) {
+    std::unique_ptr<$4> $5 {
+        new $4{$3} };
+    $1.push_front(*$5);
+    return *$5.release();
+}
+
+$4& emplace_back($2 $3) {
+    std::unique_ptr<$4> $5 {
+        new $4{$3} };
+    $1.push_back(*$5);
+    return *$5.release();
+}
+
+void pop_front(void) noexcept { return $1.pop_front(); }
+
+void pop_back(void) noexcept {
+    $1.pop_back_and_dispose([] ($4* $5) noexcept {
+        delete $5;
+    });
+    // FIXME
+
+void link($4& $5) {
+    $1.push_back($5);
+}
+
+void unlink($4& $5) noexcept {
+    $1.unlink($5);
+}
+
+void clear(void) noexcept {
+    $1.clear_and_dispose([] ($4* $5) noexcept {
+        delete $5;
+    });
+    // FIXME
+    $1.clear();
+}
+endsnippet
+
+snippet contml "map-list container"
+bool empty(void) const noexcept { return ${1:list_}.empty(); }
+
+size_t size(void) const noexcept { return $1.size(); }
+
+size_t count($3 $4) const noexcept {
+    return ${2:map_}.count($4);
+}
+
+bool contains($3 $4) const noexcept {
+    return $2.contains($4);
+}
+
+${5:T}* find(${3:Key} ${4:`!p snip.rv=type2var(t[3])`}) noexcept {
+    const auto& self = *this;
+    return const_cast<$5*>(self.find($4));
+}
+
+const $5* find($3 $4) const noexcept {
+    auto it = $2.find($4);
+    return (it != $2.end()) ? std::addressof(*it) : nullptr;
+}
+
+$5& front(void) noexcept { return $1.front(); }
+
+const $5& front(void) const noexcept { return $1.front(); }
+
+$5& back(void) noexcept { return $1.back(); }
+
+const $5& back(void) const noexcept { return $1.back(); }
+
+bool _checkTime(simtime_t time) const noexcept {
+    if (!empty()) {
+        const $5& $6 = $1.back();
+        NSFX_ASSERT($6.time_ <= time);
+    }
+    return true;
+}
+
+$5& _add($3 $4, simtime_t time) {
+    NSFX_ASSERT(_checkTime(time));
+    std::unique_ptr<$5> ${6:`!p snip.rv=type2var(t[5])`} {
+        new $5{*this, $4, time} };
+    auto result = $2.insert(*$6);
+    NSFX_ASSERT(result.second);
+    $1.push_back(*$6);
+    return *$6.release();
+}
+
+struct AddResult {
+    $5& value(void) const noexcept { return *value_; }
+    $5* value_;
+    bool added_;
+};
+
+AddResult _addOrGet($3 $4, simtime_t time) {
+    NSFX_ASSERT(_checkTime(time));
+    auto ins = $2.insert_check($4);
+    if (ins.has_value()) {
+        return {std::addressof(ins.value()), false};
+    } else {
+        std::unique_ptr<$5> $6 {
+            new $5{*this, $4, time} };
+        $2.insert_commit(*$6, ins);
+        $1.push_back(*$6);
+        return {std::addressof(*$6.release()), true};
+    }
+}
+
+void _refresh($5& $6, simtime_t time) noexcept {
+    NSFX_ASSERT(_checkTime(time));
+    $6.time_ = time;
+    $1.unlink($6);
+    $1.push_back($6);
+}
+
+void _purge(simtime_t time) noexcept {
+    while (!$1.empty()) {
+        const $5& $6 = $1.front();
+        if ($6.time_ <= time) {
+            _pop_front();
+            continue;
+        }
+        break;
+    }
+}
+
+void _pop_front(void) noexcept {
+    NSFX_ASSERT(!empty());
+    $1.pop_front_and_dispose([=] ($5* $6) noexcept {
+        $2.unlink(*$6);
+        delete $6;
+    });
+}
+
+void _erase($3 $4) noexcept {
+    size_t count = $2.erase_and_dispose($4,
+        [=] ($5* $6) noexcept {
+            $1.unlink(*$6);
+            delete $6;
+        });
+    NSFX_ASSERT(count);
+}
+
+void _erase($5& $6) noexcept {
+    $1.unlink($6);
+    $2.unlink_and_dispose($6, [] ($5* $6) noexcept {
+        delete $6;
+    });
+}
+
+void _clear(void) noexcept {
+    $2.abandon();
+    $1.clear_and_dispose([] ($5* $6) noexcept {
+        delete $6;
+    });
 }
 endsnippet
 
@@ -2288,7 +2985,7 @@ public:
     // 参数及数据结构.
 private:
 
-    // 定时器.
+    // 事件.
 private:
     enum class EventId {
         None,
@@ -2314,7 +3011,7 @@ virtual std::string_view className(void) const noexcept override
 endsnippet
 
 snippet deid "enum EventId"
-// 定时器.`!p snip << 1; snip += snip.mkline('private:')`
+// 事件.`!p snip << 1; snip += snip.mkline('private:')`
 enum class EventId
 {
     None,
@@ -2333,12 +3030,12 @@ endsnippet
 
 snippet ccm "create child module"
 ${1:o} = createModule(${2:cfg}("cid"));
-take($1);
+take(*$1);
 $1->setName(${3:name});
 $1->setLogLevel(logLevel());
 $1->useI<Xxx>(this);
-Module::connect(this, "<xxx-data.req", $1, ">xxx-data.req");
-Module::connect(this, ">xxx-data.ind", $1, "<xxx-data.ind");
+Module::connect(*this, "<xxx-data.req", *$1, ">xxx-data.req");
+Module::connect(*this, ">xxx-data.ind", *$1, "<xxx-data.ind");
 $1->initialize($2);
 endsnippet
 
@@ -2349,7 +3046,7 @@ endsnippet
 
 snippet dport "define port"
     `!p snip.rv=str2camel(t[1],True)`,
-Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_ {this, "${1:name}", PortId::`!p snip.rv=str2camel(t[1],True)`};
+Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_ {*this, "${1:name}", PortId::`!p snip.rv=str2camel(t[1],True)`};
 endsnippet
 
 snippet cpm "connect ports for modules"
@@ -2361,145 +3058,177 @@ endsnippet
 # module initialize(cfg)
 ########################################
 snippet cmis "miss init"
-if (!${1:v})
-{
+if (!${1:v}) {
     NSFX_THROW(LogicError{})("Missing '$1'");
 }
 endsnippet
 
 snippet cinit "cfg init"
 if (${1:cfg}.contains("name")) {
-    setName($1("name"));
+    setName($1["name"]);
 }
 if ($1.contains("log level")) {
-    setLogLevel($1("log level"));
+    setLogLevel($1["log level"]);
 }
 endsnippet
 
-snippet carray "cfg array"
+snippet carr "cfg array"
 //
-if (${1:cfg}.contains("$2")) {
-    if (!$1("$2").isArray()) {
+if (!${1:cfg}.contains("${2:name}")) {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
+} else {
+    const JsonVar& ${3:`!p snip.rv=str2camel(t[2],False)`J} = $1["$2"];
+    if (!$3.isArray()) {
         NSFX_THROW(ConfigError{})(
             "Invalid '$2', which must be an array");
-    }
-    ${3:size} = $1("$2").size();
-    if (!$3) {
+    } else if (!$3.arr().size()) {
         NSFX_THROW(ConfigError{})(
             "Invalid '$2', which must not be empty");
+    }
+    const size_t ${4:num`!p snip.rv=str2camel(t[2],True)`} = $3.arr().size();
+    $0
+}
+endsnippet
+
+snippet cobj "cfg obj"
+//
+if (!${1:cfg}.contains("${2:name}")) {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
+} else {
+    const JsonVar& ${3:`!p snip.rv=str2camel(t[2],False)`J} = $1["$2"];
+    if (!$3.isObject()) {
+        NSFX_THROW(ConfigError{})(
+            "Invalid '$2', which must be an object");
     }
 }
 endsnippet
 
 snippet caddr "cfg addr"
 //
-if (${1:cfg}.contains("$3")) {
-    ${2:addr} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:I32}();
-    if ($2 == AddrValue::None) {
+if (${1:cfg}.contains("${2:name}")) {
+    const auto ${3:`!p snip.rv=str2camel(t[2],False)`} = $1["$2"].as${4:U32}();
+    if ($3 == AddrValue::None) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$3': {}", $1("$3"));
+            "Invalid '$3': {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet cnum "cfg numeric"
 //
-if (${1:cfg}.contains("$3")) {
-    ${2:v} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").as${4:U32}();
-    if ($2 <= 0) {
+if (${1:cfg}.contains("${2:name}")) {
+    const auto ${3:`!p snip.rv=str2camel(t[2],False)`} = $1["$2"].as${4:U32}();
+    if ($3 <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$3': {}", $1("$3"));
+            "Invalid '$2' {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet cdbl "cfg dbl"
 //
-if (${1:cfg}.contains("$3")) {
-    ${2:v} = $1("${3:`!p snip.rv=camel2delim(t[2],False,' ')`}").asDouble();
-    if ($2 <= 0) {
+if (${1:cfg}.contains("${2:name}")) {
+    const auto ${3:`!p snip.rv=str2camel(t[2],False)`} = $1["$2"].as${4:Double}();
+    if ($3 <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$3': {}", $1("$3"));
+            "Invalid '$2': {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet ctime "cfg time"
 //
-if (${1:cfg}.contains("$2")) {
+if (${1:cfg}.contains("${2:name}")) {
     int64_t ns{};
-    unit::str_to_nanosec($1("${2:name}"), &ns);
+    unit::str_to_nanosec($1["$2"], &ns);
     if (ns <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$2': {}", $1("$2"));
+            "Invalid '$2': {}", $1["$2"]);
     }
-    ${3:`!p snip.rv=str2camel(t[2],False)`} = simtime_t::nano(ns);
+    const auto ${3:`!p snip.rv=str2camel(t[2],False)`} = simtime_t::nano(ns);
+    $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet cmeter "cfg meters"
 //
-if (${1:cfg}.contains("$2")) {
+if (${1:cfg}.contains("${2:name}")) {
     double meters{};
-    unit::str_to_meters($1("${2:name}"), &meters);
+    unit::str_to_meters($1["$2"], &meters);
     if (meters <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$2': {}", $1("$2"));
+            "Invalid '$2': {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet cbyte "cfg Byte"
 //
-if (${1:cfg}.contains("$2")) {
+if (${1:cfg}.contains("${2:name}")) {
     int64_t bytes{};
-    unit::str_to_bytes($1("${2:name}"), &bytes);
+    unit::str_to_bytes($1["$2"], &bytes);
     if (bytes <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$2': {}", $1("$2"));
+            "Invalid '$2': {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet cbps "cfg bps"
 //
-if (${1:cfg}.contains("$2")) {
+if (${1:cfg}.contains("${2:name}")) {
     double bps{};
-    unit::str_to_bps($1("${2:name}"), &bps);
+    unit::str_to_bps($1["$2"], &bps);
     if (bps <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$2': {}", $1("$2"));
+            "Invalid '$2': {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet cwatt "cfg watt"
 //
-if (${1:cfg}.contains("$2")) {
+if (${1:cfg}.contains("${2:name}")) {
     double watts{};
-    unit::str_to_watts($1("${2:name}"), &watts);
+    unit::str_to_watts($1["$2"], &watts);
     if (watts <= 0) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$2': {}", $1("$2"));
+            "Invalid '$2': {}", $1["$2"]);
     }
     $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
 endsnippet
 
 snippet csock "cfg sock"
 //
 if (${1:cfg}.contains("${2:name}")) {
-    const JsonVar& jv = cfg("$2");
+    const JsonVar& jv = cfg["$2"];
     InetSocketAddress sockAddr{};
     if (!sockAddr.parse(jv.asString())) {
         NSFX_THROW(ConfigError{})(
-            "Invalid '$2': {}, failed to parse", jv);
+            "Invalid '$2' '{}', failed to parse", jv);
     }
     $0
 } else {
@@ -2508,12 +3237,17 @@ if (${1:cfg}.contains("${2:name}")) {
 endsnippet
 
 snippet cmod "cfg module"
-{
-    const JsonVar& $2J = cfg("${2:`!p snip.rv=var2type(t[1]).lower()`}");
-    ${1:v} = createModule($2J("cid"));
-    take($1);
-    $1->initialize($2J);
+//
+if (!${1:cfg}.contains("${2:name}")) {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
 }
+const JsonVar& ${3:`!p snip.rv=str2camel(t[2],False)`J} = cfg["$2"];
+if (!$3.contains("cid")) {
+    NSFX_THROW(ConfigError{})("Missing 'cid' in '$2'");
+}
+${4:`!p snip.rv=str2camel(t[2],False)`} = createModule($3["cid"]);
+take(*$4);
+$4->initialize($3);
 endsnippet
 
 snippet hev "handle ev"
@@ -2525,31 +3259,23 @@ default: NSFX_LOG_ERROR()("Unknown event [eid={}]", (int)eid);
 endsnippet
 
 snippet hmsg "handle msg"
-PortId pid = (PortId)msg.arrivalPort()->id();
+PortId pid = (PortId)msg.arrivalPort().id();
 switch (pid) {
 ${0}case PortId::Xxx : xxx(msg); break;
 default: NSFX_LOG_ERROR()("Unknown message [pid={}]", (int)pid);
 }
 endsnippet
 
-snippet caset "case timer"
+snippet casev "case event"
 case EventId::${2:`!p snip.rv=upperFirst(t[1])`} : on${1:Xxx}(); break;
 endsnippet
 
 snippet casep "case port"
-case PortId::${2:`!p snip.rv=upperFirst(t[1])`} : on${1:Xxx}(${3:msg}); break;
+case PortId::${2:`!p snip.rv=upperFirst(t[1])`} : handle${1:Xxx}(${3:msg}); break;
 endsnippet
 
 snippet sev "ev->scheduleAt()"
 scheduleAt(${1:timer}, ${2:t});
-endsnippet
-
-snippet jj "" w
-JsonValue& jv, 
-endsnippet
-
-snippet cj "" w
-const JsonValue& jv, 
 endsnippet
 
 ########################################
