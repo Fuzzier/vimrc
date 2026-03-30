@@ -1,4 +1,5 @@
 " Highlight additional keywords in the comments
+syn keyword cTodo contained HACK
 syn keyword cTodo contained BAD
 
 " Highlight brace initialized variable names
