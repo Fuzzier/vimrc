@@ -8,12 +8,12 @@
 " Save and restore window view for buffer
 "--------------------------------------------------------------------------------
 " XBufWin can be disabled.
-if !exists('g:xbufwin_off')
-    let g:xbufwin_off = 0
+if !exists('g:xbufwin_enabled')
+    let g:xbufwin_enabled = 0
 endif
 "
 function! XBufWinRestView()
-    if g:xbufwin_off | return | endif
+    if !g:xbufwin_enabled | return | endif
     if &diff | return | endif " Do not interfere with synchronous diff view
     let l:buf = bufnr()
     let l:win = win_getid()
@@ -27,9 +27,9 @@ function! XBufWinRestView()
         endif
     endif
 endfunction
-
+"
 function! XBufWinSaveView()
-    if g:xbufwin_off | return | endif
+    if !g:xbufwin_enabled | return | endif
     if &diff | return | endif " Do not interfere with synchronous diff view
     let l:win = win_getid()
     let l:view = winsaveview()
@@ -50,7 +50,7 @@ function! XBufWinSaveView()
         endif
     endfor
 endfunction
-
+"
 augroup XBufWin
   autocmd!
   autocmd BufEnter * :call XBufWinRestView()
