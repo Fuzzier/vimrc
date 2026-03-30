@@ -586,6 +586,7 @@ command! -bar DuplicateTabpane
       \   let v:this_session = s:this_session |
       \   unlet! s:file s:sessionoptions s:this_session s:tabnr |
       \ endtry
+
 "===============================================================================
 " EDITTING
 "===============================================================================
@@ -2711,6 +2712,72 @@ function! CppUseBaseType()
     exec 'normal! 0f=lDByiwf=a typename MyBase::pa;'
     " Allow repeat by '.'
     silent! call repeat#set(":call CppUseBaseType()\<CR>")
+endfunction
+
+"----------------------------------------
+" @return A dictionary { "type": "TypeName", "name": "valueName", "arr": bool }
+function! CppParseMemberDefinition(line)
+    let s = a:line
+    " Remove comments
+    let s = substitute(s, '\/\/.*$', '', '')
+    let s = substitute(s, '\/\*.*$', '', '')
+    " Remove colon
+    let s = substitute(s, ';.*$', '', '')
+    " Remove initializers
+    let s = substitute(s, '{.*$', '', '')
+    " Remove whitespaces
+    let s = trim(s)
+    " Check array
+    let arr = v:false
+    if s =~ '\[.*\]$'
+        let arr = v:true
+    endif
+    " Remove array
+    let s = substitute(s, '\[.*\]$', '', '')
+    " Remove whitespaces
+    let s = trim(s)
+    " Variable name
+    let v = matchstr(s, '\<_\=\w*$')
+    if empty(v)
+        return #{ type: s, name: '', arr: arr }
+    endif
+    let t = substitute(s, '\s*' . v . '$', '', '')
+    return #{ type: t, name: v, arr: arr }
+endfunction
+
+"----------------------------------------
+function! CppMemberToGetter()
+    let mem = CppParseMemberDefinition(getline('.'))
+    let rv = mem['name']
+    let fn = substitute(mem['name'], '_$', '', '')
+    let rt = mem['type']
+    if rt =~ '\*$'
+        let rt = substitute(rt, '\*$', '\&', '')
+        let rv = '*' . rv
+    elseif rt !~ '&$'
+        let rt = rt . '&'
+    endif
+    " Move to ';', and go back to start of var
+    execute 'normal! ^D'
+    if mem['arr'] == v:false
+        execute 'normal! a'. printf('      %s %s(void)       noexcept { return %s; }', rt, fn, rv)
+        execute 'normal! o'. printf('const %s %s(void) const noexcept { return %s; }', rt, fn, rv)
+    else
+        execute 'normal! a'. printf('%s %s(size_t index) noexcept {', rt, fn)
+        execute 'normal! o'. printf('return %s[index];', rv)
+        execute 'normal! o'. printf('}')
+        execute 'normal! o'. printf('const %s %s(size_t index) const noexcept {', rt, fn)
+        execute 'normal! o'. printf('return %s[index];', rv)
+        execute 'normal! o'. printf('}')
+    endif
+    " Add a blank line if the next line is not blank.
+    let s = getline(line('.') + 1)
+    if s !~ '^\s*$'
+        execute 'normal! o'
+    endif
+    execute 'normal! j'
+    " Allow repeat by '.'
+    silent! call repeat#set(":call CppMemberToGetter()\<CR>")
 endfunction
 
 "----------------------------------------
