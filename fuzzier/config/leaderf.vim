@@ -42,16 +42,6 @@ let g:Lf_WildIgnore = {
 let g:Lf_ShortcutF = ''
 let g:Lf_ShortcutB = ''
 "
-" Define custom key mappings.
-nnoremap <silent> <Leader>ff  :LeaderfFile<CR>
-nnoremap <silent> <Leader>fm  :LeaderfMru<CR>
-nnoremap <silent> <Leader>fn  :LeaderfFunction<CR>
-nnoremap <silent> <Leader>fan :LeaderfFunctionAll<CR>
-nnoremap <silent> <Leader>ft  :LeaderfBufTag<CR>
-nnoremap <silent> <Leader>fat :LeaderfBufTagAll<CR>
-nnoremap <silent> <Leader>fl  :LeaderfLine<CR>
-nnoremap <silent> <Leader>fal :LeaderfLineAll<CR>
-"
 " Customize command inside LeaderF's prompt.
 " function    hotkey
 " <C-K>    => <Up>     : navigate the next result list.
@@ -68,5 +58,29 @@ let g:Lf_CommandMap = {
     \ '<C-Up>':   ['<C-K>'],
     \ '<C-Down>': ['<C-J>'],
     \ }
-
+"
+if !exists('g:Lf_CommandRunning')
+    let g:Lf_CommandRunning = 0
+endif
+"
+function! s:MyLeaderfCmd(...) abort
+    let g:Lf_CommandRunning = 1
+    try
+        execute 'Leaderf' join(a:000, ' ')
+    finally
+        let g:Lf_CommandRunning = 0
+    endtry
+endfunction
+"
+command! -nargs=* MyLeaderf call <SID>MyLeaderfCmd(<f-args>)
+"
+" Define custom key mappings.
+nnoremap <silent> <Leader>ff  :MyLeaderf file<CR>
+nnoremap <silent> <Leader>fm  :MyLeaderf mru<CR>
+nnoremap <silent> <Leader>fn  :MyLeaderf function<CR>
+nnoremap <silent> <Leader>fan :MyLeaderf function --all<CR>
+nnoremap <silent> <Leader>ft  :MyLeaderf bufTag<CR>
+nnoremap <silent> <Leader>fat :MyLeaderf bufTag --all<CR>
+nnoremap <silent> <Leader>fl  :MyLeaderf line<CR>
+nnoremap <silent> <Leader>fal :MyLeaderf line --all<CR>
 

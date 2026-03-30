@@ -146,7 +146,7 @@ endclass
 # defcompile LayoutParser
 
 def SetWinWidth()
-    if !g:set_win_width_enabled
+    if !g:set_win_width_enabled || g:Lf_CommandRunning
         return
     endif
     var id = win_getid()
