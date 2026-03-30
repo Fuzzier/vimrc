@@ -13,8 +13,8 @@ if !exists('g:xbufwin_off')
 endif
 "
 function! XBufWinRestView()
-    if &diff | return | endif " Do not interfere with synchronous diff view
     if g:xbufwin_off | return | endif
+    if &diff | return | endif " Do not interfere with synchronous diff view
     let l:buf = bufnr()
     let l:win = win_getid()
     if exists('b:xbufwin_view')
@@ -29,8 +29,8 @@ function! XBufWinRestView()
 endfunction
 
 function! XBufWinSaveView()
-    if &diff | return | endif " Do not interfere with synchronous diff view
     if g:xbufwin_off | return | endif
+    if &diff | return | endif " Do not interfere with synchronous diff view
     let l:win = win_getid()
     let l:view = winsaveview()
     if exists('b:xbufwin_view')
