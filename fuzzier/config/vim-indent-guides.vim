@@ -10,6 +10,9 @@
 " Start automatically.
 let g:indent_guides_enable_on_vim_startup = 1
 "
+" Disable the default mapping (<Leader>ig).
+let g:indent_guides_default_mapping = 0
+"
 " Disable for certain plugins.
 let g:indent_guides_exclude_filetypes = [ 'help', 'nerdtree', 'leaderf' ]
 "
