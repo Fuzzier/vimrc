@@ -648,6 +648,7 @@ call plug#begin(repos_path)
     " =========================
     " A Vim plugin which shows git diff markers in the sign column and
     " stages/previews/undoes hunks and partial hunks.
+    " Comment: It is handy to navigate hunks via [c and ]c key mappings.
     Plug 'airblade/vim-gitgutter'
     " A Git wrapper so awesome, it should be illegal.
     Plug 'tpope/vim-fugitive'
