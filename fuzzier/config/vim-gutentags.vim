@@ -16,7 +16,7 @@ let g:gutentags_enabled = 1
 let g:gutentags_cache_dir = expand(g:vimrc_path . '/LeaderF/gtags')
 "
 let g:gutentags_ctags_extra_args = [
-    \ '-I BOOST_NOEXCEPT,BOOST_CONSTEXPR,NSFX_NOEXCEPT,NSFX_OVERRIDE,NSFX_FINAL'
+    \ '-I BOOST_NOEXCEPT,BOOST_CONSTEXPR'
     \ ]
 "
 let g:gutentags_ctags_exclude = [
@@ -37,6 +37,8 @@ let g:gutentags_ctags_extra_args = [
 let g:gutentags_exclude_filetypes = [
     \ 'vim',
     \ 'snippets',
-    \ 'fugitive', 'gitcommit'
+    \ 'leaderf',
+    \ 'fugitive',
+    \ 'gitcommit'
     \ ]
 
