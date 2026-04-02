@@ -130,6 +130,8 @@ function! CppIpcMemberToP()
     silent! call repeat#set(":call CppIpcMemberToP()\<CR>")
 endfunction
 
+command! CppIpcMemberToP call CppIpcMemberToP()
+
 "----------------------------------------
 function! CppIpcMemberToE()
     let mem = CppParseMemberDefinition(getline('.'))
@@ -167,6 +169,8 @@ function! CppIpcMemberToE()
     silent! call repeat#set(":call CppIpcMemberToE()\<CR>")
 endfunction
 
+command! CppIpcMemberToE call CppIpcMemberToE()
+
 "----------------------------------------
 function! CppIpcMemberToB()
     let mem = CppParseMemberDefinition(getline('.'))
@@ -199,4 +203,6 @@ function! CppIpcMemberToB()
     " Allow repeat by '.'
     silent! call repeat#set(":call CppIpcMemberToB()\<CR>")
 endfunction
+
+command! CppIpcMemberToB call CppIpcMemberToB()
 
