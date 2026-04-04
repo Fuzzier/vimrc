@@ -14,5 +14,5 @@ let g:context_add_autocmds = 1
 let g:context_extend_regex = '^\s*\([]{})]\|end\|else\|case\>\|default\>\|public\s*:\|private\s*:\|protected\s*:\)'
 let g:context_skip_regex = '^\s*\($\|#\|//\|/\*\|\*\($\|/s\|\/\)\|public\s*:\|private\s*:\|protected\s*:\)'
 let g:context_filetype_blacklist = [ 'leaderf' ]
-let g:context_buftype_blacklist  = [ 'nofile' ]
+let g:context_buftype_blacklist  = [ '' ]
 
