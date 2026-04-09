@@ -819,10 +819,6 @@ snippet pu "public"
 public
 endsnippet
 
-snippet pro "protected"
-protected
-endsnippet
-
 snippet pr "private"
 private
 endsnippet
@@ -1368,14 +1364,6 @@ snippet p= "T* v = nullptr"
 ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
 endsnippet
 
-snippet v= "value ="
-${1:v} = ${2:$1}
-endsnippet
-
-snippet m= "value_ ="
-${1:v}_ = ${2:$1}
-endsnippet
-
 snippet cv "const T v =" w
 const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
@@ -1386,6 +1374,14 @@ endsnippet
 
 snippet c= "const T v ="
 const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
+endsnippet
+
+snippet v= "value ="
+${1:v} = ${2:$1}
+endsnippet
+
+snippet m= "value_ ="
+${1:v}_ = ${2:$1}
 endsnippet
 
 ########################################
@@ -1519,12 +1515,12 @@ endsnippet
 # Format
 ########################################
 snippet fmt "format"
-template<> struct formatter<nsfx::${1:T}>
+template<> struct fmt::formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using value_type = nsfx::$1;
+    using ${2:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const value_type& v, FormatContext& ctx) const {
+    format(const $2& v, FormatContext& ctx) const {
         return formatter<$2>::format(to_string(v), ctx);
         return format_to(ctx.out(), "{}", v);
     }
@@ -1532,21 +1528,38 @@ template<> struct formatter<nsfx::${1:T}>
 endsnippet
 
 snippet fmte "format enum"
-template<> struct formatter<nsfx::${1:T}>
+template<> struct fmt::formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using value_type = nsfx::$1;
+    using ${2:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const value_type& v, FormatContext& ctx) const {
-        using Y = std::underlying_type_t<value_type>;
-        return format_to(ctx.out(), "{}({})", to_string(v), static_cast<Y>(v));
+    format(const $2& v, FormatContext& ctx) const {
+        using U = std::underlying_type_t<$2>;
+        const U u = static_cast<U>(v);
+        return format_to(ctx.out(), "{}({})", to_string(v), u);
+    }
+};
+endsnippet
+
+snippet fmtf "format flags"
+template<> struct fmt::formatter<nsfx::${1:T}>
+    : formatter<${2:std::string_view}>
+{
+    using ${2:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    template<class FormatContext> constexpr typename FormatContext::iterator
+    format(const $2& v, FormatContext& ctx) const {
+        using U = std::underlying_type_t<$2>;
+        const U u = static_cast<U>(v);
+        char s[8] {};
+        size_t c {};
+        return format_to(ctx.out(), "{}({})", std::string_view{s, c}, u);
     }
 };
 endsnippet
 
 snippet fmts "format"
 template<>
-struct formatter<nsfx::${1:T}>
+struct fmt::formatter<nsfx::${1:T}>
     : nsfx::Formatx<nsfx::$1> {};
 endsnippet
 
@@ -1572,10 +1585,14 @@ operator<<(std::basic_ostream<Char, Traits>& os, const ${1:T}& ${2:`!p snip.rv=t
 endsnippet
 
 ########################################
-# Atomic
+# Various types
 ########################################
 snippet ato "std::atomic" w
 std::atomic<${1:${VISUAL:T}}>
+endsnippet
+
+snippet op> "std::optional" w
+std::optional<${1:${VISUAL:T}}>
 endsnippet
 
 ########################################
