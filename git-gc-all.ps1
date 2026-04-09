@@ -1,63 +1,55 @@
-function IterateSubFolders()
-{
-    param
-    (
+param (
+    [string]$Path,
+    [switch]$NoPause
+)
+
+function IterateSubFolders() {
+    param (
         # A single path, or an array of paths
         $Paths,
-        # Return $True to visit subdirectories recursively
-        $Callback
+        # If $true is returned, then visit subdirectories recursively
+        $VisitSubdirCb
     )
-    $toVisit = @()
-    foreach ($path in $Paths)
-    {
+    $ToVisit = @()
+    foreach ($Path in $Paths) {
         # Skip junction (symbolic link of directory)
-        $item = Get-Item -Path $path -Force
-        if ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint)
-        {
-            # Convert `$item` to a `DirectoryInfo` object and retrieves it
-            $reparsePointType = [System.IO.DirectoryInfo]$item | Get-Item
-            if ($reparsePointType.LinkType -eq "Junction")
-            {
+        $Item = Get-Item -Path $Path -Force
+        if ($Item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) {
+            # Convert `$item` to `DirectoryInfo` object and retrieves it
+            $ReparsePointType = [System.IO.DirectoryInfo]$Item | Get-Item
+            if ($ReparsePointType.LinkType -eq "Junction") {
                 continue
             }
         }
-        $children = Get-ChildItem -Path $path -Directory -Force
-        foreach ($child in $children)
-        {
-            $fullpath = $child.FullName
-            # Return $True to visit subdirectories recursively
-            $retval = & $Callback -Path $fullpath
-            if ($retval[-1])
-            {
-                $toVisit = $toVisit + $fullpath
+        $Children = Get-ChildItem -Path $Path -Directory -Force
+        foreach ($Child in $Children) {
+            $FullPath = $Child.FullName
+            # If $true is returned, then visit subdirectories recursively
+            $VisitSubdir = & $VisitSubdirCb -Path $FullPath
+            if ($VisitSubdir[-1]) {
+                $ToVisit = $ToVisit + $FullPath
             }
         }
     }
-    $toVisit
+    $ToVisit
 }
 
-function IterateSubFoldersRecursively()
-{
-    param
-    (
+function IterateSubFoldersRecursively() {
+    param (
         # A single path, or an array of paths
         $Paths,
-        # Return $True to visit subdirectories recursively
-        $Callback
+        # If $true is returned, then visit subdirectories recursively
+        $VisitSubdirCb
     )
-    $toVisit = $Paths
-    do
-    {
-        $toVisit = IterateSubFolders -Paths $toVisit -Callback $Callback
-    }
-    while ($toVisit)
+    $ToVisit = $Paths
+    do {
+        $ToVisit = IterateSubFolders -Paths $ToVisit -VisitSubdirCb $VisitSubdirCb
+    } while ($ToVisit)
 }
 
-function GitGc()
-{
-    param
-    (
-        [string] $Path
+function GitGc() {
+    param (
+        [string]$Path
     )
     Write-Host '========================================'
     Write-Host $Path
@@ -67,71 +59,65 @@ function GitGc()
     git prune
 }
 
-function TryGitRepo()
-{
-    param
-    (
-        [string] $Path
+function TryGitRepo() {
+    param (
+        [string]$Path
     )
-    $isGitRepo = (Test-Path -Path (Join-Path -Path $Path -ChildPath 'HEAD')) -and
+    $IsGitRepo = (Test-Path -Path (Join-Path -Path $Path -ChildPath 'HEAD')) -and
                  (Test-Path -Path (Join-Path -Path $Path -ChildPath 'refs')) -and
                  (Test-Path -Path (Join-Path -Path $Path -ChildPath 'objects'))
-    if ($isGitRepo)
-    {
-        $objectsPath = Join-Path -Path $Path -ChildPath 'objects'
-        # Get all subdirectories whose name has two characters, other than 'info' and 'pack'
-        $subfolders = Get-ChildItem -Path $objectsPath -Directory -Name '??'
-        if ($subfolders)
-        {
-            $retval = GitGc -Path $Path
+    if ($IsGitRepo) {
+        $ObjectsPath = Join-Path -Path $Path -ChildPath 'objects'
+        # If there are subdirectories whose name has two characters, do `git gc`
+        $Subfolders = Get-ChildItem -Path $ObjectsPath -Directory -Name '??'
+        if ($Subfolders) {
+            $Retval = GitGc -Path $Path
             return $true
         }
     }
     return $false
 }
 
-function TryGitWorktree()
-{
-    param
-    (
-        [string] $Path
+function TryGitWorktree() {
+    param (
+        [string]$Path
     )
-    $repo = Join-Path -Path $Path -ChildPath '.git'
-    $isGitWorktree = Test-Path -Path $repo -PathType Container
-    if ($isGitWorktree)
-    {
-        return (TryGitRepo -Path $repo)
+    $Repo = Join-Path -Path $Path -ChildPath '.git'
+    $IsGitWorktree = Test-Path -Path $Repo -PathType Container
+    if ($IsGitWorktree) {
+        return (TryGitRepo -Path $Repo)
     }
     return $false
 }
 
-$callback = {
-    param
-    (
-        [string] $Path
+$VisitSubdirCb = {
+    param (
+        [string]$Path
     )
-    $name = Split-Path -Path $Path -Leaf
-    if ($name -match 'qt.-build')
-    {
+    $Name = Split-Path -Path $Path -Leaf
+    if ($Name -match 'qt.-build') {
         return $false
     }
-    if ($name -match '^\.(?!git$)')
-    {
+    if ($Name -match '^\.(?!git$)') {
         return $false
     }
-    if ($name -cmatch '^(Misc|Swig|Lua|out|Asan|Debug|Release|RelWithDebInfo|OpRelease|OpDebug)$')
-    {
+    if ($Name -cmatch '^(Misc|Swig|Lua|out|Asan|Debug|Release|RelWithDebInfo|OpRelease|OpDebug)$') {
         return $false
     }
-    if ($name -cmatch '^(qt.|icu|llvm-project|vim|neovim)$')
-    {
+    if ($Name -cmatch '^(qt.|icu|llvm-project|vim|neovim)$') {
         TryGitWorktree -Path $Path
         return $false
     }
     TryGitRepo -Path $Path
     return $true
 }
+
+if (-not $Path) {
+    $Path = $PWD
+}
 # Get all subdirectories under current directory
-IterateSubFoldersRecursively -Paths $PWD -Callback $callback
-Write-Host 'Done. Press any key to continue...' -NoNewline
-$key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown").VirtualKeyCode
+IterateSubFoldersRecursively -Paths $Path -VisitSubdirCb $VisitSubdirCb
+
+if (-not $NoPause) {
+	if($psISE){(New-Object -ComObject 'WScript.Shell').Popup('Click OK to continue...',0,'Script done',0)}else{Write-Host 'Done. Press any key to continue...' -NoNewline;$key=$host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown").VirtualKeyCode}
+}
