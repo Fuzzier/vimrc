@@ -107,7 +107,7 @@ function! CppIpcMemberToP()
     execute 'normal! ^D'
     if mem['arr'] == v:false
         execute 'normal! a'. printf('%s %s(void) const noexcept {', rt, fn)
-        execute 'normal! o'. printf('return getb<%s>(ptr() + offsetof_%s());', rt, fn)
+        execute 'normal! o'. printf('return get<%s>(ptr() + offsetof_%s(), be_);', rt, fn)
         execute 'normal! o}'
         execute 'normal! o'. printf('constexpr size_t offsetof_%s(void) const noexcept {', fn)
         execute 'normal! o'. printf('return off_p0_ + offsetof(p0, %s);', rv)
@@ -142,11 +142,11 @@ function! CppIpcMemberToE()
     execute 'normal! ^D'
     if mem['arr'] == v:false
         execute 'normal! a'. printf('%s %s(void) const noexcept {', rt, fn)
-        execute 'normal! o'. printf('return getb<%s>(ptr() + offsetof_%s());', rt, fn)
+        execute 'normal! o'. printf('return get<%s>(ptr() + offsetof_%s(), be_);', rt, fn)
         execute 'normal! o}'
         execute 'normal! o'. printf('void set_%s(%s %s) noexcept {', fn, rt, fn)
         execute 'normal! o'. printf('assert(size() >= offsetof_%s() + sizeof(%s));', fn, fn)
-        execute 'normal! o'. printf('putb(ptr() + offsetof_%s(), %s);', fn, fn)
+        execute 'normal! o'. printf('put(ptr() + offsetof_%s(), %s, be_);', fn, fn)
         execute 'normal! o}'
         execute 'normal! o'. printf('constexpr size_t offsetof_%s(void) const noexcept {', fn)
         execute 'normal! o'. printf('return off_p0_ + offsetof(p0, %s);', rv)
@@ -182,7 +182,7 @@ function! CppIpcMemberToB()
     if mem['arr'] == v:false
         execute 'normal! a'. printf('void set_%s(%s %s) noexcept {', fn, rt, fn)
         execute 'normal! o'. printf('assert(size() >= offsetof_%s() + sizeof(%s));', fn, fn)
-        execute 'normal! o'. printf('putb(ptr() + offsetof_%s(), %s);', fn, fn)
+        execute 'normal! o'. printf('put(ptr() + offsetof_%s(), %s, be_);', fn, fn)
         execute 'normal! o}'
         execute 'normal! o'. printf('constexpr size_t offsetof_%s(void) const noexcept {', fn)
         execute 'normal! o'. printf('return off_p0_ + offsetof(p0, %s);', rv)
