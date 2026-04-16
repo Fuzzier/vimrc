@@ -186,6 +186,17 @@ def unqualify(x):
     y = re.sub(r'.*:(\w+)', r'\1', x)
     return y
 
+# @brief Convert direction to verb.
+# @param[in] x e.g., '>net-data.req', '<net-data.ind'.
+def prim2func(x):
+    if x.startswith('<'):
+        y = 'send' + str2camel(x, True)
+    elif x.startswith('>'):
+        y = 'handle' + str2camel(x, True)
+    else:
+        y = str2camel(x, False)
+    return y
+
 endglobal
 
 ################################################################################
@@ -2867,14 +2878,20 @@ const $5* find($3 $4) const noexcept {
     return (it != $2.end()) ? std::addressof(*it) : nullptr;
 }
 
+/// Returns the element that would expire first.
 $5& front(void) noexcept { return $1.front(); }
 
+/// Returns the element that would expire first.
 const $5& front(void) const noexcept { return $1.front(); }
 
+/// Returns the element that would expire last.
 $5& back(void) noexcept { return $1.back(); }
 
+/// Returns the element that would expire last.
 const $5& back(void) const noexcept { return $1.back(); }
 
+/// Asserts that the new element's lifetime is no shorter than
+/// the existing ones.
 bool _checkTime(simtime_t time) const noexcept {
     if (!empty()) {
         const $5& $6 = $1.back();
@@ -2913,6 +2930,7 @@ AddResult _addOrGet($3 $4, simtime_t time) {
     }
 }
 
+/// Renews the lifetime of the specified element.
 void _refresh($5& $6, simtime_t time) noexcept {
     NSFX_ASSERT(_checkTime(time));
     $6.time_ = time;
@@ -2920,6 +2938,7 @@ void _refresh($5& $6, simtime_t time) noexcept {
     $1.push_back($6);
 }
 
+/// Erases expired elements.
 void _purge(simtime_t time) noexcept {
     while (!$1.empty()) {
         const $5& $6 = $1.front();
@@ -2931,6 +2950,7 @@ void _purge(simtime_t time) noexcept {
     }
 }
 
+/// Erases the element that expires first.
 void _pop_front(void) noexcept {
     NSFX_ASSERT(!empty());
     $1.pop_front_and_dispose([=] ($5* $6) noexcept {
@@ -2967,35 +2987,26 @@ endsnippet
 # sim time
 ########################################
 snippet tn "now"
-simtime_t now = simTime();
-endsnippet
-
-snippet tn- "now"
-simtime_t now = ${1:tib_}->simTime();
+const simtime_t now = simTime();
 endsnippet
 
 snippet t+ "now + dt"
-simtime_t ${1:time} = now + ${2:dt};
+const simtime_t ${1:time} = now + ${2:dt};
 endsnippet
 
 ########################################
 # Module
 ########################################
 snippet dmod "declare module"
-class ${1:Xxx}
-    : public Module
-{
 public:
     explicit
-    `!p snip.rv=unqualify(t[1])`(void);
-    virtual ~`!p snip.rv=unqualify(t[1])`(void);
+    ${1:T}(void) = default;
+    virtual ~$1(void) = default;
 
     // Object
 public:
     virtual std::string_view className(void) const noexcept override
-    {
-        return Object::className(this);
-    }
+    { return Object::className(this); }
 
     // Module
 public:
@@ -3003,7 +3014,7 @@ public:
     virtual void use(std::string_view iid, void* p) override;
     virtual void initialize(const JsonVar& cfg) override;
     virtual void on(const Event& ev) override;
-    virtual void handle(Message msg) override;
+    virtual void handle(Message&& msg) override;
 
     // 参数及数据结构.
 private:
@@ -3021,8 +3032,6 @@ private:
         None,
         Last,
     };
-
-};
 endsnippet
 
 snippet cname "cname"
@@ -3062,14 +3071,16 @@ Module::connect(*this, ">xxx-data.ind", *$1, "<xxx-data.ind");
 $1->initialize($2);
 endsnippet
 
-snippet dtimer "define timer"
-    `!p snip.rv=var2type(var2type(t[1]))`,
+snippet dev "define event"
 Event ${1:timer}Tmo_ {EventId::`!p snip.rv=var2type(t[1])`};
+void on$2(void);
+    ${2:`!p snip.rv=var2type(var2type(t[1]))`},
 endsnippet
 
 snippet dport "define port"
-    `!p snip.rv=str2camel(t[1],True)`,
 Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_ {*this, "${1:name}", PortId::`!p snip.rv=str2camel(t[1],True)`};
+void `!p snip.rv=prim2func(t[1])`(Message&& msg);
+    ${3:`!p snip.rv=str2camel(t[1],True)`},
 endsnippet
 
 snippet cpm "connect ports for modules"
@@ -3284,7 +3295,7 @@ endsnippet
 snippet hmsg "handle msg"
 PortId pid = (PortId)msg.arrivalPort().id();
 switch (pid) {
-${0}case PortId::Xxx : xxx(msg); break;
+${0}case PortId::Xxx : xxx(std::move(msg)); break;
 default: NSFX_LOG_ERROR()("Unknown message [pid={}]", (int)pid);
 }
 endsnippet
@@ -3294,7 +3305,7 @@ case EventId::${2:`!p snip.rv=upperFirst(t[1])`} : on${1:Xxx}(); break;
 endsnippet
 
 snippet casep "case port"
-case PortId::${2:`!p snip.rv=upperFirst(t[1])`} : handle${1:Xxx}(${3:msg}); break;
+case PortId::${2:`!p snip.rv=upperFirst(t[1])`} : handle${1:Xxx}(std::move(msg)); break;
 endsnippet
 
 snippet sev "ev->scheduleAt()"
