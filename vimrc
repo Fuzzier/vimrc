@@ -27,21 +27,21 @@ let g:vimrc_path=GetVimHome()
 " Backup directory
 "-------------------------------------------------------------------------------
 " Set backup directory.
-let backup_path=g:vimrc_path.'/bak'
-if !isdirectory(backup_path)
-    call mkdir(backup_path, 'p')
+let g:backup_path=g:vimrc_path.'/bak'
+if !isdirectory(g:backup_path)
+    call mkdir(g:backup_path, 'p')
 endif
-let &backupdir=backup_path
+let &backupdir=g:backup_path
 "
 "-------------------------------------------------------------------------------
 " Swap directory
 "-------------------------------------------------------------------------------
 " Set swap directory.
-let swap_path=g:vimrc_path.'/swp'
-if !isdirectory(swap_path)
-    call mkdir(swap_path, 'p')
+let g:swap_path=g:vimrc_path.'/swp'
+if !isdirectory(g:swap_path)
+    call mkdir(g:swap_path, 'p')
 endif
-let &directory=swap_path
+let &directory=g:swap_path
 " Do not swap file, since it can be troublesome.
 set noswapfile
 "
@@ -51,26 +51,26 @@ set noswapfile
 " Enable persistent undo for unloaded buffer.
 set undofile
 if !has('nvim')
-    let undo_path=g:vimrc_path.'/undo'
+    let g:undo_path=g:vimrc_path.'/undo'
 else " Neovim uses an incompatible undo format.
-    let undo_path=g:vimrc_path.'/nvim/undo'
+    let g:undo_path=g:vimrc_path.'/nvim/undo'
 endif
-if !isdirectory(undo_path)
-    call mkdir(undo_path, 'p')
+if !isdirectory(g:undo_path)
+    call mkdir(g:undo_path, 'p')
 endif
-let &undodir=undo_path
+let &undodir=g:undo_path
 "
 "-------------------------------------------------------------------------------
 " Bundle directory
 "-------------------------------------------------------------------------------
 " Set bundle directory.
-let bundle_path=g:vimrc_path.'/bundle'
-if !isdirectory(bundle_path)
-    call mkdir(bundle_path, 'p')
+let g:bundle_path=g:vimrc_path.'/bundle'
+if !isdirectory(g:bundle_path)
+    call mkdir(g:bundle_path, 'p')
 endif
 let &runtimepath.=','.g:vimrc_path.'/fuzzier'
 let &runtimepath.=','.g:vimrc_path.'/fuzzier/after'
-let repos_path=bundle_path.'/repos'
+let g:repos_path=g:bundle_path.'/repos'
 
 "-------------------------------------------------------------------------------
 " PYTHON
@@ -433,7 +433,7 @@ highlight link jsonKeyword Identifier
 " mkdir ~/.vim/autoload
 " ln -s ~/.vim/bundle/repos/vim-plug/plug.vim  ~/.vim/autoload
 " let g:plug_threads = 3
-call plug#begin(repos_path)
+call plug#begin(g:repos_path)
     " =========================
     " Plugin manager
     " =========================
@@ -1326,8 +1326,10 @@ endfunction
 " set tags+=../tags
 
 "===============================================================================
-unlet backup_path
-unlet swap_path
-unlet undo_path
-unlet bundle_path
+unlet g:vimrc_path
+unlet g:backup_path
+unlet g:swap_path
+unlet g:undo_path
+unlet g:bundle_path
+unlet g:repos_path
 
