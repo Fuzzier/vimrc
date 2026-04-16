@@ -16,7 +16,7 @@ let g:coc_config_home = g:vimrc_path
 let g:coc_data_home = g:vimrc_path . '/coc'
 "
 " Check whether coc.nvim installed.
-if isdirectory(repos_path.'/coc.nvim')
+if isdirectory(g:repos_path.'/coc.nvim')
     " Use <Tab> for trigger completion and navigate to the next complete item.
     function! s:check_backspace() abort
       let col = col('.') - 1
