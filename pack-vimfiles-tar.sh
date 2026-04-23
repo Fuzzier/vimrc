@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 # "VIM - Vi IMproved 9.0 (2022 Jun 28, compiled Aug 25 2022 10:53:48)"
 # -P: Use Perl compatible syntax for pattern.
@@ -19,6 +19,6 @@ tarfile=vimfiles-$vim_majorminor.$vim_patch-$D
 
 pushd .. > /dev/null
 
-tar -acf $tarfile.tar.gz --totals --exclude=.vim/bak --exclude=.vim/swp --exclude=.vim/tags --exclude=.vim/session --exclude=.vim/sessions --exclude=.vim/undo --exclude=.vim/nvim --exclude=.ccls-cache .vim .config/nvim
+tar -acf $tarfile.tar.gz --totals --exclude=.vim/bak --exclude=.vim/swp --exclude=.vim/tags --exclude=.vim/startify --exclude=.vim/LeaderF --exclude=.vim/undo --exclude=.vim/nvim --exclude=.ccls-cache .vim .config/nvim
 
 popd > /dev/null

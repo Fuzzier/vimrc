@@ -1,4 +1,4 @@
-# /usr/bin/bash
+#!/bin/bash
 
 for d in $(ls bundle/repos)
 do

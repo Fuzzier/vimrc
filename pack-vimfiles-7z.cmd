@@ -32,7 +32,7 @@ PUSHD ..
 SET vimfiles=vimfiles
 
 :: To exclude files and directories.
-SET __7z_x_args__=-x!%vimfiles%\bak -x!%vimfiles%\session -x!%vimfiles%\sessions -x!%vimfiles%\swp -x!%vimfiles%\tags -x!%vimfiles%\undo -x!%vimfiles%\nvim -xr!.local -xr!.ccls-cache
+SET __7z_x_args__=-x!%vimfiles%\bak -x!%vimfiles%\swp -x!%vimfiles%\tags -x!%vimfiles%\undo -x!%vimfiles%\startify -x!%vimfiles%\LeaderF -x!%vimfiles%\nvim -xr!.local -xr!.ccls-cache
 
 :: a: add to archive
 :: -ttar: create tarball
