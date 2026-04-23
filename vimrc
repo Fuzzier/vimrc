@@ -482,6 +482,8 @@ call plug#begin(g:repos_path)
     " =========================
     " The ultimate snippet solution for Vim. Send pull requests to SirVer/ultisnips!
     " Comment: Powerful, with interoperability with python and vim script.
+    " The commit 'c4c92bd04f38d45add297bc3e199a370d9280f3b' is the latest
+    " version that supports python3.8
     Plug 'SirVer/ultisnips'
     "
     " =========================
