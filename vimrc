@@ -704,52 +704,6 @@ function! AssignHotkeys()
 endfunction
 call AssignHotkeys()
 
-function! CopyClassName()
-    " class|struct Xxx
-    " * not preceded by any other keywords (e.g., 'friend')
-    " * not followed by ';'
-    let cline_num = line('.')
-    while cline_num != 0
-        let cline = getline(cline_num)
-        " class/struct declaration
-        let pattern = '^\(class\|struct\)\s\+\zs\(\k\|:\)\+\ze\;\@!'
-        let class_name = cline->matchstr(pattern)
-        if class_name != ''
-            break
-        endif
-        " ctor/dtor definition
-        "              leading spaces (as few as possible)
-        "                         keywords and :
-        "                                    ::
-        "                                      tild (if any)
-        let pattern = '^\(\zs\(\k\|:\)\+\ze\)::\~\?\1('
-        let class_name = cline->matchstr(pattern)
-        if class_name != ''
-            break
-        endif
-        " member function definition
-        "              leading spaces (as few as possible)
-        "                         keywords and :
-        "                                       ::
-        let pattern = '^\S.\{-}\zs\(\k\|:\)\+\ze::.*('
-        let class_name = cline->matchstr(pattern)
-        if class_name != ''
-            break
-        endif
-        let cline_num = cline_num - 1
-    endwhile
-    if class_name != ''
-        echo class_name
-        " If the class name looks like 'Xxx::Yyy'
-        if class_name =~ '::'
-            " Remove qualifiers, e.g., remove 'Xxx::', and keep the last 'Yyy'
-            let class_name = class_name->matchstr('\k\+$')
-        endif
-        call setreg('c', class_name)
-    endif
-endfunction
-nnoremap <Leader><Leader>c  :call CopyClassName()<CR>
-
 " function! Test()
 "     echo strftime('%H:%M:%S')
 "     silent! call repeat#set(":call Test()\")
