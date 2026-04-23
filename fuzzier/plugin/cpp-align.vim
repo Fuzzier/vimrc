@@ -16,9 +16,8 @@ function! s:CppFindMatchingClose(line, pos)
     elseif open == '<'
         let close = '>'
     else
-        return -1
+        return ['', -1]
     endif
-    let stack = []
     let depth = 0
     let index = a:pos + 1
     while index < len(a:line)
@@ -27,9 +26,33 @@ function! s:CppFindMatchingClose(line, pos)
             let depth += 1
         elseif ch == close
             if depth == 0
-                return index
+                return [close, index]
             endif
             let depth -= 1
+        endif
+        let index += 1
+    endwhile
+    return ['', -1]
+endfunction
+
+" Find the matching closing double-quote on the same line.
+function! s:CppFindMatchingDoubleQuote(line, pos)
+    let delim = a:line[a:pos]
+    if delim != '"'
+        return -1
+    endif
+    let index = a:pos + 1
+    let pch = ' '
+    while index < len(a:line)
+        let ch = a:line[index]
+        " Skip escape character.
+        " - If the previous character `pch` is '\', then ignore `ch`.
+        if pch == '\'
+            let pch = ' '
+        elseif ch == delim
+            return index
+        else
+            let pch = ch
         endif
         let index += 1
     endwhile
@@ -43,10 +66,23 @@ function! s:CppAlignAt(line_num, text, indent)
     call setline(a:line_num, str)
 endfunction
 
+function! s:CppAlignOp(line_num, text, indent)
+    let sp = repeat(' ', a:indent)
+    let str = substitute(a:text, '^\s*', '', '')
+    let str = sp . str
+    call setline(a:line_num, str)
+endfunction
+
+" NSFX_THROW(LogicError{})("This is an error");
+"     ^
+" NSFX_THROW(LogicError{})("This is an error"
+"     ^                    ^
+" NestParen(((sa, da
+"     ^       ^
 function! CppAlign()
     call repeat#set(":call CppAlign()\<CR>")
     let cline_num = line('.')
-    if cline_num == 0
+    if cline_num <= 1
         return
     endif
     let cline = getline(cline_num)
@@ -61,58 +97,104 @@ function! CppAlign()
     " Strip trailing spaces.
     let pline = substitute(pline, '\s*$', '', '')
     let pline_len = strlen(pline)
+    let align_pos = pline_len
     let pline_indent = match(pline, '\S')
     let cline_indent = match(cline, '\S')
-    if pline_len <= cline_indent + 1
+    " If cline starts after the last character of pline.
+    if pline_len <= cline_indent
         call s:CppAlignAt(cline_num, cline, pline_indent + shiftwidth())
         return
     endif
-    let pos = cline_indent
+    " The position of the first non-space character of pline
+    let pos = pline_indent
     while v:true
-        " Find next: space, (, [, {, <
-        let [ch, pos, end] = matchstrpos(pline, '\s\|[(\[{<]', pos)
+        " Find next:  sp (  [  {  <
+        let pat = '\V\s\|(\|[\|{\|<\k\@='
+        let [s, pos, end] = matchstrpos(pline, pat, pos)
         if pos == -1 || pos + 1 == pline_len
-            " Align with previous line with one more shiftwidth.
-            call s:CppAlignAt(cline_num, cline, pline_indent + shiftwidth())
-            return
+            " echom 'cannot find delim in pline'
+            break
         endif
-        " If an opening delimiter is found.
-        if ch !~# '\s'
-            let close_pos = s:CppFindMatchingClose(pline, pos)
-            " If the opening delimiter has no matching close on the same line.
-            if close_pos == -1
-                " Align with one character after: (, [, {, <
-                call s:CppAlignAt(cline_num, cline, pos + 1)
-                return
-            else
-                let pos = close_pos + 1
-                continue
-            endif
-        endif
-        " After space, find next: non-space, (, [, {, <
-        let [ch, pos, end] = matchstrpos(pline, '\S*[(\[{<]', pos + 1)
-        if pos == -1 || pos + 1 == pline_len
-            " Align with previous line with one more shiftwidth.
-            call s:CppAlignAt(cline_num, cline, pline_indent + shiftwidth())
-            return
-        endif
-        " If a keyword is found.
-        if ch =~# '\k'
-            " Align with the keyword.
-            call s:CppAlignAt(cline_num, cline, pos)
-            return
-        endif
-        " Otherwise, an opening delimiter is found.
-        " If the opening delimiter has no matching close on the same line.
-        if s:CppFindMatchingClose(pline, pos) == -1
-            " Align with one character after: (, [, {, <
-            call s:CppAlignAt(cline_num, cline, pos + 1)
-            return
-        else
+        " If a space is found.
+        if s =~# '\s'
+            " Continue search after space.
             let pos += 1
+            " Find next:   nsp        (  [  {  <
+            let pat = '\V\[^ ([{<]\*\((\|[\|{\|<\k\@=\)'
+            let [s, pos, end] = matchstrpos(pline, pat, pos)
+            if pos == -1 || pos + 1 == pline_len
+                " echom 'cannot find non-delim in pline'
+                break
+            endif
+            " If non-delimiter is found.
+            if s !~# '\V\[([{<]'
+                " echom 'found non-delim in pline ' .. s .. ' ' .. pos
+                " May align with the non-delimiter.
+                if cline_indent < pos
+                    let align_pos = pos
+                    " echom 'may align with non-delim in pline ' .. s .. ' ' .. align_pos
+                    break
+                endif
+            endif
             continue
         endif
+        " Otherwise, an opening delimiter is found.
+        " echom 'found delim ' .. s .. ' ' .. pos
+        let [cch, close_pos] = s:CppFindMatchingClose(pline, pos)
+        " If the opening delimiter has no matching close on the same line.
+        if close_pos != -1
+            " Continue search after the matching close delimiter.
+            let pos = close_pos + 1
+            " echom 'found closing pair in pline ' .. cch .. ' ' .. close_pos
+        else
+            " Continue search after the opening delimiter.
+            let pos += 1
+            " May align with one character after: (, [, {, <
+            if cline_indent < pos
+                let align_pos = pos
+                " echom 'may align after delim in pline ' .. s .. ' ' .. align_pos
+                break
+            endif
+        endif
     endwhile
+    " The position of the first non-space character of cline
+    let pos = cline_indent
+    " If cline starts with an operator that is followed by a space.
+    let ops = [
+    \   '.*', '->*', '->',
+    \   '++', '--',
+    \   '&&', '||',
+    \   '<<=', '>>=', '<<', '>>',
+    \   '<=>',
+    \   '<=', '>=', '==', '!=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=',
+    \   '<',  '>',  '=',        '+',  '-',  '*',  '/',  '%',  '&',  '|',  '^',
+    \                     '!',  '~',
+    \   '::', '.',  ',',  '?',  ':'
+    \ ]
+    " Very non-magic.
+    let pat = '\V\(' .. join(ops, '\|') .. '\)\ze\s'
+    " Search from the first non-space character of cline
+    let [s, c_op_pos, c_op_end] = matchstrpos(cline, pat, pos)
+    if c_op_pos != -1
+        " echom 'found c_op ' .. s .. ' ' .. c_op_pos
+        " Search for the first operator in pline.
+        let pat = '\s\zs\V\(' .. join(ops, '\|') .. '\)\ze\s'
+        let [s, p_op_pos, p_op_end] = matchstrpos(pline, pat)
+        " May align with the operator.
+        if p_op_pos != -1
+            " echom 'found p_op ' .. s .. ' ' .. p_op_pos
+            if c_op_pos < p_op_pos && c_op_pos < align_pos
+                let align_pos = p_op_pos
+                " echom 'align with op in pline ' .. s .. ' ' .. align_pos
+            endif
+        endif
+    endif
+    if align_pos == pline_len
+        " Align with previous line with one more shiftwidth.
+        let align_pos = pline_indent + shiftwidth()
+    endif
+    " echom 'align with pline ' .. align_pos
+    call s:CppAlignAt(cline_num, cline, align_pos)
 endfunction
 
 nnoremap <Leader>a :call CppAlign()<CR>
