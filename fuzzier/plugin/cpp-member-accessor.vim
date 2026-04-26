@@ -155,7 +155,7 @@ function! CppIpcMemberToE()
         execute 'normal! j'
     else
         execute 'normal! a'. printf('%s::Editor %s(void) const noexcept {', rt, fn)
-        execute 'normal! o'. printf('%s::Editor editor{ptr() + offsetof_%s(), end_};', rt, fn)
+        execute 'normal! o'. printf('%s::Editor editor{ptr() + offsetof_%s(), end_, be_};', rt, fn)
         execute 'normal! o'. printf('NSFX_VERIFY(editor.parse());')
         execute 'normal! o'. printf('return editor;')
         execute 'normal! o}'
@@ -192,7 +192,7 @@ function! CppIpcMemberToB()
     else
         execute 'normal! a'. printf('%s::Builder put_%s(void) {', rt, fn)
         execute 'normal! o'. printf('assert(size() >= offsetof_%s());', fn)
-        execute 'normal! o'. printf('return %s::Builder{buf_};', rt)
+        execute 'normal! o'. printf('return %s::Builder{buf_, be_};', rt)
         execute 'normal! o}'
         execute 'normal! o'. printf('constexpr size_t offsetof_%s(void) const noexcept {', fn)
         execute 'normal! o'. printf('return off_p1_ + offsetof(p1, %s);', rv)
