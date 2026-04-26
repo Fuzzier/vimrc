@@ -593,6 +593,18 @@ if constexpr (${1:condition}) {
 }
 endsnippet
 
+snippet ife "if enum class"
+if (${1:E}::None < ${2:`!p snip.rv=type2var(t[1])`} && $2 < $1::Last) {
+    ${3:${VISUAL}}
+}
+endsnippet
+
+snippet ifef "if enum class"
+if (${1:E}::First <= ${2:`!p snip.rv=type2var(t[1])`} && $2 < $1::Last) {
+    ${3:${VISUAL}}
+}
+endsnippet
+
 snippet elif "else if"
 else if (${1:condition}) {
     ${2:${VISUAL}}
@@ -707,10 +719,14 @@ for (const auto& ${1:x} : ${2:$1Set}) {
 endsnippet
 
 snippet fore "for enum class"
-constexpr auto kFirst${2:`!p snip.rv=upperFirst(type2var(t[1]))`} = static_cast<size_t>(${1:E}::First);
-constexpr auto kLast$2  = static_cast<size_t>($1::Last);
-for (size_t ${3:`!p snip.rv=first_char(type2var(t[1]))`} = kFirst$2; $3 < kLast$2; ++$3) {
-    const ${4:`!p snip.rv=type2var(t[1])`} = static_cast<$1>($3);
+for (size_t ${3:`!p snip.rv=first_char(type2var(t[1]))`} = 1u; $3 < k${2:`!p snip.rv=var2type(type2var(t[1]))`}Last; ++$3) {
+    const auto ${4:`!p snip.rv=type2var(t[1])`} = static_cast<${1:E}>($3);
+}
+endsnippet
+
+snippet foref "for enum class"
+for (size_t ${3:`!p snip.rv=first_char(type2var(t[1]))`} = k${2:`!p snip.rv=var2type(type2var(t[1]))`}First; $3 < k$2Last; ++$3) {
+    const auto ${4:`!p snip.rv=type2var(t[1])`} = static_cast<${1:E}>($3);
 }
 endsnippet
 
@@ -735,8 +751,8 @@ ${1:${VISUAL:vec_}}.cbegin(), $1.cend()
 endsnippet
 
 snippet efl "enum first/last"
-constexpr auto kFirst${2:`!p snip.rv=upperFirst(type2var(t[1]))`} = static_cast<size_t>(${1:E}::First);
-constexpr auto kLast$2  = static_cast<size_t>($1::Last);
+constexpr auto k${2:`!p snip.rv=upperFirst(type2var(t[1]))`}First = static_cast<size_t>(${1:E}::First);
+constexpr auto k$2Last  = static_cast<size_t>($1::Last);
 endsnippet
 
 snippet u2e "uint to enum"
@@ -744,7 +760,7 @@ const auto ${3:`!p snip.rv=type2var(t[1])`} = static_cast<${1:E}>(${2:value});
 endsnippet
 
 snippet e2u "enum to uint"
-const auto ${2:`!p snip.rv=type2var(t[1])`} = static_cast<size_t>(${1:value});
+const auto ${2:`!p snip.rv=first_char(type2var(t[1]))`} = static_cast<size_t>(${1:value});
 endsnippet
 
 ########################################
@@ -1411,6 +1427,10 @@ endsnippet
 
 snippet c= "const T v ="
 const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
+endsnippet
+
+snippet c=. "const T v ="
+const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:o}.${4:$2}();
 endsnippet
 
 snippet v= "value ="
@@ -2662,6 +2682,8 @@ snippet contst "swiss-table container"
 bool empty(void) const noexcept { return ${1:map_}.empty(); }
 
 size_t size(void) const noexcept { return $1.size(); }
+
+void reserve(size_t count) { return $1.reserve(count); }
 
 size_t count($2 $3) const noexcept {
     return $1.count($3);
