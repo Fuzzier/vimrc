@@ -157,8 +157,6 @@ function! CppAlign()
             endif
         endif
     endwhile
-    " The position of the first non-space character of cline
-    let pos = cline_indent
     " If cline starts with an operator that is followed by a space.
     let ops = [
     \   '.*', '->*', '->',
@@ -171,21 +169,32 @@ function! CppAlign()
     \                     '!',  '~',
     \   '::', '.',  ',',  '?',  ':'
     \ ]
-    " Very non-magic.
+    " Search for the first operator in pline.
     let pat = '\V\(' .. join(ops, '\|') .. '\)\ze\s'
-    " Search from the first non-space character of cline
-    let [s, c_op_pos, c_op_end] = matchstrpos(cline, pat, pos)
-    if c_op_pos != -1
-        " echom 'found c_op ' .. s .. ' ' .. c_op_pos
-        " Search for the first operator in pline.
-        let pat = '\s\zs\V\(' .. join(ops, '\|') .. '\)\ze\s'
-        let [s, p_op_pos, p_op_end] = matchstrpos(pline, pat)
-        " May align with the operator.
-        if p_op_pos != -1
-            " echom 'found p_op ' .. s .. ' ' .. p_op_pos
-            if c_op_pos < p_op_pos && c_op_pos < align_pos
-                let align_pos = p_op_pos
-                " echom 'align with op in pline ' .. s .. ' ' .. align_pos
+    let [p_op, p_op_pos, p_op_end] = matchstrpos(pline, pat, pline_indent)
+    if p_op_pos != -1
+        echom 'found p_op ' .. p_op .. ' ' .. p_op_pos
+        " Search for the first operator in cline.
+        let pat = '^' .. pat
+        let [c_op, c_op_pos, c_op_end] = matchstrpos(cline, pat, cline_indent)
+        if c_op_pos != -1
+            echom 'found c_op ' .. c_op .. ' ' .. c_op_pos
+            " May align with the operator.
+            if c_op_pos < p_op_pos
+                if cline_indent < p_op_pos && c_op_pos < align_pos
+                    " echom 'align with op in pline ' .. p_op .. ' ' .. align_pos
+                    let align_pos = p_op_pos
+                endif
+            endif
+        else
+            " Search for the first non-space in pline after the first operator.
+            let p_operand_pos = match(pline, '\S', p_op_pos + strlen(p_op))
+            if p_operand_pos != -1
+                " May align with the operand.
+                if cline_indent < p_operand_pos && p_operand_pos < align_pos
+                    echom 'align with operand in pline ' .. p_operand_pos
+                    let align_pos = p_operand_pos
+                endif
             endif
         endif
     endif
