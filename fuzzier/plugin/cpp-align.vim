@@ -97,14 +97,16 @@ function! CppAlign()
     " Strip trailing spaces.
     let pline = substitute(pline, '\s*$', '', '')
     let pline_len = strlen(pline)
-    let align_pos = pline_len
     let pline_indent = match(pline, '\S')
     let cline_indent = match(cline, '\S')
-    " If cline starts after the last character of pline.
-    if pline_len <= cline_indent
-        call s:CppAlignAt(cline_num, cline, pline_indent + shiftwidth())
+    " If cline starts before the first character of pline;
+    " OR cline starts after the last character of pline.
+    if cline_indent < pline_indent || pline_len <= cline_indent
+        call s:CppAlignAt(cline_num, cline, pline_indent)
         return
     endif
+    " Try to find an align position that is after and closest to cline_indent.
+    let align_pos = pline_len
     " The position of the first non-space character of pline
     let pos = pline_indent
     while v:true
@@ -181,7 +183,7 @@ function! CppAlign()
             echom 'found c_op ' .. c_op .. ' ' .. c_op_pos
             " May align with the operator.
             if c_op_pos < p_op_pos
-                if cline_indent < p_op_pos && c_op_pos < align_pos
+                if cline_indent < p_op_pos && p_op_pos < align_pos
                     " echom 'align with op in pline ' .. p_op .. ' ' .. align_pos
                     let align_pos = p_op_pos
                 endif
@@ -198,9 +200,14 @@ function! CppAlign()
             endif
         endif
     endif
+    " May align with previous line with one more shiftwidth.
+    let pline_indent_sw = pline_indent + shiftwidth()
+    if cline_indent < pline_indent_sw && pline_indent_sw < align_pos
+        let align_pos = pline_indent_sw
+    endif
+    " If there is no proper align position, align with previous line.
     if align_pos == pline_len
-        " Align with previous line with one more shiftwidth.
-        let align_pos = pline_indent + shiftwidth()
+        let align_pos = pline_indent
     endif
     " echom 'align with pline ' .. align_pos
     call s:CppAlignAt(cline_num, cline, align_pos)
