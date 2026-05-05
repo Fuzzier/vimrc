@@ -2092,17 +2092,17 @@ endsnippet
 snippet kcomp "Comp"
 struct ${1:Comp} {
     using is_transparent = void;
-    constexpr bool operator()(${2:Key} lhs, $2 rhs) const noexcept {
+    constexpr bool operator()($2 lhs, $2 rhs) const noexcept {
         return lhs < rhs;
     }
-    constexpr bool operator()(const ${3:T}& lhs, $2 key) const noexcept {
-        return lhs.${4:`!p snip.rv=type2var(t[2])`_} < key;
+    constexpr bool operator()(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}, const ${4:T}& rhs) const noexcept {
+        return $3 < rhs.${5:$3_};
     }
-    constexpr bool operator()($2 key, const $3& rhs) const noexcept {
-        return key < rhs.$4;
+    constexpr bool operator()(const $4& lhs, $2 $3) const noexcept {
+        return lhs.$5 < $3;
     }
-    constexpr bool operator()(const $3& lhs, const $3& rhs) const noexcept {
-        return lhs.$4 < rhs.$4;
+    constexpr bool operator()(const $4& lhs, const $4& rhs) const noexcept {
+        return lhs.$5 < rhs.$5;
     }
 };
 endsnippet
