@@ -171,16 +171,16 @@ function! CppAlign()
     \                     '!',  '~',
     \   '::', '.',  ',',  '?',  ':'
     \ ]
-    " Search for the first operator in pline.
-    let pat = '\V\(' .. join(ops, '\|') .. '\)\ze\s'
+    " Search for the first operator (surrounded by space) in pline.
+    let pat = '\V\s\(' .. join(ops, '\|') .. '\)\ze\s'
     let [p_op, p_op_pos, p_op_end] = matchstrpos(pline, pat, pline_indent)
     if p_op_pos != -1
-        echom 'found p_op ' .. p_op .. ' ' .. p_op_pos
+        " echom 'found p_op ' .. p_op .. ' ' .. p_op_pos
         " Search for the first operator in cline.
-        let pat = '^' .. pat
+        let pat = '^\V\(' .. join(ops, '\|') .. '\)\ze\s'
         let [c_op, c_op_pos, c_op_end] = matchstrpos(cline, pat, cline_indent)
         if c_op_pos != -1
-            echom 'found c_op ' .. c_op .. ' ' .. c_op_pos
+            " echom 'found c_op ' .. c_op .. ' ' .. c_op_pos
             " May align with the operator.
             if c_op_pos < p_op_pos
                 if cline_indent < p_op_pos && p_op_pos < align_pos
@@ -194,7 +194,7 @@ function! CppAlign()
             if p_operand_pos != -1
                 " May align with the operand.
                 if cline_indent < p_operand_pos && p_operand_pos < align_pos
-                    echom 'align with operand in pline ' .. p_operand_pos
+                    " echom 'align with operand in pline ' .. p_operand_pos
                     let align_pos = p_operand_pos
                 endif
             endif
