@@ -172,7 +172,7 @@ function! CppAlign()
     \   '::', '.',  ',',  '?',  ':'
     \ ]
     " Search for the first operator (surrounded by space) in pline.
-    let pat = '\V\s\(' .. join(ops, '\|') .. '\)\ze\s'
+    let pat = '\s\@<=\V\(' .. join(ops, '\|') .. '\)\ze\s'
     let [p_op, p_op_pos, p_op_end] = matchstrpos(pline, pat, pline_indent)
     if p_op_pos != -1
         " echom 'found p_op ' .. p_op .. ' ' .. p_op_pos
