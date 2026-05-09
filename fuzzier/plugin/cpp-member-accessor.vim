@@ -116,7 +116,7 @@ function! CppIpcMemberToP()
         execute 'normal! j'
     else
         execute 'normal! a'. printf('%s::Parser %s(void) const noexcept {', rt, fn)
-        execute 'normal! o'. printf('%s::Parser parser{ptr() + offsetof_%s(), end_};', rt, fn)
+        execute 'normal! o'. printf('%s::Parser parser{ptr() + offsetof_%s(), end_, be_};', rt, fn)
         execute 'normal! o'. printf('NSFX_VERIFY(parser.parse());')
         execute 'normal! o'. printf('return parser;')
         execute 'normal! o}'
