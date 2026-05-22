@@ -11,1279 +11,125 @@
 "===============================================================================
 " PATH
 "===============================================================================
-" If `g:vim_portable` does not exist or the value is `0`.
-if !get(g:, 'vim_portable', 0)
-    " The directory that contains this 'vimrc'.
-    let g:vim_home = expand('<sfile>:p:h')
+" The directory structure
+" vim ($VIM)
+" |- vim92 ($VIMRUNTIME)
+" |  |- vim.exe
+" |  |- gvim.exe
+" |- vimfiles
+" |  |- vimrc (this file)
+" |  |- fuzzier ($HOME)
+" |     |- vimrc
+" |     |- gvimrc
+" |
+" |- ccls
+" |  |- bin
+" |     |- ccls.exe
+" |- LLVM
+" |  |- bin
+" |     |- clang.exe
+" |     |- clang++.exe
+" |     |- lld.exe
+" |     |- lldb.exe
+" |- node
+" |  |- node.exe
+" |  |- node_modules
+" |- python
+"    |- python.exe
+"    |- Lib
+"       |- site-packages
+" The root directory.
+let s:vim_root = getenv('VIM')
+
+" The directory that contains this 'vimrc'.
+let s:curr_path = expand('<sfile>:p:h')
+
+let s:user = '/fuzzier'
+
+" The user profile directory.
+let s:vim_home = s:curr_path .. s:user
+if !isdirectory(s:vim_home)
+    let s:vim_home = s:curr_path .. '/vimfiles' .. s:user
+    if !isdirectory(s:vim_home)
+        echomsg 'Cannot find user directory'
+        cquit 1
+    endif
 endif
 
-" Set `runtimepath`.
-execute 'set runtimepath^=' .. g:vim_home
+" Prepend path to environment variable.
+function! s:PrependPathToEnvvar(varname, path)
+    if has('win32')
+        let sep = ';'
+    else
+        let sep = ':'
+    endif
+    let value = getenv(a:varname)
+    if empty(value)
+        call setenv(a:varname, a:path)
+    else
+        call setenv(a:varname, a:path .. sep .. value)
+    endif
+endfunction
 
-"-------------------------------------------------------------------------------
-" Backup directory
-"-------------------------------------------------------------------------------
-" Set backup directory.
-let g:backup_path = g:vim_home .. '/bak'
-if !isdirectory(g:backup_path)
-    call mkdir(g:backup_path, 'p')
-endif
-let &backupdir = g:backup_path
-"
-"-------------------------------------------------------------------------------
-" Swap directory
-"-------------------------------------------------------------------------------
-" Set swap directory.
-let g:swap_path = g:vim_home .. '/swp'
-if !isdirectory(g:swap_path)
-    call mkdir(g:swap_path, 'p')
-endif
-let &directory = g:swap_path
-" Do not swap file, since it can be troublesome.
-set noswapfile
-"
-"-------------------------------------------------------------------------------
-" Undo directory
-"-------------------------------------------------------------------------------
-" Enable persistent undo for unloaded buffer.
-set undofile
-if !has('nvim')
-    let g:undo_path = g:vim_home .. '/undo'
-else " Neovim uses an incompatible undo format.
-    let g:undo_path = g:vim_home .. '/nvim/undo'
-endif
-if !isdirectory(g:undo_path)
-    call mkdir(g:undo_path, 'p')
-endif
-let &undodir = g:undo_path
-"
-"-------------------------------------------------------------------------------
-" Bundle directory
-"-------------------------------------------------------------------------------
-" Set bundle directory.
-let g:bundle_path = g:vim_home .. '/bundle'
-if !isdirectory(g:bundle_path)
-    call mkdir(g:bundle_path, 'p')
-endif
-let &runtimepath.=','.g:vim_home .. '/fuzzier'
-let &runtimepath.=','.g:vim_home .. '/fuzzier/after'
-let g:repos_path = g:bundle_path .. '/repos'
+" Prepend path to environment variable.
+function! s:AppendPathToEnvvar(varname, path)
+    if has('win32')
+        let sep = ';'
+    else
+        let sep = ':'
+    endif
+    let value = getenv(a:varname)
+    if empty(value)
+        call setenv(a:varname, a:path)
+    else
+        call setenv(a:varname, value .. sep .. a:path)
+    endif
+endfunction
 
-"-------------------------------------------------------------------------------
-" PYTHON
-"-------------------------------------------------------------------------------
 if has('win32')
-    " let g:python_host_prog = 'C:/Python-2.7/python.exe'
-    let g:python3_host_prog = 'python.exe'
-elseif has('unix')
-    " let g:python_host_prog = '/usr/bin/python'
-    let g:python3_host_prog = '/usr/bin/python3'
+    " Python environment.
+    let s:python_home = s:vim_root .. '/python'
+    if isdirectory(s:python_home)
+        let s:python_path = s:python_home .. '/Lib'
+        call setenv('PYTHONHOME', s:python_home)
+        call setenv('PYTHONPATH', s:python_path)
+        call s:AppendPathToEnvvar('PYTHONPATH', s:python_path .. '/site-packages')
+        call s:PrependPathToEnvvar('PATH', s:python_home)
+   endif
+
+    " Nodejs environment.
+    let s:node_home=s:vim_root .. '/node'
+    if isdirectory(s:node_home)
+        let s:node_path=s:node_home .. '/node_modules'
+        call setenv('NODE_PATH', s:node_path)
+        call s:PrependPathToEnvvar('PATH', s:node_home)
+    endif
+
+    " LLVM.
+    let s:llvm_path = s:vim_root .. '/LLVM/bin'
+    if isdirectory(s:llvm_path)
+        call s:PrependPathToEnvvar('PATH', s:llvm_path)
+    endif
+
+    let s:ccls_path = s:vim_root .. '/ccls/bin'
+    if isdirectory(s:ccls_path)
+        call s:AppendPathToEnvvar('PATH', s:ccls_path)
+    endif
+
+    let s:ctags_path = s:vim_root .. '/ctags'
+    if isdirectory(s:ctags_path)
+        call s:AppendPathToEnvvar('PATH', s:ctags_path)
+    endif
+
+    let s:cscope_path = s:vim_root .. '/cscope'
+    if isdirectory(s:cscope_path)
+        call s:AppendPathToEnvvar('PATH', s:cscope_path)
+    endif
+
 endif
 
-"===============================================================================
-" GENERAL SETTINGS
-"===============================================================================
-"
-"-------------------------------------------------------------------------------
-" Language
-"-------------------------------------------------------------------------------
-" Set default encoding.
-set encoding=utf-8
-"
-" Set language for menus.
-set langmenu=en_US.utf-8
-"
-" Set message encoding.
-language message en_US.utf-8
-"
-"-------------------------------------------------------------------------------
-" Color scheme (console & window)
-"-------------------------------------------------------------------------------
-" Enables 24-bit RGB color in the TUI.
-if has('nvim')
-    set termguicolors
-endif
-"
-" Set gui color depth to 256.
-set t_Co=256
-"
-" Set color scheme.
-colorscheme calmar256x-dark
-"
-"-------------------------------------------------------------------------------
-" Highlight
-"-------------------------------------------------------------------------------
-if has('nvim')
-    hi link cUserFunction          Identifier
-    hi link cUserVariableBraceInit Identifier
-    hi link cOperator              Statement
-
-    hi link cppOperator            Statement
-    hi link cppSTLfunction         Identifier
-
-    hi clear DiagnosticError
-    hi DiagnosticError ctermfg=9 guifg=#ff5f00
-
-    " hi clear CocFloating
-    " hi CocFloating guibg=#262626
-    hi FgCocErrorFloatBgCocFloating ctermfg=9 guifg=#ff5f00 guibg=#262626
-endif
-"
-"-------------------------------------------------------------------------------
-" GUI (console & window)
-"-------------------------------------------------------------------------------
-" Show guideline at 81-th column.
-set colorcolumn=81
-
-" Set the minimum windows width.
-" Reserve 4 columns for showing line number, plus 1 column for visibility.
-" set winwidth=88
-" if has('nvim')
-"     autocmd WinEnter * :set winwidth=88
-" endif
-
-" Show more lines.
-set linespace=1
-
-if has('nvim')
-    set title
-    set titlestring=%t\ (%{expand('%:p:h')})
-endif
-
-"-------------------------------------------------------------------------------
-" Cursor
-"-------------------------------------------------------------------------------
-" Ps = 0  -> blinking block.
-" Ps = 1  -> blinking block (default).
-" Ps = 2  -> steady block.
-" Ps = 3  -> blinking underline.
-" Ps = 4  -> steady underline.
-" Ps = 5  -> blinking bar (xterm).
-" Ps = 6  -> steady bar (xterm).
-" let &t_SI = "\e[6 q"
-" let &t_EI = "\e[2 q"
-
-"-------------------------------------------------------------------------------
-" Various settings
-"-------------------------------------------------------------------------------
-syntax enable                   " enable syntax highlighting
-filetype plugin indent on       " enable language-dependent indenting
-set autoindent                  " copy indent from current line
-set autoread                    " read opened files when changed outside Vim.
-                                " In Neovim, use :e<CR> to read manually.
-set autowrite                   " write a modified buffer on each :next ,...
-set backspace=indent,eol,start  " backspacing over everything in insert mode
-set backup                      " keep a backup file
-set cmdheight=2                 " prevent status line to be overwritten by mode message
-set complete+=k                 " scan the files given with the 'dictionary' option
-set concealcursor=n             " conceal text only in normal mode
-set conceallevel=2              " conceal text completely
-set cursorline                  " hightlight current cursor line and line number
-set expandtab                   " use spaces for indentation, instead of tabs
-set fileformats=unix,dos        " use unix end-of-line when editing new files
-set foldmethod=marker           " fold by using markers
-set formatoptions+=nBj          " n: recognize numbered lists
-                                " B: don't insert a space between multi-byte characters when joining lines
-                                " j: remove a comment leader when joining lines
-set hidden                      " keep changed buffer without saving it
-set history=10000               " keep 10000 lines of command line history
-set hlsearch                    " highlight the last used search pattern
-set incsearch                   " do incremental searching
-set laststatus=2                " always show the status line
-set listchars=tab:>\ ,trail:-,extends:>,precedes:<,nbsp:+
-                                " strings to use in 'list' mode
-set mouse=a                     " enable the use of the mouse
-set nocompatible                " always use new features
-set nowrap                      " do not wrap lines
-set number                      " show line number
-if !has('nvim')
-set popt=left:8pc,right:3pc     " print options
-endif
-set ruler                       " show the cursor position all the time
-set scrolloff=1                 " show at least 1 line below and after cursor
-set sessionoptions-=options     " do not save options and mappings in session script
-set shortmess+=c                " do not give completion popup menu messages
-set shiftwidth=4                " number of spaces to use for each step of indent
-set signcolumn=yes              " always draw signcolumn to show quickfix and syntax error signs
-set showcmd                     " display incomplete commands
-set showmatch                   " show the matching pair for parenthesis, brackets and braces
-set sidescrolloff=5             " show at least 5 columns to the left and right of the cursor
-set smartindent                 " smart autoindenting when starting a new line
-set smarttab                    " use 'shiftwidth' at the beginning of a line
-set switchbuf=                  " switch buffer within the current window
-set tabpagemax=50               " set the maximum number of tabpages
-set tabstop=4                   " number of spaces that a <Tab> counts for
-set updatetime=500              " set idle time before CursorHold event
-set viewoptions-=options        " do not save options and mappings in window session script
-set visualbell                  " visual bell instead of beeping
-set wildignore=*.bak,*.o,*.e,*~ " wildmenu: ignore these extensions
-set wildmenu                    " command-line completion in an enhanced mode
-
-if has('browse')
-set browsedir=current           " which directory to use for the file browser
-endif
-
-"===============================================================================
-" BUFFERS, WINDOWS
-"===============================================================================
-
-"-------------------------------------------------------------------------------
-" Always display incomplete commands.
-"-------------------------------------------------------------------------------
-autocmd BufEnter * :set showcmd
-
-"-------------------------------------------------------------------------------
-" Always expand tab.
-"-------------------------------------------------------------------------------
-autocmd BufEnter * :set expandtab
-
-"-------------------------------------------------------------------------------
-" CTRL-X: substruct number.
-"-------------------------------------------------------------------------------
-silent! vunmap <C-X>
-
-"-------------------------------------------------------------------------------
-" The current directory is the directory of the file in the current window.
-"-------------------------------------------------------------------------------
-" Commented: Exclude buffers for: manpage, coc, fugitive, terminal.
-autocmd BufEnter * :if bufname() !~# '^\(man:\|term:\|list:\|fugitive:\|LeaderF:\|!\)'
-                \| :lchdir %:p:h
-                \| :endif
-
-"-------------------------------------------------------------------------------
-" Indent JSON files by 2 spaces.
-"-------------------------------------------------------------------------------
-autocmd BufEnter *.json,*.jsonc :setlocal shiftwidth=2 | :setlocal tabstop=2
-                             \| :syn clear jsonTrailingCommaError
-
-"-------------------------------------------------------------------------------
-" Hybrid line number
-" * Absolute line number in normal mode
-" * Relative line number in insert mode
-" https://jeffkreeftmeijer.com/vim-number/
-" https://github.com/jeffkreeftmeijer/vim-numbertoggle
-" If you use tmux, add set-option -g focus-events on to your tmux config (~/.tmux.conf).
-"-------------------------------------------------------------------------------
-augroup hybridLineNumber
-  autocmd!
-  autocmd BufEnter,FocusGained,InsertLeave,WinEnter *
-          \ if &nu && mode() != "i" | set relativenumber | endif
-  autocmd BufLeave,FocusLost,InsertEnter,WinLeave *
-          \ if &nu | set norelativenumber | endif
-augroup END
-
-"-------------------------------------------------------------------------------
-" Recognize MIB definitions.
-"-------------------------------------------------------------------------------
-autocmd BufEnter *-SMI.txt,*-MIB.txt :set filetype=mib
-
-"-------------------------------------------------------------------------------
-" Leave the editor with Ctrl-q (KDE): Write all changed buffers and exit Vim
-"-------------------------------------------------------------------------------
-nnoremap  <C-q>    :wqall<CR>
-
-"-------------------------------------------------------------------------------
-" When editing a file, always jump to the last known cursor position.
-" Don't do it when the position is invalid or when inside an event handler
-" (happens when dropping a file on gvim).
-"-------------------------------------------------------------------------------
-autocmd BufReadPost *
-    \ if line("'\"") > 0 && line("'\"") <= line("$") |
-    \   exe "normal! g`\"" |
-    \ endif
-
-"-------------------------------------------------------------------------------
-" Shorcut.
-"-------------------------------------------------------------------------------
-" Save all.
-nnoremap <Leader>w  :noh<CR>:wall<CR>
-
-" Insert blank line and change to insert mode with proper indentation.
-nnoremap ]<Space>  o<C-U><Esc>cc
-nnoremap [<Space>  O
-
-"-------------------------------------------------------------------------------
-" Tab navigation.
-"-------------------------------------------------------------------------------
-" Shortcuts for navigating tabs.
-nnoremap <silent> <C-Tab>   :tabnext<CR>
-nnoremap <silent> <C-S-Tab> :tabprev<CR>
-inoremap <silent> <C-Tab>   <C-o>:tabnext<CR>
-inoremap <silent> <C-S-Tab> <C-o>:tabprev<CR>
-
-" Open a terminal in a new tab.
-command! TT tabnew
-command! TC tabclose
-command! TN tabnext
-command! TP tabprev
-
-"-------------------------------------------------------------------------------
-" Window navigation.
-"-------------------------------------------------------------------------------
-" Shortcuts for navigating among windows.
-nnoremap <C-j>  <C-w>j
-nnoremap <C-k>  <C-w>k
-nnoremap <C-h>  <C-w>h
-nnoremap <C-l>  <C-w>l
-
-"-------------------------------------------------------------------------------
-" Split window.
-"-------------------------------------------------------------------------------
-" Split vertically, then move to the the new window immediately.
-nnoremap <C-w>v      :vs<C-w>
-
-"-------------------------------------------------------------------------------
-" Hotkeys
-"-------------------------------------------------------------------------------
-if has('nvim')
-    " 'Y' yank whole lines.
-    nmap Y yy
-
-    " Yank to "*
-    vnoremap <C-Insert> "*y
-
-    " Put from "*
-    nnoremap <S-Insert> "*p
-    inoremap <S-Insert> <C-r>*
-endif
-
-"===============================================================================
-" EDITTING
-"===============================================================================
-
-"-------------------------------------------------------------------------------
-" Copy string to clipboard
-"-------------------------------------------------------------------------------
-noremap <Leader><Leader>y  "*yi"
-noremap <Leader><Leader>p  "*p
-noremap <Leader><Leader>P  "*P
-
-"-------------------------------------------------------------------------------
-" comma always followed by a space
-"-------------------------------------------------------------------------------
-inoremap  ,  ,<Space>
-
-"-------------------------------------------------------------------------------
-" Remove entered word by Ctrl-Backspace in Insert mode.
-"-------------------------------------------------------------------------------
-" Remove a word backward, blanks between cursor and the word are also removed.
-inoremap <C-BS>   <Esc>dbs
-" Remove 4 characters backward.
-inoremap <C-S-BS> <BS><BS><BS><BS>
-
-"-------------------------------------------------------------------------------
-" Indentation styles.
-" :h cino->
-"-------------------------------------------------------------------------------
-" Allman (ANSI) Style
-" g0   : C++ public, protected, private are indented as class brace.
-" N-1s : C++ namespace scope has no additional indent.
-" E-1s : C++ extern scope has no additional indent.
-set cino=>1s,e0,n0,f0,{0,}0,^0,Ls,:0,=1s,l1,b0,g0,h1s,N-1s,E-s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1
-"
-" nnoremap <Leader><Leader>sa :set cino=>1s,e0,n0,f0,{0,}0,^0,L-1,:0,=1s,l1,b0,g0,h1s,N-1s,E-1s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1<CR>:set tabstop=4<CR>:set shiftwidth=4<CR>
-"
-" Whitesmith Style
-" set cino=>1s,e0,n0,f1s,{1s,}0,^0,L-1,:0,=1s,l1,b0,g0,h1s,N-1s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1
-"
-" nnoremap <Leader><Leader>sw :set cino=>1s,e0,n0,f0,{0,}0,^0,L-1,:0,=1s,l1,b0,g0,h1s,N-1s,p1s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1<CR>:set tabstop=4<CR>:set shiftwidth=4<CR>
-"
-" GNU Style
-" Manual: remove indents for braces of non-statement constructs
-"         (namespace, struct, enum, class, function, ...)
-" set cino=>2s,e-1s,n-1s,f0,{1s,}0,^-1s,L-1,:1s,=1s,l1,b0,g0,h1s,N-1s,p2s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1
-"
-" nnoremap <Leader><Leader>sg :set cino=>2s,e-1s,n-1s,f0,{1s,}0,^-1s,L-1,:1s,=1s,l1,b0,g0,h1s,N-1s,p2s,t0,i1s,+1s,c3,C0,/0,(0,u0,U0,w0,W1s,m1,M0,j1,J1<CR>:set tabstop=2<CR>:set shiftwidth=2<CR>
-
-"-------------------------------------------------------------------------------
-" doxygen highlighting
-"-------------------------------------------------------------------------------
-" Do not use the official doxygen syntax highlighting scheme.
-let g:load_doxygen_syntax = 0
-"
-" Font for code.
-" let g:doxy_code_font = 'Bitstream Vera Sans Mono'
-"
-" Use the new doxygen syntax highlighting scheme.
-" Syntax highlighting for pure Doxygen files.
-autocmd BufNewFile,BufRead *.doxygen setfiletype doxy
-"
-autocmd Syntax c,cpp,make,dosbatch
-  \ if exists('b:current_syntax')
-  \   | runtime! syntax/doxy.vim
-  \ | endif
-
-"-------------------------------------------------------------------------------
-" jsonc highlighting
-"-------------------------------------------------------------------------------
-" JSON with C++ style comment.
-autocmd FileType json syntax match Comment +/\/\.\+$+
-
-highlight link jsonKeyword Identifier
-
-"===============================================================================
-" PLUGINS (managed by 'junegunn/vim-plug')
-"===============================================================================
-" 'plug.vim' shall be placed in '~/.vim/autoload/'.
-" However, to automatically update 'plug.vim', one can put a symbolic link of
-" 'plug.vim' in '~/.vim/autoload/'.
-" mkdir ~/.vim/autoload
-" ln -s ~/.vim/bundle/repos/vim-plug/plug.vim  ~/.vim/autoload
-" let g:plug_threads = 3
-call plug#begin(g:repos_path)
-    " =========================
-    " Plugin manager
-    " =========================
-    " A minimalist Vim plugin manager.
-    " Comment: Simple, fast, yet powerful.
-    "          Much faster than 'Shougo/dein.vim'.
-    "          'Shougo/dein.vim' merges plugins into a single directory,
-    "          thus the `rtp` is short and clean.
-	"          Use `PlugUpgrade` to upgrade `vim-plug` itself.
-    " Plug 'junegunn/vim-plug'
-    "
-    " =========================
-    " Neovim on Vim
-    " =========================
-    if !has('nvim')
-        " This is an experimental project, trying to build a compatibility layer for neovim rpc client working on vim8.
-        Plug 'roxma/vim-hug-neovim-rpc'
-        " Yet Another Remote Plugin Framework for Neovim.
-        Plug 'roxma/nvim-yarp'
-    endif
-    "
-    " =========================
-    " LSP client
-    " =========================
-    " Intellisense engine for vim8 & neovim, full language server protocol support as VSCode.
-    " Comment: Fully functional LSP client.
-    "          Cache for each project.
-    "          Starting from `v0.0.82`, coc.nvim uses custom popup menu.
-    " Comment: The Vim9 script has problems.
-    Plug 'neoclide/coc.nvim', { 'branch': 'release' }
-    " Plug 'neoclide/coc.nvim', { 'branch': 'master', 'do': 'npm ci' }
-    " Extended Vim syntax highlighting for C and C++ (C++11/14/17/20).
-    " Comment: Not ideal.
-    "          e.g., strings are not recognized correctly in macro/function
-    "          calls.
-    "          Many highlightings has bad contrast/brightness.
-    Plug 'bfrg/vim-cpp-modern'
-    " Additional Vim syntax highlighting for C++ (including C++11/14/17).
-    " Plug 'octol/vim-cpp-enhanced-highlight'
-    " Print documents in echo area.
-    " Comment: Replaced by coc.nvm.
-    " Plug 'Shougo/echodoc'
-    "
-    " =========================
-    " Snippet tools
-    " =========================
-    " The ultimate snippet solution for Vim. Send pull requests to SirVer/ultisnips!
-    " Comment: Powerful, with interoperability with python and vim script.
-    " The commit 'c4c92bd04f38d45add297bc3e199a370d9280f3b' is the latest
-    " version that supports python3.8
-    Plug 'SirVer/ultisnips'
-    "
-    " =========================
-    " Highlighting
-    " =========================
-    " Highlight words and expressions
-    Plug 'azabiong/vim-highlighter'
-    " Highlight several words in different colors simultaneously.
-    " Comment: The highest version just works.
-    " Plug 'inkarkat/vim-mark', { 'commit': 'd9431b7cf5ddf1828035b45b7becd8a985d4311d' }
-    " Comment: The newer versions depend upon a giganic library
-    "          'inkarkat/vim-ingo-library' with a tiny dependency.
-    " Plug 'inkarkat/vim-mark', { 'branch': 'stable' }
-    " Comment: The standalone version has no dependencies.
-    " Plug 'ayuanx/vim-mark-standalone', { 'tag': '3.0.0_standalone' }
-    " Comment: Many functions are broken.
-    " Plug 'fuzzier/vim-mark-standalone'
-    " Word highlighting and navigation throughout out the buffer.
-    " Comment: It is less versatile than 'vim-mark'.
-    " Plug 'lfv89/vim-interestingwords'
-    " Show syntax highlighting attributes of character under cursor.
-    Plug 'vim-scripts/SyntaxAttr.vim'
-    "
-    " =========================
-    " Indent guides
-    " =========================
-    " A Vim plugin for visually displaying indent levels in code.
-    " Comment: The vertical lines are thick, but it works without many problems.
-    Plug 'Boolean263/vim-indent-guides', { 'tag': '154-no-execute' }
-    " A vim plugin to display the indention levels with thin vertical lines.
-    " Comment: Display thin vertical lines embedded in the background, very
-    "          calm and noise-free.
-    "          However, it interferes with conceal settings, and pollutes
-    "          concealed syntax items (concealed delimiters are no longer
-    "          concealed and shown as indent guides).
-    " Plug 'Yggdroot/indentLine'
-    " Display a guide for the current line's indent level.
-    " Comment: Dynamic indent guides, fancy, but the cursor have to be moved to
-    "          the scope in order to display indent guides for that scope.
-    "          Inconvenient for code reading.
-    " Plug 'tweekmonster/local-indent.vim'
-    if has('nvim')
-        " The fastest Neovim colorizer.
-        " Comment: Simple and fast, but only useful when working with colors
-        "          alone, since it pollutes the highlightings of syntax items.
-        Plug 'norcalli/nvim-colorizer.lua'
-    endif
-    "
-    " =========================
-    " Colorschemes
-    " =========================
-    " Top 100(ish) Themes, GUI Menu.
-    " Plug 'vim-scripts/Colour-Sampler-Pack'
-    " Colorsheme Scroller, Chooser, and Browser.
-    " Plug 'vim-scripts/ScrollColors'
-    " All 256 xterm colors with their RGB equivalents, right in Vim!
-    Plug 'vim-scripts/xterm-color-table.vim'
-    " Black and White cterm color scheme
-    " Plug 'vim-scripts/bw.vim'
-    "
-    " =========================
-    " General tools
-    " =========================
-    " A Vim plugin to move function arguments (and other delimited-by-something items) left and right.
-    " Comment: It has problem to work with C++ template.
-    " Plug 'AndrewRadev/sideways.vim'
-    " Highlights trailing whitespace in red and provides :FixWhitespace to fix it.
-    Plug 'bronson/vim-trailing-whitespace'
-    " Vim plug for switching between companion source files (e.g. '.h' and '.cpp').
-    Plug 'derekwyatt/vim-fswitch'
-    " A plugin which makes swapping of text in Vim easier.
-    " Comment: The original plugin has naming conflict with 'machakann/vim-swap'.
-    "          As the plugin is no longer maintained by the original author,
-    "          it is forked and renamed.
-    "          It does not swap operands correctly sometimes.
-    " Plug 'kurkale6ka/vim-swap'
-    " Plug 'fuzzier/vim-swap-operands'
-    " A Vim alignment plugin.
-    Plug 'junegunn/vim-easy-align'
-    " The missing motion for Vim 👟.
-    " Comment: Override `s` key is overly intrusive, alters the meaning and
-    "          habit of essential key strokes, and interferes other operations
-    "          that use the hijacked keys.
-    Plug 'justinmk/vim-sneak'
-    " Speed up Vim by updating folds only when just.
-    Plug 'Konfekt/FastFold'
-    " Vim motions on speed!
-    " Plug 'Lokaltog/vim-easymotion'
-    " A Vim text editor plugin to swap delimited items.
-    Plug 'machakann/vim-swap'
-    " Argumentative aids with manipulating and moving between function arguments.
-    " Comment: Argument swapping scrolls and blinks the screen.
-    " Plug 'PeterRincker/vim-argumentative'
-    " Provides auto-balancing and some expansions for parens, quotes, etc.
-    Plug 'Raimondi/delimitMate'
-    " Mark quickfix & location list items with signs.
-    Plug 'tomtom/quickfixsigns_vim'
-    " An extensible & universal comment vim-plugin that also handles embedded filetypes.
-    Plug 'tomtom/tcomment_vim'
-    " Enable repeating supported plugin maps with '.'.
-    Plug 'tpope/vim-repeat'
-    " Defaults everyone can agree on.
-    Plug 'tpope/vim-sensible'
-    " Quoting/parenthesizing made simple.
-    Plug 'tpope/vim-surround'
-    " Pairs of handy bracket mappings.
-    Plug 'tpope/vim-unimpaired'
-    " Extended % matching for HTML, LaTeX, and many other languages.
-    Plug 'vim-scripts/matchit.zip'
-    " Replace text with the contents of a register.
-    " Comment: `ya"` does not yank the surrounding blanks, good.
-    Plug 'vim-scripts/ReplaceWithRegister'
-    " Vim plugin that shows the context of the currently visible buffer contents
-    Plug 'wellle/context.vim'
-    " Vim plugin that provides additional text objects.
-    Plug 'wellle/targets.vim'
-    "
-    " =========================
-    " IDE like
-    " =========================
-    " Active fork of kien/ctrlp.vim—Fuzzy file, buffer, mru, tag, etc finder.
-    " Comment: Unhandy.
-    "          Have to use <C-j>, <C-k> to move around, an anti-VIM experience.
-    " Plug 'ctrlpvim/ctrlp.vim'
-    " 🌵 Viewer & Finder for LSP symbols and tags.
-    " Comment: Unhandy.
-    "          The icons are not visible.
-    " Plug 'liuchengxu/vista.vim'
-    " The fancy start screen for Vim.
-    " Comment: Session and MRU management is quite handy.
-    "          The header quotes is a sweet addition.
-    Plug 'mhinz/vim-startify'
-    " 🚀 Run Async Shell Commands in Vim 8.0 / NeoVim and Output to the Quickfix Window !!
-    " Plug 'skywind3000/asyncrun.vim'
-    " 🚀 Modern Task System for Project Building, Testing and Deploying !!
-    " Plug 'skywind3000/asynctasks.vim'
-    " Small changes make vim/nvim's internal terminal great again !!
-    Plug 'skywind3000/vim-terminal-help'
-    " A tree explorer plugin for vim.
-    Plug 'scrooloose/nerdtree'
-    " Buffer Explorer / Browser.
-    Plug 'vim-scripts/bufexplorer.zip'
-    " Plugin to manage Most Recently Used (MRU) files.
-    " Comment: For linewise yank, the replacement is also linewise.
-    Plug 'vim-scripts/mru.vim'
-    " An efficient fuzzy finder that helps to locate files, buffers, mrus, gtags, etc. on the fly for both vim and neovim.
-    Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
-    "
-    " =========================
-    " Tag tools
-    " =========================
-    " A Vim plugin that manages your tag files.
-    " Comment: Intra-file tag jumping is still useful.
-    Plug 'ludovicchabant/vim-gutentags'
-    " Vim plugin that displays tags in a window, ordered by scope.
-    " Comment: Lighter and faster than language server.
-    " Comment: It is quite annoying to auto-update tags upon file save.
-    "          When there are a number of files to save, it hangs Vim.
-    "          And the auto-update cannot be disabled!
-    Plug 'preservim/tagbar'
-    "
-    " =========================
-    " Git tools
-    " =========================
-    " A Vim plugin which shows git diff markers in the sign column and
-    " stages/previews/undoes hunks and partial hunks.
-    " Comment: It is handy to navigate hunks via [c and ]c key mappings.
-    Plug 'airblade/vim-gitgutter'
-    " A Git wrapper so awesome, it should be illegal.
-    Plug 'tpope/vim-fugitive'
-    " ➕ Show a diff using Vim its sign column.
-    " Comment: since 'quickfixsigns_vim' is working.
-    " Plug 'mhinz/vim-signify'
-    "
-    " =========================
-    " C/C++ tools
-    " =========================
-    " C/C++ IDE -- Write and run programs. Insert statements, idioms, comments etc.
-    " Comment: the complex mappings can be troublesome.
-    "Plug 'vim-scripts/c.vim'
-    " Simplify Doxygen documentation in C, C++, Python.
-    Plug 'vim-scripts/DoxygenToolkit.vim'
-call plug#end()
-
-"===============================================================================
-" Source settings for plugins
-"===============================================================================
-for f in glob(g:vim_home .. '/fuzzier/config/**/*.vim', 0, 1)
-    execute 'source' f
-endfor
-
-"===============================================================================
-" Coding functions
-"===============================================================================
-" Delete C/C++ style comments.
-" function! DeleteComments()
-"     let @"=substitute(@", '^\_s*\/\*\_.\{-}\*\/\n', '', 'g')
-"     let @"=substitute(@", '^\_s*\/\/.*\n', '', 'g')
-" endfunction
-" xnoremap <Leader>dc  y:<C-u>call DeleteComments()<CR>p
-" nnoremap <Leader>dc  gvy:<C-u>call DeleteComments()<CR>p
-
-function! AssignHotkeys()
-    let __ss = ':noh<CR>'
-    " Remove comments.
-    let __s1 = ':s/^\_s*\(\/\*\_.\{-}\*\/\\|\/\/.*\)\n//ge<CR>'
-    exe 'xnoremap <Leader>dc    ' . __s1 . __ss
-    exe 'nnoremap <Leader>dc  gv' . __s1 . __ss
-    "
-    " Replace '= 0' into 'override'
-    let __s1 = ':s/\s*=\s*0;/ override;/ge<CR>'
-    exe 'xnoremap <Leader>d0    ' . __s1 . __ss
-    exe 'nnoremap <Leader>d0  gv' . __s1 . __ss
-    "
-    " Replace '= 0' into 'override { }'
-    let __s1 = ':s/\s*=\s*0;/ override\r{\r}\r/ge<CR>'
-    let __s2 = 'gv}='
-    exe 'xnoremap <Leader>do    ' . __s1 . __s2 . __ss
-    exe 'nnoremap <Leader>do  gv' . __s1 . __s2 . __ss
-endfunction
-call AssignHotkeys()
-
-" function! Test()
-"     echo strftime('%H:%M:%S')
-"     silent! call repeat#set(":call Test()\")
-" endfunction
-" nnoremap <silent> <Plug>MyTest :<C-U>call Test()<CR>
-" nmap zz <Plug>MyTest
-
-"===============================================================================
-" Coding macros
-"===============================================================================
-"
-"----------------------------------------
-" Convert class member function declaration to definition.
-" @precondition: yank class name into register 'c'
-" disable highlighting search.
-" :set nohls
-" find '(', select lines til ')',
-" 0/(     v/)V
-" remove 'explicit', 'static', 'friend', 'virtual', '= 0' and 'final' and 'override',
-" :s/\s*\(explicit\|friend\|static\|virtual\|=\s*0\|final\|override\)\s*//ge
-" replace two or more spaces into one space,
-" :s/\s\{2,\}/ /ge
-" find back '(', visual the line
-" /)?(       V
-" find the function name in the current visual area before '('
-"       operator\s*\S\+(
-"       \~\?\k\+\s*(
-" /\%V\(operator[^(]*\|\k+[^(]*\)\ze(
-" paste from register 'c', add '::',
-" "cP                      a::
-" find back '(', select lines til ')', auto indent, move to start of line
-" /)?(       v/)V                =            0
-" find ')', remove ';', add '{}',
-" /)      :s/;//e   o{}iA
-" leave only 1 blank line by replacing 2+ blank lines that are not followed by
-" 'NSFX', '}' (end of namespace), // (comments) with 1 blank line,
-"              NSFX
-"                    }
-"                       //
-" :s/\n\{2,\}\(NSFX\|}\|\/\{2,\}\)\@!/\r/ge
-" enable highlight search.
-" :set hls
-" no highlight.
-" :noh
-" let @z=':set nohls\'
-"     \ .'0/(\v/)\V'
-"     \ .':s/\s*\(explicit\|friend\|static\|virtual\|=\s*0\|final\|override\)\s*//ge\'
-"     \ .':s/\s\{2,\}/ /ge\'
-"     \ .'/)\?(\V'
-"     \ .'/\%V\(operator\s*\S\+\|\~\?\k\+\s*\)\ze(\'
-"     \ .'"cPa::'
-"     \ .'/)\?(\v/)\V=0'
-"     \ .'/)\:s/;//e\o{}i\A\'
-"     \ .':s/\n\{0,\}\(NSFX\|}\|\/\{2,\}\)\@=/\r\r/ge\'
-"     \ .':s/\n\{2,\}\(NSFX\|}\|\/\{2,\}\)\@!/\r/ge\'
-"     \ .':set hls\'
-"     \ .':noh\'
-
-function! CppDefineMemberFunction()
-    let cline_num = line('.')
-    let cline = getline(cline_num)
-    """"""""""""""""""""
-    " `cline` is blank or comment or access control
-    while 1
-        "                   ( / / | / * | * ).*
-        if cline =~  '^\s*\(\(\/\/\|\/\*\|\*\).*\)*$' ||
-         \ cline =~# '^\s*\(public\|protected\|private\)\>'
-            " Delete current line into black hole register
-            silent :execute 'normal! "_dd'
-            " If no more lines to delete (the last line has been deleted)
-            if cline_num != line('.')
-                return
-            endif
-            let cline = getline(cline_num)
-        else
-            break
-        endif
-    endwhile
-    """"""""""""""""""""
-    " Find left parenthesis '(', move cursor
-    call cursor(cline_num, 1)
-    let cline_num = search('(')
-    if !cline_num
-        return
-    endif
-    " Find right parenthesis ')', do not move cursor
-    let rline_num = search(')', 'n')
-    if !rline_num
-        return
-    endif
-    """"""""""""""""""""
-    " Remove declarative words
-    let cline = getline(cline_num)
-    let cline = substitute(cline, '\s*\(explicit\|friend\|static\|virtual\|final\|override\|=\s*0\)\>\s*', '', 'g')
-    " Extract the function name that is followed by '('
-    "                                 operator   ...  | ~  xxx        (
-    let funcname = matchstr(cline, '\(operator\s*\S\+\|\~\?\k\+\)\(\s*(\)\@=')
-    " If current line does not match pattern
-    if empty(funcname)
-        return
-    endif
-    " Add scope name from register "c and '::'
-    let qualname = getreg('c') . '::' . funcname
-    " Update current line
-    "                                operator   ...  | ~  xxx        (
-    let cline = substitute(cline, '\(operator\s*\S\+\|\~\?\k\+\)\(\s*(\)\@=', qualname, '')
-    call setline(cline_num, cline)
-    """"""""""""""""""""
-    " Find comma ';', do not move cursor, do not wrap around
-    let nline_num = search(';', 'nW')
-    if nline_num
-        " Remove comma ';'
-        let nline = getline(nline_num)
-        let nline = substitute(nline, ';', '', '')
-        call setline(nline_num, nline)
-    else
-        " Fallback to the line of right parenthesis ')'
-        let nline_num = rline_num
-    endif
-    """"""""""""""""""""
-    " Insert braces
-    call append(nline_num, ['{', '}'])
-    " (   < cline_num
-    " ...
-    " }   <= nline_num
-    let nline_num = nline_num + 2
-    """"""""""""""""""""
-    " Indent from function name to braces
-    " silent :execute 'normal! =' . (nline_num - cline_num) . 'j'
-    silent :execute 'normal! =ap'
-    " Move cursor to inserted '}'
-    " } <= cline_num, nline_num
-    let cline_num = nline_num
-    call cursor([cline_num, 0])
-    """"""""""""""""""""
-    " Ensure empty lines
-    let num_empty = 0
-    " } <= cline_num, nline_num
-    let nline_num = cline_num
-    if nline_num == line('$')
-        call append(cline_num, ['', ''])
-        " }   <= cline_num
-        "
-        "     <= nline_num (last line)
-        let nline_num = nline_num + 2
-    else
-        " }   <= cline_num
-        " ... <= nline_num
-        let nline_num = nline_num + 1
-        let nline = getline(nline_num)
-        if !empty(nline)
-            " Add a blank line after '}'
-            call append(cline_num, [''])
-        endif
-        " }   <= cline_num
-        "
-        " ... <= nline_num
-        let nline_num = nline_num + 1
-        let nline = getline(nline_num)
-        " Add another blank line before 'NSFX_...' or '//' or '}'
-        if nline =~# '\s*\(NSFX\|//\|}\)'
-            " call append(cline_num, [''])
-            " }   <= cline_num
-            "
-            "
-            " ... <= nline_num ('NSFX_...' or '//' or '}')
-            " let nline_num = nline_num + 1
-        endif
-    endif
-    let cline_num = nline_num
-    call cursor([nline_num, 0])
-    """"""""""""""""""""
-    " Ensure spaces
-    " Allow repeat by '.'
-    silent! call repeat#set(":call CppDefineMemberFunction()\<CR>")
-endfunction
-
-let @z=':call CppDefineMemberFunction()'
-
-"----------------------------------------
-" Property definition to initialization list.
-" 'size_t count_;' => 'count_(count),'
-" find ';', word back, delete type til first character in line,
-" 0/;     b          d^
-" add comma ', ',
-" i,w
-" yank 'xxx_', move to end of 'xxx_',
-" yw           e
-" add '()', paste 'xxx_', remove '_' and ';'
-" a(      p             x           lx
-" select line, auto indent
-" V            =
-" leave no blank lines by replacing 2+ blank lines with 1 blank line,
-" :s/\n\{2,\}/\r/ge
-" no highlighting.
-" :noh
-" let @y='0/;\bd^'
-"     \ .'i,w'
-"     \ .'ywe'
-"     \ .'a(pxlx'
-"     \ .'V='
-"     \ .':s/\n\{2,\}/\r/ge\'
-"     \ .':noh\'
-
-"----------------------------------------
-" Property definition to initialization list.
-" 'Message* msg_;' => 'msg_(nullptr),'
-" find ';', word back, delete type til first character in line,
-" 0/;     b          d^
-" add comma ', ',
-" i,w
-" yank 'xxx_', move to end of 'xxx_',
-" yw           e
-" add '()', put 'nullptr', remove ';'
-" a(        nullptr      f;x
-" select line, auto indent
-" V            =
-" leave no blank lines by replacing 2+ blank lines with 1 blank line,
-" :s/\n\{2,\}/\r/ge
-" no highlighting.
-" :noh
-" let @x='0/;\bd^'
-"     \ .'i,w'
-"     \ .'ywe'
-"     \ .'a(nullptrf;x'
-"     \ .'V='
-"     \ .':s/\n\{2,\}/\r/ge\'
-"     \ .':noh\'
-
-function! CppDefinitionToInitializationList(type)
-    " a:type
-    " * '': default
-    " * 'v': use variable name
-    "
-    " Convert
-    "   'Message* msg_;' OR
-    "   'Message* msg_[];'
-    " To
-    "   ': msg_()' OR
-    "   ', msg_{}'
-    "
-    let l:cline_num = line('.')
-    let l:cline = getline(l:cline_num)
-    " `l:cline` is blank or comment
-    "                      ( / / | / * | * ).*
-    while l:cline =~ '^\s*\(\(\/\/\|\/\*\|\*\).*\)*$'
-        " Delete current line into black hole register
-        silent :execute 'normal! "_dd'
-        " If no more lines to delete (the last line has been deleted)
-        if l:cline_num != line('.')
-            return
-        endif
-        let l:cline = getline(l:cline_num)
-    endwhile
-    " Extract the variable name that is followed by ';'
-    let l:varname = matchstr(l:cline, '\k\+\(\[.*\]\)\?;\@=')
-    " If current line does not match pattern
-    if empty(l:varname)
-        return
-    endif
-    let l:varname = matchstr(l:cline, '\k\+;\@=')
-    let l:isArray = 0
-    if empty(l:varname)
-        let l:varname = matchstr(l:cline, '\k\+\[\@=')
-        let l:isArray = 1
-    endif
-    let l:valname = substitute(l:varname, '_$', '', '')
-    " Extract the type name that is followed by the variable name.
-    let l:typename = matchstr(l:cline, '\S\+\%(\s\+\S\+;\)\@=')
-    echom l:typename
-    let l:isPointer = 0
-    let l:isNumeric = 0
-    let l:isBoolean = 0
-    let l:isDefCtor = 0
-    if l:typename =~ '\*'
-        let l:isPointer = 1
-    elseif l:typename =~# 'unique_ptr\|shared_ptr\|weak_ptr\|intrusive_ptr'
-        let l:isPointer = 1
-    elseif l:typename =~# 'unsigned\|int\d*_t\|size_t\|float\|double\|addr_t\|csn\d\+_t'
-        let l:isNumeric = 1
-    elseif l:typename =~# 'bool'
-        let l:isBoolean = 1
-    elseif l:typename =~# 'simtime_t\|Vec\|List\|Set\|Map\|Tree\c'
-        let l:isDefCtor = 1
-    endif
-    "
-    let l:pline_num = prevnonblank(l:cline_num-1)
-    let l:pline = getline(l:pline_num)
-    " Xxx()
-    "     : ...      <= pline (not '::'), OR
-    "     , ...      <= pline
-    " If `pline` starts with ':' or ','
-    " echom l:pline
-    if l:pline =~ '^\s*\(::\@!\|,\)'
-        let l:delim = ', '
-    else
-        let l:delim = ': '
-    endif
-    " Build statement
-    let l:stmt = l:delim . l:varname
-    if a:type =~# 'v'
-        let l:stmt = l:stmt . '{' . l:valname . '}'
-    else
-        if l:isArray
-            let l:stmt = l:stmt . '{} // Fill 0'
-        elseif l:isPointer
-            let l:stmt = l:stmt . '{nullptr}'
-        elseif l:isNumeric
-            let l:stmt = l:stmt . '{0}'
-        elseif l:isBoolean
-            let l:stmt = l:stmt . '{false}'
-        elseif l:isDefCtor
-            let l:stmt = l:stmt . '{}'
-        else
-            let l:stmt = l:stmt . '{' . l:valname . '}'
-        endif
-    endif
-    call setline(l:cline_num, l:stmt)
-    " Auto indent.
-    exec 'normal =='
-    " Move cursor to the next line
-    call cursor([l:cline_num + 1, 0])
-    " Allow repeat by '.'
-    silent! call repeat#set(":call CppDefinitionToInitializationList()\<CR>")
-endfunction
-
-let @x=':call CppDefinitionToInitializationList("")'
-let @y=':call CppDefinitionToInitializationList("v")'
-
-"----------------------------------------
-" Replace '= 0;' to 'override;'
-let @p='0/):s/\(override\s\*\)\@<!= 0/override/ej:noh'
-
-"----------------------------------------
-" Override a virtual function inplace.
-" find '(', select lines til ')',
-" 0/(     v/)V
-" replace '= 0;' with 'override',
-" :s/\s*=\s*0\s*;/ override;/e
-" find back '(', select lines til ')', auto indent,
-" /)?(       v/)V                =
-" find ')', remove ';', add '{}',
-" /)      :s/;//e   o{}ia
-" leave only 1 blank line by replacing 2+ blank lines with 1 blank line
-" :s/\n\{2,\}/\r/ge
-" no highlighting.
-" :noh
-let @o='0/(v/)V'
-    \ .':s/\s*=\s*0\s*;/ override;/e'
-    \ .'/)?(v/)V='
-    \ .'/):s/;//eo{}iA'
-    \ .':s/\n\{2,\}/\r/ge'
-    \ .':noh'
-
-"----------------------------------------
-" Inline function definition
-function! CppInlineFunctionDefinition()
-    let cline_num = line('.')
-    call cursor(cline_num, 1)
-    " Find ';'
-    " * Move cursor
-    " * Do not wrap around
-    let line_num = search(';', 'W')
-    " If ';' is not found
-    if line_num == 0
-        return
-    endif
-    " The next line
-    let nline_num = line_num + 1
-    let nline = getline(nline_num)
-    " If the next line is not blank
-    if nline !~ '^\s*$'
-        call append(line_num, '')
-    endif
-    " Remove ';' to the end of the line
-    " Insert newline
-    " Insert '{'      <--
-    " Insert newline    |
-    " Insert '}'        |
-    " Move cursor up  ---
-    execute 'normal! C{}'
-    execute 'normal! k'
-    " Allow repeat by '.'
-    silent! call repeat#set(":call CppInlineFunctionDefinition()\<CR>")
-endfunction
-
-let @d=':call CppInlineFunctionDefinition()'
-
-"----------------------------------------
-" Copy assign variable
-" Convert
-"   'o->xxx_'
-" To
-"   'o->xxx_ = xxx_;'
-function! CppCopyAssignVariable()
-    let cline_num = line('.')
-    let line = getline(cline_num)
-    " If there are trailing whitespaces
-    " 'o->xxx '
-    "        ^
-    if line =~ '\s\+$'
-        " Remove trailing whitespaces
-        let line = substitute(line, '\s\+$', '')
-        call setline(cline_num, line)
-    endif
-    " If there is no ending ';'
-    " 'o->xxx'
-    "        ^
-    if line !~ ';'
-        " Append ';'
-        " 'o->xxx;'
-        "        ^
-        execute 'normal! A;'
-    endif
-    " Move to the end of the word
-    " 'o->xxx = yyy;'
-    "       ^
-    execute 'normal! ^E'
-    " Move to the start of the word
-    " * From current cursor
-    " * Backward
-    " * Do not wrap around
-    " 'o->xxx;'
-    "     ^
-    call search('\<\w', 'cbW')
-    " Copy the word
-    " 'o->xxx = yyy;'
-    "       ^
-    execute 'normal! yiw'
-    " move to the end of the word
-    " * From current cursor
-    " * Do not wrap around
-    call search('\w\>', 'cW')
-    " If there is no has '='
-    " 'o->xxx;'
-    "       ^
-    if line !~ '='
-        " Append ' = '
-        " 'o->xxx = ;'
-        "          ^
-        execute 'normal! a = '
-        " Put the word
-        " 'o->xxx = xxx;'
-        "             ^
-        execute 'normal! p'
-    " Else, there is '='
-    else
-        " Move to ';'
-        " * From current cursor
-        " 'o->xxx = yyy;'
-        "              ^
-        call search(';', 'c')
-        let line = getline(cline_num)
-        " If there is a word between '=' and ';'
-        " 'o->xxx = yyy;'
-        "              ^
-        if line =~ '=.*\w\+.*;'
-            " Move to the end of the word
-            " 'xxx = yyy;'
-            "          ^
-            execute 'normal! ge'
-            " Visual the word
-            " 'xxx = yyy;'
-            "        ^^^
-            execute 'normal! viw'
-            " Put word
-            " 'xxx = xxx;'
-            "          ^
-            execute 'normal! p'
-        " If there is no word between '=' and ';'
-        " 'o->xxx = ;'
-        "           ^
-        else
-            " Put word
-            " 'xxx = xxx;'
-            "          ^
-            execute 'normal! P'
-        endif
-        " Move the start of the word
-        execute 'normal! f;b'
-        " Move down
-        execute 'normal! j'
-    endif
-    " Allow repeat by '.'
-    silent! call repeat#set(":call CppCopyAssignVariable()\<CR>")
-endfunction
-
-let @a=':call CppCopyAssignVariable()'
-
-"----------------------------------------
-" Remove til '*/'.
-" find '/',
-" /\/
-" move to the blank line before the paragraph (paragraph forward, paragraph back),
-" }{
-" one line down, select lines til '*/', delete
-" j              v/\*\/V              d
-" no highlighting.
-" :noh
-let @c='/\/'
-    \ .'}{'
-    \ .'jv/\*\/Vd'
-    \ .':noh'
-
-"----------------------------------------
-" Add 'inline'.
-" find '('
-" /(
-" move to the first column
-" 0
-" insert 'inline'
-" iinline 
-" find '{'
-" /{
-" find the pairing '}'
-" %
-" move to the blank link before the next paragraph
-" }
-" no highlighting
-" :noh
-let @h='/(0iinline /{%}:noh'
-
-"----------------------------------------
-function! CppRemoveComments()
-    " Move the the first column
-    exe 'normal! 0'
-    let l:stopline = line('.') + 10
-    " Search for comments
-    " * from current curror
-    " * do not wrap around
-    "                            / /
-    let l:line_num = search('\s*\/\/', 'cW', l:stopline)
-    if l:line_num
-        " Remove the comment
-        exec 'normal! D'
-    endif
-    " Allow repeat by '.'
-    silent! call repeat#set(":call CppRemoveComments()\<CR>")
-endfunction
-
-noremap <Leader>xd :call CppRemoveComments()<CR>
-
-"----------------------------------------
-function! GetVisualLines()
-    let l:lines = []
-    if 'V' ==# visualmode() || 'v' ==# visualmode()
-        " Obtain selected string
-        let l:start = getpos("'<")
-        let l:end   = getpos("'>")
-        let l:lines = getline(l:start[1], l:end[1])
-        //
-        if len(l:lines) == 1
-            let l:lines[0] = l:lines[0][l:start[2] - 1 : l:end[2] - 1]
-        else
-            let l:lines[0]  = l:lines[0][l:start[2] - 1 :]
-            let l:lines[-1] = l:lines[-1][: l:end[2] - 1]
-        endif
-    endif
-    return l:lines
-endfunction
-
-"----------------------------------------
-function! CppUseBaseType()
-    exec 'normal! 0f=lDByiwf=a typename MyBase::pa;'
-    " Allow repeat by '.'
-    silent! call repeat#set(":call CppUseBaseType()\<CR>")
-endfunction
-
-"===============================================================================
-" Tags search paths.
-"===============================================================================
-" set tags+=../../../tag
-" set tags+=../../tag
-" set tags+=../tags
-
-"===============================================================================
-unlet g:backup_path
-unlet g:swap_path
-unlet g:undo_path
-unlet g:bundle_path
-unlet g:repos_path
-if !get(g:, 'vim_portable', 0)
-    unlet g:vim_home
+" Source 'vimrc' and 'gvimrc'.
+execute 'source ' .. s:vim_home .. '/vimrc'
+if has('gui_running')
+    execute 'source ' .. s:vim_home .. '/gvimrc'
 endif
