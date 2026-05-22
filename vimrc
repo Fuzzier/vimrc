@@ -5,43 +5,40 @@
 "      CREATED:  2009-04-04
 "     REVISION:  $Id: customization.vimrc,v 1.6 2009/10/03 12:24:30 mehner Exp $
 "       AUTHOR:  Wei Tang <gauchyler@uestc.edu.cn>
-"     MODIFIED:  2023-10-21
+"     MODIFIED:  2026-05-22
 "===============================================================================
 
 "===============================================================================
 " PATH
 "===============================================================================
-" The directory where 'init.vim' resides.
-function! GetVimHome()
-    if has('win32')
-        let path=expand('~/vimfiles')
-    elseif has('unix')
-        let path=expand('~/.vim')
-    endif
-    return path
-endfunction
-"
-let g:vimrc_path=GetVimHome()
+" If `g:vim_portable` does not exist or the value is `0`.
+if !get(g:, 'vim_portable', 0)
+    " The directory that contains this 'vimrc'.
+    let g:vim_home = expand('<sfile>:p:h')
+endif
+
+" Set `runtimepath`.
+execute 'set runtimepath^=' .. g:vim_home
 
 "-------------------------------------------------------------------------------
 " Backup directory
 "-------------------------------------------------------------------------------
 " Set backup directory.
-let g:backup_path=g:vimrc_path.'/bak'
+let g:backup_path = g:vim_home .. '/bak'
 if !isdirectory(g:backup_path)
     call mkdir(g:backup_path, 'p')
 endif
-let &backupdir=g:backup_path
+let &backupdir = g:backup_path
 "
 "-------------------------------------------------------------------------------
 " Swap directory
 "-------------------------------------------------------------------------------
 " Set swap directory.
-let g:swap_path=g:vimrc_path.'/swp'
+let g:swap_path = g:vim_home .. '/swp'
 if !isdirectory(g:swap_path)
     call mkdir(g:swap_path, 'p')
 endif
-let &directory=g:swap_path
+let &directory = g:swap_path
 " Do not swap file, since it can be troublesome.
 set noswapfile
 "
@@ -51,26 +48,26 @@ set noswapfile
 " Enable persistent undo for unloaded buffer.
 set undofile
 if !has('nvim')
-    let g:undo_path=g:vimrc_path.'/undo'
+    let g:undo_path = g:vim_home .. '/undo'
 else " Neovim uses an incompatible undo format.
-    let g:undo_path=g:vimrc_path.'/nvim/undo'
+    let g:undo_path = g:vim_home .. '/nvim/undo'
 endif
 if !isdirectory(g:undo_path)
     call mkdir(g:undo_path, 'p')
 endif
-let &undodir=g:undo_path
+let &undodir = g:undo_path
 "
 "-------------------------------------------------------------------------------
 " Bundle directory
 "-------------------------------------------------------------------------------
 " Set bundle directory.
-let g:bundle_path=g:vimrc_path.'/bundle'
+let g:bundle_path = g:vim_home .. '/bundle'
 if !isdirectory(g:bundle_path)
     call mkdir(g:bundle_path, 'p')
 endif
-let &runtimepath.=','.g:vimrc_path.'/fuzzier'
-let &runtimepath.=','.g:vimrc_path.'/fuzzier/after'
-let g:repos_path=g:bundle_path.'/repos'
+let &runtimepath.=','.g:vim_home .. '/fuzzier'
+let &runtimepath.=','.g:vim_home .. '/fuzzier/after'
+let g:repos_path = g:bundle_path .. '/repos'
 
 "-------------------------------------------------------------------------------
 " PYTHON
@@ -671,7 +668,7 @@ call plug#end()
 "===============================================================================
 " Source settings for plugins
 "===============================================================================
-for f in glob(g:vimrc_path.'/fuzzier/config/**/*.vim', 0, 1)
+for f in glob(g:vim_home .. '/fuzzier/config/**/*.vim', 0, 1)
     execute 'source' f
 endfor
 
@@ -1282,10 +1279,11 @@ endfunction
 " set tags+=../tags
 
 "===============================================================================
-unlet g:vimrc_path
 unlet g:backup_path
 unlet g:swap_path
 unlet g:undo_path
 unlet g:bundle_path
 unlet g:repos_path
-
+if !get(g:, 'vim_portable', 0)
+    unlet g:vim_home
+endif

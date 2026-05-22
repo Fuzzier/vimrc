@@ -11,7 +11,7 @@
 nnoremap <silent> <F11>  :TagbarToggle<CR>
 "
 if has('win32')
-    let g:tagbar_ctags_bin = g:vimrc_path . '/ctags/uctags.exe'
+    let g:tagbar_ctags_bin = g:vim_home . '/ctags/uctags.exe'
 endif
 "
 let g:tagbar_autofocus = 1

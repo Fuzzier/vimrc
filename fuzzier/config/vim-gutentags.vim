@@ -10,10 +10,10 @@
 let g:gutentags_enabled = 1
 "
 " Set the cache directory for tags.
-" NOTE: In `LeaderF.vim`, `g:Lf_CacheDirectory` is set to `g:vimrc_path`.
+" NOTE: In `LeaderF.vim`, `g:Lf_CacheDirectory` is set to `g:vim_home`.
 "       Thus, `gutentags` shall generate tags in the following subdirectory
 "       for `LeaderF`.
-let g:gutentags_cache_dir = expand(g:vimrc_path . '/LeaderF/gtags')
+let g:gutentags_cache_dir = expand(g:vim_home . '/LeaderF/gtags')
 "
 let g:gutentags_ctags_extra_args = [
     \ '-I BOOST_NOEXCEPT,BOOST_CONSTEXPR'
@@ -24,7 +24,7 @@ let g:gutentags_ctags_exclude = [
     \ ]
 "
 if has('win32')
-    let g:gutentags_ctags_executable = g:vimrc_path . '/ctags/uctags.exe'
+    let g:gutentags_ctags_executable = g:vim_home . '/ctags/uctags.exe'
 endif
 "
 let g:gutentags_ctags_extra_args = [

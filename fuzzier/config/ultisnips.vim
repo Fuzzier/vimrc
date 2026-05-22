@@ -21,11 +21,11 @@ let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
 "
 " Set private directories for snippets.
 " Used by :UltiSnipsEdit command.
-let g:UltiSnipsSnippetsDir = g:vimrc_path . '/fuzzier/UltiSnips'
+let g:UltiSnipsSnippetsDir = g:vim_home . '/fuzzier/UltiSnips'
 "
 " Set search directories for snippets.
 " Used by :UltiSnipsEdit! command.
-let g:UltiSnipsSnippetDirectories = [g:vimrc_path . '/fuzzier/UltiSnips']
+let g:UltiSnipsSnippetDirectories = [g:vim_home . '/fuzzier/UltiSnips']
 "
 autocmd VimEnter * silent! delcommand UltiSnipsAddFiletypes
 

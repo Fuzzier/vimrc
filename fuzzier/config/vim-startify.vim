@@ -7,7 +7,7 @@
 "---------------------------------------
 " mhinz/vim-startify
 "---------------------------------------
-let g:startify_session_dir = g:vimrc_path . '/startify'
+let g:startify_session_dir = g:vim_home . '/startify'
 "
 " Automatically update sessions.
 let g:startify_session_persistence = 1

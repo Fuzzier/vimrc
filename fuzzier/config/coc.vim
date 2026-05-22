@@ -12,8 +12,8 @@
 " `neovim/share/neovim-qt/runtime/plugin/nvim_gui_shim.vim` shall be removed!
 "
 " Configurations.
-let g:coc_config_home = g:vimrc_path
-let g:coc_data_home = g:vimrc_path . '/coc'
+let g:coc_config_home = g:vim_home
+let g:coc_data_home = g:vim_home . '/coc'
 "
 " Check whether coc.nvim installed.
 if isdirectory(g:repos_path.'/coc.nvim')

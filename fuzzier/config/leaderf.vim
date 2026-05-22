@@ -11,7 +11,7 @@
 let g:Lf_PythonVersion = 3
 " Path to ctag.
 if has('win32')
-    let g:Lf_Ctags = g:vimrc_path . '/ctags/uctags.exe'
+    let g:Lf_Ctags = g:vim_home . '/ctags/uctags.exe'
 endif
 " Do not generate tags.
 let g:Lf_GtagsAutoGenerate = 0
@@ -20,7 +20,7 @@ let g:Lf_GtagsAutoUpdate = 0
 " Use gutentags.
 let g:Lf_GtagsGutentags = 1
 " Root path to tag files, the tag files are put under 'LeaderF/gtags/'.
-let g:Lf_CacheDirectory = g:vimrc_path
+let g:Lf_CacheDirectory = g:vim_home
 " Search file from the root path.
 " * Find root markers in ancestor directories.
 " * Fallback to current directory.

@@ -10,7 +10,7 @@
 " Turn highlighting on or off using only the HiSet key.
 let HiSetToggle = 1
 " The directory to store highlight (*.hl) files.
-let HiKeywords = g:vimrc_path . '/hl'
+let HiKeywords = g:vim_home . '/hl'
 " Jump forward/backward highlights of the same pattern
 nnoremap gj <Cmd>Hi><CR>
 nnoremap gk <Cmd>Hi<<CR>
