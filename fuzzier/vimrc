@@ -573,7 +573,8 @@ call plug#begin(g:repos_path)
     " Vim motions on speed!
     " Plug 'Lokaltog/vim-easymotion'
     " A Vim text editor plugin to swap delimited items.
-    Plug 'machakann/vim-swap'
+    " Comment: Does not work for C++ template.
+    " Plug 'machakann/vim-swap'
     " Argumentative aids with manipulating and moving between function arguments.
     " Comment: Argument swapping scrolls and blinks the screen.
     " Plug 'PeterRincker/vim-argumentative'
