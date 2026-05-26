@@ -560,7 +560,6 @@ call plug#begin(g:repos_path)
     "          it is forked and renamed.
     "          It does not swap operands correctly sometimes.
     " Plug 'kurkale6ka/vim-swap'
-    " Plug 'fuzzier/vim-swap-operands'
     " A Vim alignment plugin.
     Plug 'junegunn/vim-easy-align'
     " The missing motion for Vim 👟.
