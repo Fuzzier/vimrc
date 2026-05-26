@@ -834,16 +834,12 @@ enddef
 
 def SwapParamToRight()
     SwapElemsAtCursor(kSwapRight)
-    if exists('*repeat#set')
-        repeat#set("\<Plug>(SwapParamToRight)")
-    endif
+    silent! call repeat#set("\<Plug>(SwapParamToRight)")
 enddef
 
 def SwapParamToLeft()
     SwapElemsAtCursor(kSwapLeft)
-    if exists('*repeat#set')
-        repeat#set("\<Plug>(SwapParamToLeft)")
-    endif
+    silent! call repeat#set("\<Plug>(SwapParamToLeft)")
 enddef
 
 nnoremap <silent> <Plug>(SwapParamToRight) <ScriptCmd>SwapParamToRight()<CR>
