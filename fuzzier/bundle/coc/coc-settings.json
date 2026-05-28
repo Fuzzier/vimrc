@@ -1,0 +1,89 @@
+{
+  // Automatically update 'b:coc_current_function'.
+  "coc.preferences.extensionUpdateCheck": "daily",
+
+  // Select first item on completion start.
+  "suggest.noselect": false,
+  // The indicator that shows a complete item can be expanded as a snippet.
+  "suggest.snippetIndicator": "🐼✨",
+  // The maximum number of completion items shown.
+  "suggest.maxCompleteItemCount": 20,
+  // Floating window style.
+  "suggest.floatConfig":
+  {
+    "border": false,
+    "borderhighlight": "NonText"
+  },
+
+  "signature.enable": false,
+  // Show signature in status line.
+  "signature.target": "float",
+
+  "diagnostic.enableSign": true,
+  "diagnostic.errorSign": "E",
+  "diagnostic.warningSign": "W",
+  "diagnostic.infoSign": "I",
+  "diagnostic.hintSign": "H",
+  "diagnostic.messageTarget": "float",
+
+  "codeLens.enable": false,
+
+  ////////////////////
+  // coc-highlight
+  "highlight.document.enable": false,
+  "highlight.colors.enable": true,
+
+  ////////////////////
+  // coc-json
+  // The trailing comma error hurts the eyes...
+  "json.validate.enable": false,
+
+  ////////////////////
+  // language servers
+  "languageserver":
+  {
+    "ccls":
+    {
+      "enable": true,
+      "command": "ccls",
+      // "args": [ "--log-file=Z:/ccls.log", "-v=1" ],
+      "filetypes": [ "c", "cpp", "cuda", "objc", "objcpp" ],
+      "rootPatterns": [ ".ccls-root", "compile_commands.json" ],
+      "requireRootPattern": true,
+      "initializationOptions":
+      {
+        "cache":
+        {
+          "directory": ".ccls-cache",
+          "retainInMemory": 1,
+        },
+        "client":
+        {
+          // Effect: add parenthesis for functions automatically.
+          "snippetSupport": true,
+        },
+        "completion":
+        {
+          "placeholder": false,
+          "filterAndSort": false,
+          "detailedLabel": false,
+        },
+        "highlight": { "lsRanges": true, },
+        "clang": {
+          "extraArgs": [
+            "-I..",
+            "-std=c++17"
+          ]
+        }
+      },
+    },
+    "clangd":
+    {
+      "enable": false,
+      "command": "clangd",
+      "args": [ "--background-index" ],
+      "filetypes": [ "c", "cpp", "objc", "objcpp" ],
+      "rootPatterns": [ "compile_commands.json", "compile_flags.txt" ]
+    }
+  }
+}
