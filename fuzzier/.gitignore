@@ -1,10 +1,5 @@
-bak
-bundle
-coc
-cscope
-ctags
-hl
-leaderf
-startify
-swap
-undo
+bundle/repos
+bundle/coc/data
+bundle/hl
+bundle/startify
+data
