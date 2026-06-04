@@ -39,8 +39,8 @@ if isdirectory(g:repos_path .. '/coc.nvim')
     endif
     "
     " Snippet navigation keys.
-    let g:coc_snippet_next = '<Tab>'
-    let g:coc_snippet_prev = '<S-Tab>'
+    let g:coc_snippet_next = '<C-J>'
+    let g:coc_snippet_prev = '<C-K>'
     "
     " Use '[c' and ']c' to navigate diagnostics.
     if coc#util#api_version() <= 30
