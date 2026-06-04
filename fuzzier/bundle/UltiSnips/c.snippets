@@ -117,6 +117,16 @@ def type2var(x):
     z = z.replace('array',   'arr')
     return z
 
+def type2auto(x):
+    qualifier = ''
+    if x.endswith('&'):
+        qualifier = '&'
+    elif x.endswith('*'):
+        qualifier = '*'
+    const = 'const ' if x.startswith('const') else ''
+    y = const + 'auto' + qualifier
+    return y
+
 def var2type(x):
     z = ''
     m = re.search(r'^(\w+?)_?$', x)
@@ -1300,48 +1310,43 @@ endsnippet
 # Type cast
 ########################################
 snippet sc> "static_cast" w
-static_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
+static_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet sc>= "static_cast"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
-    static_cast<$1*>(${3:$2});
+`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = static_cast<${1:T}>(${2:${VISUAL:v}});
 endsnippet
 
 snippet cc> "const_cast" w
-const_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
+const_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet cc>= "const_cast"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
-    const_cast<$1*>(${3:$2});
+`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = const_cast<${1:T}>(${2:${VISUAL:v}});
 endsnippet
 
 snippet dc> "dynamic_cast" w
-dynamic_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
+dynamic_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet dc>= "dynamic_cast"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
-    dynamic_cast<$1*>(${3:$2});
+`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = dynamic_cast<${1:T}>(${2:${VISUAL:v}});
 endsnippet
 
 snippet rc> "reinterpret_cast" w
-reinterpret_cast<${1:${VISUAL:T}}>(${2:`!p snip.rv=type2var(t[1])`})
+reinterpret_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet rc>= "reinterpret_cast"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
-    reinterpret_cast<$1*>(${3:$2});
+`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = reinterpret_cast<${1:T}>(${2:${VISUAL:v}});
 endsnippet
 
 snippet c> "C-style cast"
-(${1:${VISUAL:T}}*)(${2:`!p snip.rv=type2var(t[1])`})
+(${1:T})(${2:${VISUAL:v}})
 endsnippet
 
 snippet c>= "C-style cast"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} =
-    ($1*)(${3:$2});
+`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = (${1:T})(${2:${VISUAL:v}})
 endsnippet
 
 snippet v>= "C-style cast"
@@ -1355,7 +1360,7 @@ std::byte ${2:`!p snip.rv=type2var(t[1])`Storage_}[sizeof($1)];
 endsnippet
 
 snippet ld "launder()" w
-std::launder(${1:${VISUAL:T}})
+std::launder(${1:${VISUAL:v}})
 endsnippet
 
 ########################################
@@ -1433,8 +1438,21 @@ snippet cs= "const size_t v ="
 const size_t ${1:v} = ${2:$1};
 endsnippet
 
+snippet qq
+Your age: ${1|<18,18~60,>60|}
+Your height: ${2|<120cm,120cm~180cm,>180cm|}
+endsnippet
+
 snippet ca= "const auto v ="
-const auto ${1:v} = ${2:$1};
+const ${3|auto,auto&,auto*|} ${1:v} = ${2:$1};
+endsnippet
+
+snippet car= "const auto& v ="
+const auto& ${1:v} = ${2:$1};
+endsnippet
+
+snippet cap= "const auto* v ="
+const auto* ${1:v} = ${2:$1};
 endsnippet
 
 snippet v= "value ="
@@ -1457,7 +1475,7 @@ ${1:x}_{&${2:$1}}
 endsnippet
 
 snippet irm "x_{rhs.x}"
-${1:x}_{rhs.${2:$1}}
+${1:x}_{rhs.${2:$1}_}
 endsnippet
 
 ########################################
@@ -1588,7 +1606,7 @@ snippet fmt "format"
 template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using ${2:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    using ${3:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
     format(const $2& v, FormatContext& ctx) const {
         return formatter<$2>::format(to_string(v), ctx);
@@ -1601,7 +1619,7 @@ snippet fmte "format enum"
 template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using ${2:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    using ${3:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
     format(const $2& v, FormatContext& ctx) const {
         using U = std::underlying_type_t<$2>;
@@ -1615,7 +1633,7 @@ snippet fmtf "format flags"
 template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using ${2:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    using ${3:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
     format(const $2& v, FormatContext& ctx) const {
         using U = std::underlying_type_t<$2>;
@@ -1650,7 +1668,9 @@ template<class Char, class Traits>
 friend std::basic_ostream<Char, Traits>&
 operator<<(std::basic_ostream<Char, Traits>& os, const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
 {
-    return os << $2;
+    using U = std::underlying_type_t<$1>;
+    return os << to_string($2) << '(' << static_cast<U>($2) << ')';
+    return os << to_string($2);
 }
 endsnippet
 
@@ -1679,117 +1699,67 @@ endsnippet
 
 snippet itbea "begin,end"
 // Iterator. {{{`!p snip << 1; snip += snip.mkline('public:')`
-struct const_iterator;
-struct iterator {
-    friend struct const_iterator;
-    using iterator_category = std::random_access_iterator_tag;
-    using difference_type   = std::ptrdiff_t;
+template<bool Const>
+struct Iterator {
+    template<bool> friend struct Iterator;
     using value_type = ${1:T};
-    using reference  = value_type&;
-    using pointer    = value_type*;
-    iterator(void) = default;
-    explicit iterator(pointer p) noexcept : p_{p} {}
-    reference operator*(void) const noexcept { return *p_; }
-    pointer operator->(void) const noexcept { return p_; }
-    reference operator[](difference_type n) const noexcept { return p_[n]; }
-    iterator& operator++(void) noexcept { ++p_; return *this; }
-    iterator& operator--(void) noexcept { --p_; return *this; }
-    iterator operator++(int) noexcept { iterator tmp{p_}; ++p_; return tmp; }
-    iterator operator--(int) noexcept { iterator tmp{p_}; --p_; return tmp; }
-    iterator& operator+=(difference_type n) noexcept { p_ += n; return *this; }
-    iterator& operator-=(difference_type n) noexcept { p_ -= n; return *this; }
-    friend iterator operator+(iterator it, difference_type n) noexcept
-    { it += n; return it; }
-    friend iterator operator+(difference_type n, iterator it) noexcept
-    { it += n; return it; }
-    friend iterator operator-(iterator it, difference_type n) noexcept
-    { it -= n; return it; }
-    friend difference_type operator-(const iterator& lhs, const iterator& rhs) noexcept
-    { return lhs.p_ - rhs.p_; }
-    friend bool operator==(const iterator& lhs, const iterator& rhs) noexcept
-    { return lhs.p_ == rhs.p_; }
-    friend bool operator!=(const iterator& lhs, const iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    friend bool operator<(const iterator& lhs, const iterator& rhs) noexcept
-    { return lhs.p_ < rhs.p_; }
-    friend bool operator>(const iterator& lhs, const iterator& rhs) noexcept
-    { return rhs < lhs; }
-    friend bool operator<=(const iterator& lhs, const iterator& rhs) noexcept
-    { return !(rhs < lhs); }
-    friend bool operator>=(const iterator& lhs, const iterator& rhs) noexcept
-    { return !(lhs < rhs); }
-    private: pointer p_{};
-};
-struct const_iterator {
-    using iterator_category = std::random_access_iterator_tag;
+    using reference  = std::conditional_t<!Const, value_type&, const value_type&>;
+    using pointer    = std::conditional_t<!Const, value_type*, const value_type*>;
     using difference_type   = std::ptrdiff_t;
-    using value_type = $1;
-    using reference  = const value_type&;
-    using pointer    = const value_type*;
-    const_iterator(void) = default;
-    const_iterator(iterator it) noexcept : p_{it.p_} {}
-    explicit const_iterator(pointer p) noexcept : p_{p} {}
-    reference operator*(void) const noexcept { return *p_; }
-    pointer operator->(void) const noexcept { return p_; }
-    reference operator[](difference_type n) const noexcept { return p_[n]; }
-    const_iterator& operator++(void) noexcept { ++p_; return *this; }
-    const_iterator& operator--(void) noexcept { --p_; return *this; }
-    const_iterator operator++(int) noexcept
-    { const_iterator tmp{p_}; ++p_; return tmp; }
-    const_iterator operator--(int) noexcept
-    { const_iterator tmp{p_}; --p_; return tmp; }
-    const_iterator& operator+=(difference_type n) noexcept { p_ += n; return *this; }
-    const_iterator& operator-=(difference_type n) noexcept { p_ -= n; return *this; }
-    friend const_iterator operator+(const_iterator it, difference_type n) noexcept
+    using iterator_category = std::random_access_iterator_tag;
+    using iterator_concept  = std::random_access_iterator_tag;
+    constexpr Iterator() noexcept = default;
+    explicit constexpr Iterator(pointer p) noexcept : p_{p} {}
+    template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
+    constexpr Iterator(Iterator<RhsConst> rhs) noexcept : p_{rhs.p_} {}
+    template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
+    constexpr Iterator& operator=(Iterator<RhsConst> rhs) noexcept
+    { p_ = rhs.p_; return *this; }
+    constexpr reference operator*() const noexcept { return *p_; }
+    constexpr pointer operator->() const noexcept { return p_; }
+    constexpr reference operator[](difference_type n) const noexcept
+    { return p_[n]; }
+    constexpr Iterator& operator++() noexcept { ++p_; return *this; }
+    constexpr Iterator& operator--() noexcept { --p_; return *this; }
+    constexpr Iterator operator++(int) noexcept
+    { Iterator tmp = *this; ++*this; return tmp; }
+    constexpr Iterator operator--(int) noexcept
+    { Iterator tmp = *this; --*this; return tmp; }
+    constexpr Iterator& operator+=(difference_type n) noexcept
+    { p_ += n; return *this; }
+    constexpr Iterator& operator-=(difference_type n) noexcept
+    { p_ -= n; return *this; }
+    friend constexpr Iterator operator+(Iterator it, difference_type n) noexcept
     { it += n; return it; }
-    friend const_iterator operator+(difference_type n, const_iterator it) noexcept
-    { it += n; return it; }
-    friend const_iterator operator-(const_iterator it, difference_type n) noexcept
+    friend constexpr Iterator operator+(difference_type n, Iterator it) noexcept
+    { return it + n; }
+    friend constexpr Iterator operator-(Iterator it, difference_type n) noexcept
     { it -= n; return it; }
-    friend difference_type operator-(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return lhs.p_ - rhs.p_; }
-    friend difference_type operator-(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return const_iterator{lhs} - rhs; }
-    friend difference_type operator-(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return lhs - const_iterator{rhs}; }
-    friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return lhs.p_ == rhs.p_; }
-    friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    friend bool operator<(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return lhs.p_ < rhs.p_; }
-    friend bool operator>(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return rhs < lhs; }
-    friend bool operator<=(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(rhs < lhs); }
-    friend bool operator>=(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(lhs < rhs); }
-    friend bool operator==(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return const_iterator{lhs} == rhs; }
-    friend bool operator!=(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    friend bool operator<(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return const_iterator{lhs} < rhs; }
-    friend bool operator>(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return rhs < lhs; }
-    friend bool operator<=(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(rhs < lhs); }
-    friend bool operator>=(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(lhs < rhs); }
-    friend bool operator==(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return lhs == const_iterator{rhs}; }
-    friend bool operator!=(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    friend bool operator<(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return lhs < const_iterator{rhs}; }
-    friend bool operator>(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return rhs < lhs; }
-    friend bool operator<=(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return !(rhs < lhs); }
-    friend bool operator>=(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return !(lhs < rhs); }
+    template<bool RhsConst>
+    constexpr difference_type operator-(Iterator<RhsConst> rhs) const noexcept
+    { return p_ - rhs.p_; }
+    template<bool RhsConst>
+    constexpr bool operator==(Iterator<RhsConst> rhs) const noexcept
+    { return p_ == rhs.p_; }
+    template<bool RhsConst>
+    constexpr bool operator!=(Iterator<RhsConst> rhs) const noexcept
+    { return !(*this == rhs); }
+    template<bool RhsConst>
+    constexpr bool operator<(Iterator<RhsConst> rhs) const noexcept
+    { return p_ < rhs.p_; }
+    template<bool RhsConst>
+    constexpr bool operator<=(Iterator<RhsConst> rhs) const noexcept
+    { return !(rhs < *this); }
+    template<bool RhsConst>
+    constexpr bool operator>(Iterator<RhsConst> rhs) const noexcept
+    { return rhs < *this; }
+    template<bool RhsConst>
+    constexpr bool operator>=(Iterator<RhsConst> rhs) const noexcept
+    { return !(*this < rhs); }
     private: pointer p_{};
 };
+using iterator = Iterator</*Const*/false>;
+using const_iterator = Iterator</*Const*/true>;
 iterator begin(void) noexcept { return iterator{${2:arr_}.data()};         }
 iterator end(void)   noexcept { return iterator{$2.data() + size_}; }
 const_iterator begin(void)  const noexcept { return const_iterator{$2.data()};         }
@@ -1801,59 +1771,69 @@ endsnippet
 
 snippet itbev "begin,end"
 // Iterator. {{{`!p snip << 1; snip += snip.mkline('public:')`
-struct const_iterator;
-struct iterator {
-    friend struct const_iterator;
-    using MyIterator = ${1:Vec}::iterator;
-    using iterator_category = std::bidirectional_iterator_tag;
-    using difference_type = typename std::iterator_traits<MyIterator>::difference_type;
+template<bool Const>
+struct Iterator {
+    template<bool> friend struct Iterator;
+    using MyIterator = std::conditional_t<!Const,
+                       ${1:Vec}::iterator, $1::const_iterator>;
     using value_type = ${2:T};
-    using reference  = value_type&;
-    using pointer    = value_type*;
-    iterator(void) = default;
-    explicit iterator(MyIterator it) noexcept : it_{it} {}
-    reference operator*(void) const noexcept { return **it_; }
-    pointer operator->(void) const noexcept { return *it_; }
-    iterator& operator++(void) noexcept { ++it_; return *this; }
-    iterator& operator--(void) noexcept { --it_; return *this; }
-    iterator operator++(int) noexcept { iterator tmp{it_}; ++it_; return tmp; }
-    iterator operator--(int) noexcept { iterator tmp{it_}; --it_; return tmp; }
-    friend bool operator==(const iterator& lhs, const iterator& rhs) noexcept
-    { return lhs.it_ == rhs.it_; }
-    friend bool operator!=(const iterator& lhs, const iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    private: MyIterator it_;
+    using reference  = std::conditional_t<!Const, value_type&, const value_type&>;
+    using pointer    = std::conditional_t<!Const, value_type*, const value_type*>;
+    using difference_type   = std::ptrdiff_t;
+    using iterator_category = std::random_access_iterator_tag;
+    using iterator_concept  = std::random_access_iterator_tag;
+    constexpr Iterator() noexcept = default;
+    explicit constexpr Iterator(MyIterator it) noexcept : it_{it} {}
+    template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
+    constexpr Iterator(Iterator<RhsConst> rhs) noexcept : it_{rhs.it_} {}
+    template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
+    constexpr Iterator& operator=(Iterator<RhsConst> rhs) noexcept
+    { it_ = rhs.it_; return *this; }
+    constexpr reference operator*() const noexcept { return **it_; }
+    constexpr pointer operator->() const noexcept { return *it_; }
+    constexpr reference operator[](difference_type n) const noexcept
+    { return *it_[n]; }
+    constexpr Iterator& operator++() noexcept { ++it_; return *this; }
+    constexpr Iterator& operator--() noexcept { --it_; return *this; }
+    constexpr Iterator operator++(int) noexcept
+    { Iterator tmp = *this; ++*this; return tmp; }
+    constexpr Iterator operator--(int) noexcept
+    { Iterator tmp = *this; --*this; return tmp; }
+    constexpr Iterator& operator+=(difference_type n) noexcept
+    { it_ += n; return *this; }
+    constexpr Iterator& operator-=(difference_type n) noexcept
+    { it_ -= n; return *this; }
+    friend constexpr Iterator operator+(Iterator it, difference_type n) noexcept
+    { it += n; return it; }
+    friend constexpr Iterator operator+(difference_type n, Iterator it) noexcept
+    { return it + n; }
+    friend constexpr Iterator operator-(Iterator it, difference_type n) noexcept
+    { it -= n; return it; }
+    template<bool RhsConst>
+    constexpr difference_type operator-(Iterator<RhsConst> rhs) const noexcept
+    { return it_ - rhs.it_; }
+    template<bool RhsConst>
+    constexpr bool operator==(Iterator<RhsConst> rhs) const noexcept
+    { return it_ == rhs.it_; }
+    template<bool RhsConst>
+    constexpr bool operator!=(Iterator<RhsConst> rhs) const noexcept
+    { return !(*this == rhs); }
+    template<bool RhsConst>
+    constexpr bool operator<(Iterator<RhsConst> rhs) const noexcept
+    { return it_ < rhs.it_; }
+    template<bool RhsConst>
+    constexpr bool operator<=(Iterator<RhsConst> rhs) const noexcept
+    { return !(rhs < *this); }
+    template<bool RhsConst>
+    constexpr bool operator>(Iterator<RhsConst> rhs) const noexcept
+    { return rhs < *this; }
+    template<bool RhsConst>
+    constexpr bool operator>=(Iterator<RhsConst> rhs) const noexcept
+    { return !(*this < rhs); }
+    private: MyIterator it_{};
 };
-struct const_iterator {
-    using MyIterator = $1::const_iterator;
-    using iterator_category = std::bidirectional_iterator_tag;
-    using difference_type = typename std::iterator_traits<MyIterator>::difference_type;
-    using value_type = $2;
-    using reference  = const value_type&;
-    using pointer    = const value_type*;
-    const_iterator(void) = default;
-    const_iterator(iterator it) noexcept : it_{it.it_} {}
-    explicit const_iterator(MyIterator it) noexcept : it_{it} {}
-    reference operator*(void) const noexcept { return **it_; }
-    pointer operator->(void) const noexcept { return *it_; }
-    const_iterator& operator++(void) noexcept { ++it_; return *this; }
-    const_iterator& operator--(void) noexcept { --it_; return *this; }
-    const_iterator operator++(int) noexcept { const_iterator tmp{it_}; ++it_; return tmp; }
-    const_iterator operator--(int) noexcept { const_iterator tmp{it_}; --it_; return tmp; }
-    friend bool operator==(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return lhs.it_ == rhs.it_; }
-    friend bool operator!=(const const_iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    friend bool operator==(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return const_iterator{lhs} == rhs; }
-    friend bool operator!=(const iterator& lhs, const const_iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    friend bool operator==(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return lhs == const_iterator{rhs}; }
-    friend bool operator!=(const const_iterator& lhs, const iterator& rhs) noexcept
-    { return !(lhs == rhs); }
-    private: MyIterator it_;
-};
+using iterator = Iterator</*Const*/false>;
+using const_iterator = Iterator</*Const*/true>;
 iterator begin(void) noexcept { return iterator{${3:`!p snip.rv=type2var(t[1])`_}.begin()}; }
 iterator end(void)   noexcept { return iterator{$3.end()};   }
 const_iterator begin(void)  const noexcept { return const_iterator{$3.cbegin()}; }
