@@ -9,6 +9,7 @@ syntax keyword cppSTLnamespace
 
 syntax keyword cppSTLtype
         \ intrusive_ref_counter intrusive_ptr
+        \ type_name
         \ type_tag_t
         \ size_tag_t
         \ byte_order_t
@@ -17,12 +18,9 @@ syntax keyword cppSTLtype
         \ native_endian_t
         \ little_endian_t
         \ big_endian_t
-        \ type_name
-        \ proxy
+        \ key_extract
         \ is_instantiation_of
         \ is_raw_pointer_to
-        \ dereference_type
-        \ dereference_type_t
         \ is_movable_iterator
         \ no_futex_t
         \ futex_t
