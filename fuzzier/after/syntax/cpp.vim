@@ -19,6 +19,7 @@ syntax keyword cppSTLtype
         \ little_endian_t
         \ big_endian_t
         \ key_extract
+        \ key_extract_result
         \ is_instantiation_of
         \ is_raw_pointer_to
         \ is_movable_iterator
@@ -37,6 +38,7 @@ syntax keyword cppSTLconstant
         \ native_endian
         \ little_endian
         \ big_endian
+        \ key_extract_result_t
         \ is_instantiation_of_v
         \ is_raw_pointer_to_v
         \ is_movable_iterator_v
