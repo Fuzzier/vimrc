@@ -22,3 +22,7 @@ command! -nargs=* GL :execute "normal gq"
 " * -s: without author and date.
 command! -range=% GB <line1>,<line2>:Git blame -s
 
+" Prevent `fugitive` summary window from overriding `vim-sneak` hotkey 's'.
+autocmd FileType fugitive silent! nunmap <buffer> s
+autocmd FileType fugitive silent! xunmap <buffer> s
+
