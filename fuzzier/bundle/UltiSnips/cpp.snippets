@@ -127,6 +127,15 @@ def type2auto(x):
     y = const + 'auto' + qualifier
     return y
 
+# @brief Type to member access operator.
+# Pointer type: '->'
+# Other types : '.'
+def type2memacc(x):
+    member_accessor = '.'
+    if x.endswith('*'):
+        member_accessor = '->'
+    return member_accessor
+
 def var2type(x):
     z = ''
     m = re.search(r'^(\w+?)_?$', x)
@@ -191,8 +200,23 @@ def camel2delim(x, u, delim):
     z = re.sub(r'_', delim, y).strip()
     return z
 
-# @brief Get unqualified name.
-def unqualify(x):
+# @brief Get trailing reference or pointer.
+# 'nsfx::Object&' => 'nsfx::Object'
+# 'nsfx::Object*' => 'nsfx::Object'
+def remove_ref_ptr(x):
+    y = x
+    if x.endswith('&&'):
+        y = x[:-2]
+    elif x.endswith('&') or x.endswith('*'):
+        y = x[:-1]
+    return y
+
+def tparam_qual(x):
+    return '*' if x.endswith('*') else '&'
+
+# @brief Get non-scoped name.
+# 'nsfx::Object' => 'Object'
+def remove_scope(x):
     y = re.sub(r'.*:(\w+)', r'\1', x)
     return y
 
@@ -482,7 +506,11 @@ endsnippet
 
 snippet #ifcon "has concept"
 #if (__cpp_concepts >= 201907L)
+
+$0
 #else // !(__cpp_concepts >= 201907L)
+
+
 #endif // (__cpp_concepts >= 201907L)
 endsnippet
 
@@ -651,12 +679,12 @@ for (${1:size_t} ${2:i} = ${3:1u}; $2 <= ${4:N}; ++$2) {$0
 endsnippet
 
 snippet fori "for (++)"
-for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {$0
+for (${1:int} ${2:i} = ${3:0u}; $2 < ${4:N}; ++$2) {$0
 }
 endsnippet
 
 snippet foru "for (++)"
-for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {$0
+for (${1:unsigned} ${2:i} = ${3:0u}; $2 < ${4:N}; ++$2) {$0
 }
 endsnippet
 
@@ -843,19 +871,6 @@ $0
 endsnippet
 
 ########################################
-# enum
-########################################
-snippet denum "enum"
-enum ${1:name}
-{
-    ${2:`!p snip.rv=str2delim(t[1],'_').upper()`}_NONE,
-    $0
-    $2_LAST,
-    $2_COUNT = $2_LAST - 1,
-}
-endsnippet
-
-########################################
 # Keywords
 ########################################
 snippet pu "public"
@@ -894,28 +909,12 @@ snippet scx "static constexpr"
 static constexpr
 endsnippet
 
-snippet scxb "static constexpr bool"
-static constexpr bool
-endsnippet
-
 snippet cx "constexpr" w
 constexpr
 endsnippet
 
-snippet cxb "constexpr bool" w
-constexpr bool
-endsnippet
-
 snippet co "const" w
 const
-endsnippet
-
-snippet car "const auto&" w
-const auto&
-endsnippet
-
-snippet ar "auto&" w
-auto&
 endsnippet
 
 snippet cno "const noexcept"
@@ -938,7 +937,7 @@ ${1:`!v getreg('c')`}(${2:void}) noexcept$0
 {}
 endsnippet
 
-snippet ctord "Ctor(args)"
+snippet ctord "Ctor(args) = default"
 ${1:`!v getreg('c')`}(${2:void}) noexcept = default;
 endsnippet
 
@@ -946,11 +945,11 @@ snippet dtor "~Dtor(void)"
 ~${1:`!v getreg('c')`}(void) noexcept$0
 endsnippet
 
-snippet dtord "~Dtor(void)"
+snippet dtord "~Dtor(void) = default"
 ~${1:`!v getreg('c')`}(void) noexcept = default;
 endsnippet
 
-snippet vdtord "virtual ~Dtor(void)"
+snippet vdtord "virtual ~Dtor(void) = default"
 virtual ~${1:`!v getreg('c')`}(void) noexcept = default;
 endsnippet
 
@@ -983,24 +982,24 @@ endsnippet
 ########################################
 # // Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet cpy "Copyable"
-${1:`!v getreg('c')`}(const $1& rhs);
-$1& operator=(const $1& rhs);
+constexpr ${1:`!v getreg('c')`}(const $1& rhs);
+constexpr $1& operator=(const $1& rhs);
 endsnippet
 
 # // Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet cpyd "Copyable"
-${1:`!v getreg('c')`}(const $1& ) noexcept = default;
-$1& operator=(const $1& ) noexcept = default;
+constexpr ${1:`!v getreg('c')`}(const $1&) noexcept = default;
+constexpr $1& operator=(const $1&) noexcept = default;
 endsnippet
 
 # // Copyable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet cpy.d "Copyable" m
-${1:`!v getreg('c')`}(const $1& rhs)
+constexpr ${1:`!v getreg('c')`}(const $1& rhs)
     : $0
 {
 }
 
-$1& operator=(const $1& rhs)
+constexpr $1& operator=(const $1& rhs)
 {
     if (this != std::addressof(rhs)) {
         $0
@@ -1011,24 +1010,24 @@ endsnippet
 
 # // Movable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet mov "Movable"
-${1:`!v getreg('c')`}($1&& rhs) noexcept;
-$1& operator=($1&& rhs) noexcept;
+constexpr ${1:`!v getreg('c')`}($1&& rhs) noexcept;
+constexpr $1& operator=($1&& rhs) noexcept;
 endsnippet
 
 # // Movable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet movd "Movable"
-${1:`!v getreg('c')`}($1&& rhs) noexcept = default;
-$1& operator=($1&& rhs) noexcept = default;
+constexpr ${1:`!v getreg('c')`}($1&&) noexcept = default;
+constexpr $1& operator=($1&&) noexcept = default;
 endsnippet
 
 # // Movable.`!p snip << 1; snip += snip.mkline('public:')`
 snippet mov.d "Movable" m
-${1:`!v getreg('c')`}($1&& rhs) noexcept
+constexpr ${1:`!v getreg('c')`}($1&& rhs) noexcept
     : $0
 {
 }
 
-$1& operator=($1&& rhs) noexcept
+constexpr $1& operator=($1&& rhs) noexcept
 {
     if (this != std::addressof(rhs)) {
         $0
@@ -1314,7 +1313,7 @@ static_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet sc>= "static_cast"
-`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = static_cast<${1:T}>(${2:${VISUAL:v}});
+`!p snip.rv=type2auto(t[2])` ${1:v} = static_cast<${2:T}>(${3:${VISUAL:expr}});
 endsnippet
 
 snippet cc> "const_cast" w
@@ -1322,7 +1321,7 @@ const_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet cc>= "const_cast"
-`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = const_cast<${1:T}>(${2:${VISUAL:v}});
+`!p snip.rv=type2auto(t[2])` ${1:v} = const_cast<${2:T}>(${3:${VISUAL:expr}});
 endsnippet
 
 snippet dc> "dynamic_cast" w
@@ -1330,7 +1329,7 @@ dynamic_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet dc>= "dynamic_cast"
-`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = dynamic_cast<${1:T}>(${2:${VISUAL:v}});
+`!p snip.rv=type2auto(t[2])` ${1:v} = dynamic_cast<${2:T}>(${3:${VISUAL:expr}});
 endsnippet
 
 snippet rc> "reinterpret_cast" w
@@ -1338,7 +1337,7 @@ reinterpret_cast<${1:T}>(${2:${VISUAL:v}})
 endsnippet
 
 snippet rc>= "reinterpret_cast"
-`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = reinterpret_cast<${1:T}>(${2:${VISUAL:v}});
+`!p snip.rv=type2auto(t[2])` ${1:v} = reinterpret_cast<${2:T}>(${3:${VISUAL:expr}});
 endsnippet
 
 snippet c> "C-style cast"
@@ -1346,12 +1345,7 @@ snippet c> "C-style cast"
 endsnippet
 
 snippet c>= "C-style cast"
-`!p snip.rv=type2auto(t[1])` ${3:`!p snip.rv=type2var(t[1])`} = (${1:T})(${2:${VISUAL:v}})
-endsnippet
-
-snippet v>= "C-style cast"
-${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} =
-    ($1)(${3:$2});
+`!p snip.rv=type2auto(t[2])` ${1:v} = (${2:T})(${3:${VISUAL:expr}});
 endsnippet
 
 snippet rbuf "std::byte[]"
@@ -1386,10 +1380,6 @@ snippet rm "T& v_" w
 ${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
-snippet r= "T& v =" w
-${1:${VISUAL:T}}& ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
-endsnippet
-
 snippet pv "T* v" w
 ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
@@ -1398,69 +1388,60 @@ snippet pm "T* v_" w
 ${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
-snippet p= "T* v = nullptr"
-${1:${VISUAL:T}}* ${2:`!p snip.rv=type2var(t[1])`} = ${3:nullptr};
-endsnippet
-
-snippet cv "const T v =" w
+snippet cv "const T v" w
 const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}
 endsnippet
 
-snippet cm "const T v_ =" w
+snippet cm "const T v_" w
 const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`}_
 endsnippet
 
-snippet c= "const T v ="
-const ${1:${VISUAL:T}} ${2:`!p snip.rv=type2var(t[1])`} = ${3:$2};
+snippet cb "const bool v" w
+const bool
 endsnippet
 
-snippet cb= "const bool v ="
-const bool ${1:v} = ${2:$1};
+snippet c8 "const uint8_t v" w
+const uint8_t
 endsnippet
 
-snippet c8= "const uint8_t v ="
-const uint8_t ${1:v} = ${2:$1};
+snippet c1 "const uint16_t v" w
+const uint16_t
 endsnippet
 
-snippet c1= "const uint16_t v ="
-const uint16_t ${1:v} = ${2:$1};
+snippet c3 "const uint32_t v" w
+const uint32_t
 endsnippet
 
-snippet c3= "const uint32_t v ="
-const uint32_t ${1:v} = ${2:$1};
+snippet c6 "const uint64_t v" w
+const uint64_t
 endsnippet
 
-snippet c6= "const uint64_t v ="
-const uint64_t ${1:v} = ${2:$1};
+snippet cz "const size_t v" w
+const size_t
 endsnippet
 
-snippet cs= "const size_t v ="
-const size_t ${1:v} = ${2:$1};
+snippet ca "const auto v" w
+const auto
 endsnippet
 
-snippet qq
-Your age: ${1|<18,18~60,>60|}
-Your height: ${2|<120cm,120cm~180cm,>180cm|}
+snippet car "const auto& v" w
+const auto&
 endsnippet
 
-snippet ca= "const auto v ="
-const ${3|auto,auto&,auto*|} ${1:v} = ${2:$1};
+snippet cap "const auto* v" w
+const auto*
 endsnippet
 
-snippet car= "const auto& v ="
-const auto& ${1:v} = ${2:$1};
-endsnippet
-
-snippet cap= "const auto* v ="
-const auto* ${1:v} = ${2:$1};
-endsnippet
-
-snippet v= "value ="
+snippet v= "v ="
 ${1:v} = ${2:$1}
 endsnippet
 
-snippet m= "value_ ="
+snippet m= "v_ ="
 ${1:v}_ = ${2:$1}
+endsnippet
+
+snippet m=r "v_ = rhs.v_"
+${1:v}_ = ${2:rhs}.$1_;
 endsnippet
 
 ########################################
@@ -1474,7 +1455,7 @@ snippet ip "x_{&x}"
 ${1:x}_{&${2:$1}}
 endsnippet
 
-snippet irm "x_{rhs.x}"
+snippet irm "x_{rhs.x_}"
 ${1:x}_{rhs.${2:$1}_}
 endsnippet
 
@@ -1489,27 +1470,27 @@ snippet i8  "int8_t" w
 int8_t
 endsnippet
 
-snippet u16  "uint16_t" w
+snippet u1  "uint16_t" w
 uint16_t
 endsnippet
 
-snippet i16  "int16_t" w
+snippet i1  "int16_t" w
 int16_t
 endsnippet
 
-snippet u32  "uint32_t" w
+snippet u3  "uint32_t" w
 uint32_t
 endsnippet
 
-snippet i32  "int32_t" w
+snippet i3  "int32_t" w
 int32_t
 endsnippet
 
-snippet u64  "uint64_t" w
+snippet u6  "uint64_t" w
 uint64_t
 endsnippet
 
-snippet i64  "int64_t" w
+snippet i6  "int64_t" w
 int64_t
 endsnippet
 
@@ -1560,7 +1541,7 @@ snippet wstr& "const std::wstring&" w
 const std::wstring&
 endsnippet
 
-snippet strv "std::string_view" w
+snippet sv "std::string_view" w
 std::string_view
 endsnippet
 
@@ -1606,7 +1587,7 @@ snippet fmt "format"
 template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using ${3:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    using ${3:`!p snip.rv=remove_scope(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
     format(const $2& v, FormatContext& ctx) const {
         return formatter<$2>::format(to_string(v), ctx);
@@ -1619,10 +1600,10 @@ snippet fmte "format enum"
 template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using ${3:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    using ${3:`!p snip.rv=remove_scope(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const $2& v, FormatContext& ctx) const {
-        using U = std::underlying_type_t<$2>;
+    format(const $3& v, FormatContext& ctx) const {
+        using U = std::underlying_type_t<$3>;
         const U u = static_cast<U>(v);
         return format_to(ctx.out(), "{}({})", to_string(v), u);
     }
@@ -1633,7 +1614,7 @@ snippet fmtf "format flags"
 template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
-    using ${3:`!p snip.rv=unqualify(t[1])`} = nsfx::$1;
+    using ${3:`!p snip.rv=remove_scope(t[1])`} = nsfx::$1;
     template<class FormatContext> constexpr typename FormatContext::iterator
     format(const $2& v, FormatContext& ctx) const {
         using U = std::underlying_type_t<$2>;
@@ -1686,6 +1667,17 @@ std::optional<${1:${VISUAL:T}}>
 endsnippet
 
 ########################################
+# Threaded
+########################################
+snippet lg "lock_guard"
+std::lock_guard guard{${1:mutex}};
+endsnippet
+
+snippet ul "unique_lock"
+std::unique_lock guard{${1:mutex}};
+endsnippet
+
+########################################
 # Containers
 ########################################
 snippet itbe "begin,end"
@@ -1693,8 +1685,10 @@ using iterator       = ${1:Map}::iterator;
 using const_iterator = $1::const_iterator;
 iterator begin(void) noexcept { return ${2:`!p snip.rv=type2var(t[1])`_}.begin(); }
 iterator end(void)   noexcept { return $2.end();   }
-const_iterator begin(void) const noexcept { return $2.begin(); }
-const_iterator end(void)   const noexcept { return $2.end();   }
+const_iterator begin(void) const noexcept { return $2.cbegin(); }
+const_iterator end(void)   const noexcept { return $2.cend();   }
+const_iterator cbegin(void) const noexcept { return $2.cbegin(); }
+const_iterator cend(void)   const noexcept { return $2.cend();   }
 endsnippet
 
 snippet itbea "begin,end"
@@ -1715,10 +1709,6 @@ struct Iterator {
     template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
     constexpr Iterator& operator=(Iterator<RhsConst> rhs) noexcept
     { p_ = rhs.p_; return *this; }
-    constexpr reference operator*() const noexcept { return *p_; }
-    constexpr pointer operator->() const noexcept { return p_; }
-    constexpr reference operator[](difference_type n) const noexcept
-    { return p_[n]; }
     constexpr Iterator& operator++() noexcept { ++p_; return *this; }
     constexpr Iterator& operator--() noexcept { --p_; return *this; }
     constexpr Iterator operator++(int) noexcept
@@ -1756,6 +1746,10 @@ struct Iterator {
     template<bool RhsConst>
     constexpr bool operator>=(Iterator<RhsConst> rhs) const noexcept
     { return !(*this < rhs); }
+    constexpr reference operator*() const noexcept { return *p_; }
+    constexpr pointer operator->() const noexcept { return p_; }
+    constexpr reference operator[](difference_type n) const noexcept
+    { return p_[n]; }
     private: pointer p_{};
 };
 using iterator = Iterator</*Const*/false>;
@@ -1789,10 +1783,6 @@ struct Iterator {
     template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
     constexpr Iterator& operator=(Iterator<RhsConst> rhs) noexcept
     { it_ = rhs.it_; return *this; }
-    constexpr reference operator*() const noexcept { return **it_; }
-    constexpr pointer operator->() const noexcept { return *it_; }
-    constexpr reference operator[](difference_type n) const noexcept
-    { return *it_[n]; }
     constexpr Iterator& operator++() noexcept { ++it_; return *this; }
     constexpr Iterator& operator--() noexcept { --it_; return *this; }
     constexpr Iterator operator++(int) noexcept
@@ -1830,6 +1820,10 @@ struct Iterator {
     template<bool RhsConst>
     constexpr bool operator>=(Iterator<RhsConst> rhs) const noexcept
     { return !(*this < rhs); }
+    constexpr reference operator*() const noexcept { return **it_; }
+    constexpr pointer operator->() const noexcept { return *it_; }
+    constexpr reference operator[](difference_type n) const noexcept
+    { return *it_[n]; }
     private: MyIterator it_{};
 };
 using iterator = Iterator</*Const*/false>;
@@ -2083,19 +2077,6 @@ NSFX_LOG_TRACE_R()(${1:});
 endsnippet
 
 ########################################
-# Callback
-########################################
-snippet del "Delegate"
-using ${1:}Cb = void(${2:Ts});
-Delegate<$1Cb> ${3:`!p snip.rv=type2var(t[1])`}Ev_;
-endsnippet
-
-snippet cb "Callback"
-using ${1:}Cb = void(${2:Ts});
-Callback<$1Cb> ${3:`!p snip.rv=type2var(t[1])`}Cb_;
-endsnippet
-
-########################################
 # TEST
 ########################################
 snippet ts "test suite"
@@ -2321,10 +2302,17 @@ struct ${1:Key} {
 endsnippet
 
 snippet kof "keyof"
-using Key = ${1:addr_t};
+using Key = ${1:K};
 struct ${2:KeyOf} {
-    ${3:Key} operator()(const ${4:T}& ${5:`!p snip.rv=type2var(t[4])`}) const noexcept {
-        return $5.${6:`!p snip.rv=type2var(t[3])`_};
+    using mapped_type = ${3:T};
+    Key operator()(const $3& ${4:`!p snip.rv=type2var(t[3])`}) const noexcept {
+        return $4`!p snip.rv=type2memacc(t[3])`${5:`!p snip.rv=type2var(t[3])`_};
+    }
+    // FIXME: use this if \`$3\` is declared after \`$2\`.
+    template<class T,
+    std::enable_if_t<(std::is_same_v<T, `!p snip.rv=remove_ref_ptr(t[3])`>), int> = 0>
+    Key operator()(const T`!p snip.rv=tparam_qual(t[3])` $4) const noexcept {
+        return $4`!p snip.rv=type2memacc(t[3])`$5;
     }
 };
 endsnippet
@@ -2332,17 +2320,18 @@ endsnippet
 snippet kcomp "Comp"
 struct ${1:Comp} {
     using is_transparent = void;
-    bool operator()($2 lhs, $2 rhs) const noexcept {
+    ${2:KeyOf} ${3:`!p snip.rv=type2var(t[2])`_};
+    bool operator()($4 lhs, $4 rhs) const noexcept {
         return lhs < rhs;
     }
-    bool operator()(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}, const ${4:T}& rhs) const noexcept {
-        return $3 < rhs.${5:$3_};
+    bool operator()(${4:Key} ${5:`!p snip.rv=type2var(t[4])`}, const ${6:T} rhs) const noexcept {
+        return operator()($5, $3(rhs));
     }
-    bool operator()(const $4& lhs, $2 $3) const noexcept {
-        return lhs.$5 < $3;
+    bool operator()(const $6 lhs, $4 $5) const noexcept {
+        return operator()($3(lhs), $5);
     }
-    bool operator()(const $4& lhs, const $4& rhs) const noexcept {
-        return lhs.$5 < rhs.$5;
+    bool operator()(const $6 lhs, const $6 rhs) const noexcept {
+        return operator()($3(lhs), $3(rhs));
     }
 };
 endsnippet
@@ -2350,17 +2339,18 @@ endsnippet
 snippet keq "KeyEqual"
 struct ${1:KeyEqual} {
     using is_transparent = void;
-    bool operator()($2 lhs, $2 rhs) const noexcept {
+    ${2:KeyOf} ${3:`!p snip.rv=type2var(t[2])`_};
+    bool operator()($4 lhs, $4 rhs) const noexcept {
         return lhs == rhs;
     }
-    bool operator()(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}, const ${4:T}& rhs) const noexcept {
-        return $3 == rhs.${5:$3_};
+    bool operator()(${4:Key} ${5:`!p snip.rv=type2var(t[4])`}, const ${6:T} rhs) const noexcept {
+        return operator()($5, $3(rhs));
     }
-    bool operator()(const $4& lhs, $2 $3) const noexcept {
-        return lhs.$5 == $3;
+    bool operator()(const $6 lhs, $4 $5) const noexcept {
+        return operator()($3(lhs), $5);
     }
-    bool operator()(const $4& lhs, const $4& rhs) const noexcept {
-        return lhs.$5 == rhs.$5;
+    bool operator()(const $6 lhs, const $6 rhs) const noexcept {
+        return operator()($3(lhs), $3(rhs));
     }
 };
 endsnippet
@@ -2368,8 +2358,12 @@ endsnippet
 snippet khash "Hash"
 struct ${1:Hash} {
     using is_transparent = void;
-    size_t operator()(${2:Key} ${3:`!p snip.rv=type2var(t[2])`}) const noexcept {
-        return hash_aux::moremur($3);
+    ${2:KeyOf} ${3:`!p snip.rv=type2var(t[2])`_};
+    size_t operator()(${4:Key} ${5:`!p snip.rv=type2var(t[4])`}) const noexcept {
+        return hash_aux::moremur($5);
+    }
+    size_t operator()(const ${6:T} rhs) const noexcept {
+        return operator()($3(rhs));
     }
 };
 endsnippet
@@ -2646,13 +2640,13 @@ $4& _emplace_back($2 $3) {
 
 void _pop_back(void) noexcept { return $1.pop_back(); }
 
-struct AddResult {
-    $4& value(void) const noexcept { return *value_; }
-    $4* value_;
-    bool added_;
+struct insert_return_type {
+    $4& value(void) const noexcept { return *position; }
+    $4* position;
+    bool inserted;
 };
 
-AddResult _addOrGet($2 $3) {
+insert_return_type _addOrGet($2 $3) {
     $4* $5 = find($3);
     if ($5) {
         return {$5, false};
@@ -2667,7 +2661,7 @@ void _clear(void) noexcept {
 endsnippet
 
 snippet contvs "sorted vector-based container"
-bool empty(void) const noexcept { return ${1:map_}.empty(); }
+bool empty(void) const noexcept { return ${1:set_}.empty(); }
 
 size_t size(void) const noexcept { return $1.size(); }
 
@@ -2682,18 +2676,6 @@ size_t count($2 $3) const noexcept {
 
 bool contains($2 $3) const noexcept {
     return !!find($3);
-}
-
-bool contains(const $4& $5) const noexcept {
-    const Comp comp{};
-    auto it = std::lower_bound($1.begin(), $1.end(), $5, comp);
-    if (it != $1.end()) {
-        const $4& value = *it;
-        if (!comp($5, value)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 $4* find($2 $3) noexcept {
@@ -2724,20 +2706,13 @@ const $4& at($2 $3) const noexcept {
     return *$5;
 }
 
-$4& _add($2 $3) {
-    NSFX_ASSERT(!contains($3));
-    const Comp comp{};
-    auto it = std::lower_bound($1.begin(), $1.end(), $3, comp);
-    return *$1.emplace(it, $3);
-}
-
-struct AddResult {
-    $4& value(void) const noexcept { return *value_; }
-    $4* value_;
-    bool added_;
+struct InsertResult {
+    $4& value(void) const noexcept { return *position; }
+    $4* position;
+    bool inserted;
 };
 
-AddResult _addOrGet($2 $3) {
+InsertResult emplace($2 $3) {
     const Comp comp{};
     auto it = std::lower_bound($1.begin(), $1.end(), $3, comp);
     if (it != $1.end()) {
@@ -2760,14 +2735,7 @@ size_t _erase($2 $3) noexcept {
             return 1u;
         }
     }
-    return 0u;
-}
-
-void _erase(const $4& $5) noexcept {
-    NSFX_ASSERT(contains($5));
-    const Comp comp{};
-    auto it = std::lower_bound($1.begin(), $1.end(), $5, comp);
-    $1.erase(it);
+    return 0;
 }
 
 void _clear(void) noexcept {
@@ -2821,13 +2789,13 @@ $4& _add($2 $3) {
     return *$5.release();
 }
 
-struct AddResult {
-    $4& value(void) const noexcept { return *value_; }
-    $4* value_;
-    bool added_;
+struct insert_return_type {
+    $4& value(void) const noexcept { return *position; }
+    $4* position;
+    bool inserted;
 };
 
-AddResult _addOrGet($2 $3) {
+insert_return_type _addOrGet($2 $3) {
     auto ins = $1_.insert_check($3);
     if (ins.has_value()) {
         return {std::addressof(ins.value()), false};
@@ -2913,13 +2881,13 @@ $4& _add($2 $3) {
     return *result.first;
 }
 
-struct AddResult {
-    $4& value(void) const noexcept { return *value_; }
-    $4* value_;
-    bool added_;
+struct insert_return_type {
+    $4& value(void) const noexcept { return *position; }
+    $4* position;
+    bool inserted;
 };
 
-AddResult _addOrGet($2 $3) {
+insert_return_type _addOrGet($2 $3) {
     auto result = $1.try_emplace($3, $3);
     return {std::addressof(*result.first), result.second};
 }
@@ -2978,13 +2946,13 @@ $4& _add($2 $3) {
     return *$5.release();
 }
 
-struct AddResult {
-    $4& value(void) const noexcept { return *value_; }
-    $4* value_;
-    bool added_;
+struct insert_return_type {
+    $4& value(void) const noexcept { return *position; }
+    $4* position;
+    bool inserted;
 };
 
-AddResult _addOrGet($2 $3) {
+insert_return_type _addOrGet($2 $3) {
     $4* $5 = find($3);
     if ($5) {
         return {$5, false};
@@ -3151,13 +3119,13 @@ $5& _add($3 $4, simtime_t time) {
     return *$6.release();
 }
 
-struct AddResult {
-    $5& value(void) const noexcept { return *value_; }
-    $5* value_;
-    bool added_;
+struct insert_return_type {
+    $5& value(void) const noexcept { return *position; }
+    $5* position;
+    bool inserted;
 };
 
-AddResult _addOrGet($3 $4, simtime_t time) {
+insert_return_type _addOrGet($3 $4, simtime_t time) {
     NSFX_ASSERT(_checkTime(time));
     auto ins = $2.insert_check($4);
     if (ins.has_value()) {
@@ -3243,11 +3211,6 @@ public:
     explicit
     ${1:T}(void) = default;
     virtual ~$1(void) = default;
-
-    // Object
-public:
-    virtual std::string_view className(void) const noexcept override
-    { return Object::className(this); }
 
     // Module
 public:
@@ -3386,6 +3349,16 @@ if (${1:cfg}.contains("${2:name}")) {
         NSFX_THROW(ConfigError{})(
             "Invalid '$3': {}", $1["$2"]);
     }
+    $0
+} else {
+    NSFX_THROW(ConfigError{})("Missing '$2'");
+}
+endsnippet
+
+snippet cbool "cfg bool"
+//
+if (${1:cfg}.contains("${2:name}")) {
+    const auto ${3:`!p snip.rv=str2camel(t[2],False)`} = $1["$2"].asBool();
     $0
 } else {
     NSFX_THROW(ConfigError{})("Missing '$2'");
