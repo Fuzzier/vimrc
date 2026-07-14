@@ -2,7 +2,6 @@ syntax keyword cppSTLnamespace
         \ pmr
         \ nsfx
         \ cda
-        \ tag
         \ mpl
         \ lock_free
         \ wait
@@ -11,6 +10,7 @@ syntax keyword cppSTLtype
         \ intrusive_ref_counter intrusive_ptr
         \ type_name
         \ type_tag_t
+        \ enum_tag_t
         \ size_tag_t
         \ byte_order_t
         \ same_byte_order_t
@@ -20,6 +20,7 @@ syntax keyword cppSTLtype
         \ big_endian_t
         \ key_extract
         \ key_extract_result
+        \ hook_access
         \ is_instantiation_of
         \ is_raw_pointer_to
         \ is_movable_iterator
@@ -31,6 +32,7 @@ syntax keyword cppSTLtype
 syntax keyword cppSTLconstant
         \ intrusive_ptr_attach
         \ type_tag
+        \ enum_tag
         \ size_tag
         \ byte_order
         \ same_byte_order
