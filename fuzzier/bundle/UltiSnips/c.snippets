@@ -1455,7 +1455,7 @@ snippet ip "x_{&x}"
 ${1:x}_{&${2:$1}}
 endsnippet
 
-snippet irm "x_{rhs.x_}"
+snippet imr "x_{rhs.x_}"
 ${1:x}_{rhs.${2:$1}_}
 endsnippet
 
@@ -1650,7 +1650,9 @@ friend std::basic_ostream<Char, Traits>&
 operator<<(std::basic_ostream<Char, Traits>& os, const ${1:T}& ${2:`!p snip.rv=type2var(t[1])`})
 {
     using U = std::underlying_type_t<$1>;
+    // "name(value)"
     return os << to_string($2) << '(' << static_cast<U>($2) << ')';
+    // "name"
     return os << to_string($2);
 }
 endsnippet
@@ -2382,51 +2384,49 @@ kcomp
 using ${1:Map} = std::vector<${2:T}>;
 /// 管理表项生命期.
 $1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $5.begin(); }
-iterator end(void)   noexcept { return $5.end();   }
-const_iterator begin(void) const noexcept { return $5.begin(); }
-const_iterator end(void)   const noexcept { return $5.end();   }
 endsnippet
 
-snippet sthm> "SwissTableHashMap"
+snippet kswhs> "KeyedSwissTableHashSet"
 kof
 khash
 keq
-using ${1:Map} = SwissTableHashMapBuilder<${2:T}>
-            ::set_key<${4:Key}, ${5:KeyOf}, ${6:Hash}>
-            ::build;
+using ${1:Map} = KeyedSwissTableHashSet<${2:T}>, ${3:KeyOf}, ${4:Hash}, ${5:KeyEq}>;
 /// 管理表项生命期.
-$1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $5.begin(); }
-iterator end(void)   noexcept { return $5.end();   }
-const_iterator begin(void) const noexcept { return $5.begin(); }
-const_iterator end(void)   const noexcept { return $5.end();   }
+$1 ${6:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 endsnippet
 
-snippet itn "IntrusiveTreeNode"
-IntrusiveTreeNode<class ${1:C}>
+snippet ho "IntrusiveXxxHook"
+Intrusive${1:List}Hook<${1:T}>
+endsnippet
+
+snippet hof "IntrusiveTreeHookOf"
+struct ${1:HookOf} {
+    using Hook = Intrusive${2:List}Hook<${3:T}>;
+    constexpr Hook& operator()($3& ${4:`!p snip.rv=type2var(t[3])`}) const noexcept
+    { return $4.${5:hook}; }
+    constexpr const Hook& operator()(const $3& $4) const noexcept
+    { return $4.$5; }
+};
 endsnippet
 
 snippet iat> "IntrusiveAvlTree"
 kof
 kcomp
-using ${1:Map} = IntrusiveAvlTreeBuilder<${2:T}, class ${3:C}>
-            ::set_key<${4:Key}, ${5:KeyOf}>
-            ::build;
+using ${1:Map} = IntrusiveAvlTree<${2:T}, class ${3:HookOf}, ${4:KeyOf}>, ${5:Comp}>;
 /// 管理表项生命期.
 // FIXME
 /// 不管理表项生命期.
-$1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $5.begin(); }
-iterator end(void)   noexcept { return $5.end();   }
-const_iterator begin(void) const noexcept { return $5.begin(); }
-const_iterator end(void)   const noexcept { return $5.end();   }
+$1 ${6:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
+endsnippet
+
+snippet iwt> "IntrusiveWavlTree"
+kof
+kcomp
+using ${1:Map} = IntrusiveWavlTree<${2:T}, class ${3:HookOf}, ${4:KeyOf}>, ${5:Comp}>;
+/// 管理表项生命期.
+// FIXME
+/// 不管理表项生命期.
+$1 ${6:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 endsnippet
 
 snippet irt> "IntrusiveRbTree"
@@ -2439,35 +2439,14 @@ using ${1:Map} = IntrusiveRbTreeBuilder<${2:T}, class ${3:C}>
 // FIXME
 /// 不管理表项生命期.
 $1 ${5:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $5.begin(); }
-iterator end(void)   noexcept { return $5.end();   }
-const_iterator begin(void) const noexcept { return $5.begin(); }
-const_iterator end(void)   const noexcept { return $5.end();   }
-endsnippet
-
-snippet iln "IntrusiveListNode"
-IntrusiveListNode<class ${1:C}>
 endsnippet
 
 snippet il> "IntrusiveList"
-using ${1:List} = IntrusiveListBuilder<${2:T}, class ${3:C}>
-             ::build;
+using ${1:List} = IntrusiveList<${2:T}, ${3:HookOf}>;
 /// 管理表项生命期.
 // FIXME
 /// 不管理表项生命期.
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }
-const_iterator begin(void) const noexcept { return $4.begin(); }
-const_iterator end(void)   const noexcept { return $4.end();   }
-endsnippet
-
-snippet isln "IntrusiveSlistNode"
-IntrusiveSlistNode<class ${1:C}>
 endsnippet
 
 snippet isl> "IntrusiveSlist"
@@ -2477,39 +2456,16 @@ using ${1:List} = IntrusiveSlistBuilder<${2:T}, class ${3:C}>
 // FIXME
 /// 不管理表项生命期.
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }
-const_iterator begin(void) const noexcept { return $4.begin(); }
-const_iterator end(void)   const noexcept { return $4.end();   }
-endsnippet
-
-snippet ihn "IntrusiveHeapNode"
-IntrusiveHeapNode<class ${1:C}>
 endsnippet
 
 snippet ih> "IntrusiveHeap"
 kof
 kcomp
-using ${1:Heap} = IntrusiveHeapBuilder<${2:T}, class ${3:C}>
-           ::set_comp<Comp>
-           ::min_heap
-           ::build;
+using ${1:Heap} = IntrusiveHeap<${2:T}, ${3:HookOf}, ${4:Comp}, max_heap_t<${5:false}>>;
 /// 管理表项生命期.
 // FIXME
 /// 不管理表项生命期.
-$1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }
-const_iterator begin(void) const noexcept { return $4.begin(); }
-const_iterator end(void)   const noexcept { return $4.end();   }
-endsnippet
-
-snippet issn "IntrusiveSlistSetNode"
-IntrusiveSlistSetNode<class ${1:C}>
+$1 ${6:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 endsnippet
 
 snippet iss> "IntrusiveSlistSet"
@@ -2520,16 +2476,6 @@ using ${1:Set} = IntrusiveSlistSetBuilder<${2:T}, class ${3:C}>
 // FIXME
 /// 不管理表项生命期.
 $1  ${7:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $7.begin(); }
-iterator end(void)   noexcept { return $7.end();   }
-const_iterator begin(void) const noexcept { return $7.begin(); }
-const_iterator end(void)   const noexcept { return $7.end();   }
-endsnippet
-
-snippet ivn "IntrusiveVectorNode"
-IntrusiveVectorNode<class ${1:C}>
 endsnippet
 
 snippet iv> "IntrusiveVector"
@@ -2538,10 +2484,6 @@ using ${3:Vector} = IntrusiveVector<${1:T}, class ${2:C}>;
 // FIXME
 /// 不管理表项生命期.
 $3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-$3::iterator begin(void) noexcept { return $4.begin(); }
-$3::iterator end(void)   noexcept { return $4.end();   }
-$3::const_iterator begin(void) const noexcept { return $4.begin(); }
-$3::const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet vec> "Vector"
@@ -2549,21 +2491,11 @@ using ${1:Vector} = VectorBuilder<${2:T}>::base_index<${3:1}>::build;
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
 using iterator       = $1::iterator;
 using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }
-const_iterator begin(void) const noexcept { return $4.begin(); }
-const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet vv> "VectorView"
 using ${1:Vector} = VectorViewBuilder<${2:T}>::base_index<${3:1}>::build;
 $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }
-const_iterator begin(void) const noexcept { return $4.begin(); }
-const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet ifskn "IntrusiveFixedSkipListNode"
@@ -2577,21 +2509,11 @@ using ${5:Map} = IntrusiveFixedSkipList<${1:t}, ${2:3}, class ${3:C},
 // FIXME
 /// 不管理表项生命期.
 $5  ${6:`!p snip.rv = type2var(t[5])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-$5::iterator begin(void) noexcept { return $6.begin(); }
-$5::iterator end(void)   noexcept { return $6.end();   }
-$5::const_iterator begin(void) const noexcept { return $6.begin(); }
-$5::const_iterator end(void)   const noexcept { return $6.end();   }
 endsnippet
 
 snippet sk> "SkipList"
 using ${3:Map} = SkipList<${1:T}, ${2:Key}, KeyOf, Comp>;
 $3  ${4:`!p snip.rv = type2var(t[3])`_};`!p snip << 1; snip += snip.mkline(); snip += snip.mkline('public:')`
-using iterator       = $1::iterator;
-using const_iterator = $1::const_iterator;
-iterator begin(void) noexcept { return $4.begin(); }
-iterator end(void)   noexcept { return $4.end();   }
-const_iterator begin(void) const noexcept { return $4.begin(); }
-const_iterator end(void)   const noexcept { return $4.end();   }
 endsnippet
 
 snippet contv "vector-based container"
