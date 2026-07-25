@@ -17,36 +17,31 @@ let g:coc_data_home = g:bundle_path .. '/coc/data'
 "
 " Check whether coc.nvim installed.
 if isdirectory(g:repos_path .. '/coc.nvim')
-    " Use <Tab> for trigger completion and navigate to the next complete item.
-    function! s:check_backspace() abort
-      let col = col('.') - 1
-      return !col || getline('.')[col - 1]  =~ '\s'
-    endfunction
-    "
     " Use <C-Space> to trigger completion.
     inoremap <silent><expr> <C-Space> coc#refresh()
     "
     " Use <CR> to confirm completion without expanding a snippet
     " (<C-y> is always available to expand a snippet).
-    " Until `v0.0.81`, coc.nvim uses built-in popup menu, the visibility of
-    " the popup menu is examined by `pumvisible()`.
-    if coc#util#api_version() <= 30
-        inoremap <silent><expr> <CR> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
-    " From `v0.0.82`, coc.nvim uses custom popup menu, the visibility of
-    " the popup menu shall be examined by the new api.
-    else
+    " - From `v0.0.82`, coc.nvim uses custom popup menu, the visibility of
+    "   the popup menu is examined by the new api.
+    if coc#util#api_version() > 30
         inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+    " - Until `v0.0.81`, coc.nvim used built-in popup menu, the visibility of
+    "   the popup menu is examined by `pumvisible()`.
+    else
+        inoremap <silent><expr> <CR> pumvisible() ? coc#_select_confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
     endif
     "
     " Snippet navigation keys.
+    " - <Tab> and <S-Tab> are assigned for `UltiSnips`.
     let g:coc_snippet_next = '<C-J>'
     let g:coc_snippet_prev = '<C-K>'
     "
-    " Use '[c' and ']c' to navigate diagnostics.
-    if coc#util#api_version() <= 30
-        nmap <silent> [w <Plug>(coc-diagnostic-previous)
-    else
+    " Use '[w' and ']w' to navigate diagnostics.
+    if coc#util#api_version() > 30
         nmap <silent> [w <Plug>(coc-diagnostic-prev)
+    else
+        nmap <silent> [w <Plug>(coc-diagnostic-previous)
     endif
     nmap <silent> ]w <Plug>(coc-diagnostic-next)
     "
@@ -73,7 +68,7 @@ if isdirectory(g:repos_path .. '/coc.nvim')
         endif
     endfunction
     "
-    " Show signature for symbol when jumped to next/prev placeholder in a snippet.
+    " Show signature for symbol when jump to next/prev placeholder in a snippet.
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
     "
     " Show signature for symbol under cursor in insert mode.
@@ -83,7 +78,7 @@ if isdirectory(g:repos_path .. '/coc.nvim')
     autocmd CursorHold * silent call CocActionAsync('highlight')
     highlight! def link CocHighlightText Pmenu
     "
-    " Show in status line.
+    " Show diagnostics in status line.
     function! CocStatusDiagnostic() abort
         let info = get(b:, 'coc_diagnostic_info', {})
         if empty(info) | return '' | endif
