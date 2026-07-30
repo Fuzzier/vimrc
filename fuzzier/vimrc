@@ -75,6 +75,7 @@ let &undodir = g:undo_path
 "-------------------------------------------------------------------------------
 " PYTHON
 "-------------------------------------------------------------------------------
+let s:pyver = py3eval('sys.version_info[:2]')
 if has('win32')
     " let g:python_host_prog = 'C:/Python-2.7/python.exe'
     let g:python3_host_prog = 'python.exe'
@@ -484,7 +485,11 @@ call plug#begin(g:repos_path)
     " Comment: Powerful, with interoperability with python and vim script.
     " The commit 'c4c92bd04f38d45add297bc3e199a370d9280f3b' is the latest
     " version that supports python3.8
-    Plug 'SirVer/ultisnips'
+    if s:pyver == (3, 8)
+        Plug 'SirVer/ultisnips', { 'commit': 'c4c92bd04f38d45add297bc3e199a370d9280f3b' }
+    else
+        Plug 'SirVer/ultisnips'
+    endif
     "
     " =========================
     " Highlighting
