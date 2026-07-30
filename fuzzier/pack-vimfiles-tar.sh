@@ -17,7 +17,7 @@ D=$(date +%Y%m%d)
 tarfile=vimfiles-$vim_majorminor.$vim_patch-$D
 # echo "$tarfile"
 
-pushd .. > /dev/null
+pushd ../.. > /dev/null
 
 tar -acf $tarfile.tar.gz --totals --exclude=.vim/fuzzier/data --exclude=.ccls-cache .vim
 
