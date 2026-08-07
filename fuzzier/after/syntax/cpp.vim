@@ -3,8 +3,6 @@ syntax keyword cppSTLnamespace
         \ nsfx
         \ cda
         \ mpl
-        \ lock_free
-        \ wait
 
 syntax keyword cppSTLtype
         \ intrusive_ref_counter intrusive_ptr
@@ -24,10 +22,6 @@ syntax keyword cppSTLtype
         \ is_instantiation_of
         \ is_raw_pointer_to
         \ is_movable_iterator
-        \ no_futex_t
-        \ futex_t
-        \ no_spin_t
-        \ spin_t
 
 syntax keyword cppSTLconstant
         \ intrusive_ptr_attach
@@ -44,12 +38,6 @@ syntax keyword cppSTLconstant
         \ is_instantiation_of_v
         \ is_raw_pointer_to_v
         \ is_movable_iterator_v
-        \ no_futex
-        \ futex
-        \ use_futex
-        \ no_spin
-        \ spin
-        \ do_spin
 
 syntax keyword cppSTLfunction
         \ make_intrusive
