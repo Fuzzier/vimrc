@@ -27,8 +27,8 @@ let g:Lf_CacheDirectory = g:data_path .. '/LeaderF'
 let g:Lf_WorkingDirectoryMode = 'Ac'
 " Root markers.
 let g:Lf_RootMarkers = ['compile_commands.json', '.svn', '.git', '.hg']
-" Use [0-9] to select entry.
-let g:Lf_QuickSelect = 1
+" Do not use [0-9] to select entry.
+let g:Lf_QuickSelect = 0
 "
 let g:Lf_WildIgnore = {
     \ 'dir': [ '.ccls-cache', '.vs', '.svn', '.git', '.hg',
