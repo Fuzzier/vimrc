@@ -40,6 +40,7 @@ syntax keyword cppSTLconstant
         \ is_movable_iterator_v
 
 syntax keyword cppSTLfunction
+        \ type_hash
         \ make_intrusive
 
 syntax keyword cppCast
