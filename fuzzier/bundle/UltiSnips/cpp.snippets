@@ -616,6 +616,10 @@ snippet retn "return nullptr"
 return nullptr;
 endsnippet
 
+snippet rets "return *this"
+return *this;
+endsnippet
+
 ########################################
 # Conditional
 ########################################
@@ -669,37 +673,37 @@ endsnippet
 # Loop
 ########################################
 snippet for "for (++)"
-for (${1:size_t} ${2:i} = ${3:0u}; $2 < ${4:N}; ++$2) {$0
+for (${1:size_t} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {$0
 }
 endsnippet
 
 snippet for1 "for (++)"
-for (${1:size_t} ${2:i} = ${3:1u}; $2 <= ${4:N}; ++$2) {$0
+for (${1:size_t} ${2:i} = ${3:1}; $2 <= ${4:N}; ++$2) {$0
 }
 endsnippet
 
 snippet fori "for (++)"
-for (${1:int} ${2:i} = ${3:0u}; $2 < ${4:N}; ++$2) {$0
+for (${1:int} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {$0
 }
 endsnippet
 
 snippet foru "for (++)"
-for (${1:unsigned} ${2:i} = ${3:0u}; $2 < ${4:N}; ++$2) {$0
+for (${1:unsigned} ${2:i} = ${3:0}; $2 < ${4:N}; ++$2) {$0
 }
 endsnippet
 
 snippet for1 "for (uint16_t ++)"
-for (uint16_t ${1:i} = 0u; $1 < ${2:N}; ++$1) {$0
+for (uint16_t ${1:i} = 0; $1 < ${2:N}; ++$1) {$0
 }
 endsnippet
 
 snippet for3 "for (uint32_t ++)"
-for (uint32_t ${1:i} = 0u; $1 < ${2:N}; ++$1) {$0
+for (uint32_t ${1:i} = 0; $1 < ${2:N}; ++$1) {$0
 }
 endsnippet
 
 snippet for6 "for (uint64_t ++)"
-for (uint64_t ${1:i} = 0u; $1 < ${2:N}; ++$1) {$0
+for (uint64_t ${1:i} = 0; $1 < ${2:N}; ++$1) {$0
 }
 endsnippet
 
@@ -735,18 +739,6 @@ endsnippet
 
 snippet forc "for (const auto& : C)"
 for (const auto& ${1:x} : ${2:$1Set}) {$0
-}
-endsnippet
-
-snippet fore "for enum class"
-for (size_t ${3:`!p snip.rv=first_char(type2var(t[1]))`} = 1u; $3 < k${2:`!p snip.rv=var2type(type2var(t[1]))`}Last; ++$3) {
-    const auto ${4:`!p snip.rv=type2var(t[1])`} = static_cast<${1:E}>($3);
-}
-endsnippet
-
-snippet foref "for enum class"
-for (size_t ${3:`!p snip.rv=first_char(type2var(t[1]))`} = k${2:`!p snip.rv=var2type(type2var(t[1]))`}First; $3 < k$2Last; ++$3) {
-    const auto ${4:`!p snip.rv=type2var(t[1])`} = static_cast<${1:E}>($3);
 }
 endsnippet
 
@@ -829,25 +821,6 @@ catch (...) {
     $0
     throw;
 }
-endsnippet
-
-# Unindent 4 spaces.
-# 2 = 2 (length of 'e:')
-pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-2); snip.cursor.set(snip.line, snip.column)"
-snippet e: "exit:" b
-exit:
-endsnippet
-
-# Unindent 4 spaces.
-# 6 = 2 (length of 'e;') + 4 (indent width)
-pre_expand "snip.buffer[snip.line]=' '*(len(snip.buffer[snip.line])-6); snip.cursor.set(snip.line, snip.column)"
-snippet e; "exit:;" b
-exit:
-    return;
-endsnippet
-
-snippet ge "goto exit;"
-goto exit;
 endsnippet
 
 ################################################################################
@@ -1588,9 +1561,11 @@ template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
     using ${3:`!p snip.rv=remove_scope(t[1])`} = nsfx::$1;
-    template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const $2& v, FormatContext& ctx) const {
-        return formatter<$2>::format(to_string(v), ctx);
+    template<class FormatContext>
+    constexpr auto format(const $3& v, FormatContext& ctx) const
+        -> typename FormatContext::iterator
+    {
+        return formatter<$2>::format(to_string(v), ctx);$0
         return format_to(ctx.out(), "{}", v);
     }
 };
@@ -1601,8 +1576,10 @@ template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
     using ${3:`!p snip.rv=remove_scope(t[1])`} = nsfx::$1;
-    template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const $3& v, FormatContext& ctx) const {
+    template<class FormatContext>
+    constexpr auto format(const $3& v, FormatContext& ctx) const
+        -> typename FormatContext::iterator
+    {
         using U = std::underlying_type_t<$3>;
         const U u = static_cast<U>(v);
         return format_to(ctx.out(), "{}({})", to_string(v), u);
@@ -1615,13 +1592,13 @@ template<> struct formatter<nsfx::${1:T}>
     : formatter<${2:std::string_view}>
 {
     using ${3:`!p snip.rv=remove_scope(t[1])`} = nsfx::$1;
-    template<class FormatContext> constexpr typename FormatContext::iterator
-    format(const $2& v, FormatContext& ctx) const {
+    template<class FormatContext>
+    constexpr auto format(const $3& f, FormatContext& ctx) const
+        -> typename FormatContext::iterator
+    {
         using U = std::underlying_type_t<$2>;
-        const U u = static_cast<U>(v);
-        char s[8] {};
-        size_t c {};
-        return format_to(ctx.out(), "{}({})", std::string_view{s, c}, u);
+        const U u = static_cast<U>(f);
+        return format_to(ctx.out(), "{}({})", to_string(to_value(f)), u);
     }
 };
 endsnippet
@@ -1693,7 +1670,7 @@ const_iterator cbegin(void) const noexcept { return $2.cbegin(); }
 const_iterator cend(void)   const noexcept { return $2.cend();   }
 endsnippet
 
-snippet itbea "begin,end"
+snippet itbea "array-like begin,end"
 // Iterator. {{{`!p snip << 1; snip += snip.mkline('public:')`
 template<bool Const>
 struct Iterator {
@@ -1707,9 +1684,9 @@ struct Iterator {
     constexpr Iterator() noexcept = default;
     explicit constexpr Iterator(pointer p) noexcept : p_{p} {}
     template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
-    constexpr Iterator(Iterator<RhsConst> rhs) noexcept : p_{rhs.p_} {}
+    constexpr Iterator(const Iterator<RhsConst>& rhs) noexcept : p_{rhs.p_} {}
     template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
-    constexpr Iterator& operator=(Iterator<RhsConst> rhs) noexcept
+    constexpr Iterator& operator=(const Iterator<RhsConst>& rhs) noexcept
     { p_ = rhs.p_; return *this; }
     constexpr Iterator& operator++() noexcept { ++p_; return *this; }
     constexpr Iterator& operator--() noexcept { --p_; return *this; }
@@ -1765,7 +1742,7 @@ const_iterator cend(void)   const noexcept { return const_iterator{$2.data() + s
 // }}}
 endsnippet
 
-snippet itbev "begin,end"
+snippet itbev "vector-like begin,end"
 // Iterator. {{{`!p snip << 1; snip += snip.mkline('public:')`
 template<bool Const>
 struct Iterator {
@@ -1779,11 +1756,11 @@ struct Iterator {
     using iterator_category = std::random_access_iterator_tag;
     using iterator_concept  = std::random_access_iterator_tag;
     constexpr Iterator() noexcept = default;
-    explicit constexpr Iterator(MyIterator it) noexcept : it_{it} {}
+    explicit constexpr Iterator(const MyIterator& it) noexcept : it_{it} {}
     template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
-    constexpr Iterator(Iterator<RhsConst> rhs) noexcept : it_{rhs.it_} {}
+    constexpr Iterator(const Iterator<RhsConst>& rhs) noexcept : it_{rhs.it_} {}
     template<bool RhsConst, std::enable_if_t<(Const >= RhsConst), int> = 0>
-    constexpr Iterator& operator=(Iterator<RhsConst> rhs) noexcept
+    constexpr Iterator& operator=(const Iterator<RhsConst>& rhs) noexcept
     { it_ = rhs.it_; return *this; }
     constexpr Iterator& operator++() noexcept { ++it_; return *this; }
     constexpr Iterator& operator--() noexcept { --it_; return *this; }
@@ -1839,7 +1816,7 @@ const_iterator cend(void)   const noexcept { return const_iterator{$3.cend()};  
 // }}}
 endsnippet
 
-snippet itbem "begin,end"
+snippet itbem "map-like begin,end"
 struct const_iterator;
 struct iterator {
     friend struct const_iterator;
@@ -1850,7 +1827,7 @@ struct iterator {
     using reference  = value_type&;
     using pointer    = value_type*;
     iterator(void) = default;
-    explicit iterator(MyIterator it) noexcept : it_{it} {}
+    explicit iterator(const MyIterator& it) noexcept : it_{it} {}
     reference operator*(void) const noexcept { return it_->second; }
     pointer operator->(void) const noexcept
     { return std::addressof(it_->second); }
@@ -1871,7 +1848,7 @@ struct const_iterator {
     using pointer    = const value_type*;
     const_iterator(void) = default;
     const_iterator(iterator it) noexcept : it_{it.it_} {}
-    explicit const_iterator(MyIterator it) noexcept : it_{it} {}
+    explicit const_iterator(const MyIterator& it) noexcept : it_{it} {}
     reference operator*(void) const noexcept { return it_->second; }
     pointer operator->(void) const noexcept
     { return std::addressof(it_->second); }
@@ -1930,7 +1907,7 @@ endsnippet
 # ByteIterator
 ########################################
 snippet bio "ByteIterator"
-ByteIterator bio{${1:buf}.begin(), $1.end()};
+ByteIterator bio{$0};
 endsnippet
 
 snippet biot "ByteIterator"
@@ -1938,7 +1915,7 @@ ByteIterator bio{${1:buf}.end() - ${2:size}, $1.end()};
 endsnippet
 
 snippet cbio "ConstByteIterator"
-ConstByteIterator bio{${1:buf}.begin(), $1.end()};
+ConstByteIterator bio{$0};
 endsnippet
 
 snippet cbiot "ConstByteIterator"
@@ -2154,35 +2131,10 @@ snippet dupush "du.push"
 // 添加分组头部.
 ${1:T}* ${2:hdr} = nullptr;
 {
-    $2 = ${3:msg}.du().resetAndPush(type_tag<$1>);
+    ${3:msg}.du().reset(type_tag<$1>);
+    $2 = ${3:msg}.du().emplaceHead<$1>();
     $0
     $3->addByteLength(sizeof($1));
-}
-endsnippet
-
-snippet dupushv "du.push"
-// 添加分组头部.
-{
-    ${1:msg}.du().resetAndPush(${2:hdr});
-    $1->addByteLength(sizeof(${3:`!p snip.rv=var2type(t[2])`}));
-}
-endsnippet
-
-snippet dupushp "du.push"
-// 添加分组头部.
-{
-    ${1:msg}.du().resetAndPush(${2:p});
-    $1->addByteLength(sizeof($2));
-}
-endsnippet
-
-snippet dupushb "du.push"
-// 添加分组头部.
-{
-    ${1:msg}.du().reset(type_tag<${2:T}>);
-    uint8_t* buf = $1->du().push(sizeof(${3:`!p snip.rv=t[2].strip()`}), 0);
-    $0
-    $1->addByteLength(sizeof($3));
 }
 endsnippet
 
@@ -2230,15 +2182,9 @@ snippet icipush "ici.push"
 // 设置ICI.
 ${1:T}* ${2:ici} = nullptr;
 {
-    $2 = ${3:msg}.par().resetAndPush(type_tag<$1>);
+    ${3:msg}.par().reset<$1>();
+    $2 = emplaceHead<$1>(${3:msg}.par());
     $0
-}
-endsnippet
-
-snippet icipushv "ici.push"
-// 添加分组头部.
-{
-    ${1:msg}.par().resetAndPush(${2:ici});
 }
 endsnippet
 
@@ -2255,17 +2201,10 @@ ${1:T} ${2:ici};
 }
 endsnippet
 
-snippet iciptr "ici.ptr"
+snippet iciref "ici.ref"
 // 读取ICI.
-const ${1:T}* ${2:ici} = nullptr;
-{
-    const Buffer& par = ${3:msg}.par();
-    NSFX_ASSERT(par.size() == sizeof($1))(
-        "Invalid $1 size {} B, expected {} B",
-        par.size(), sizeof($1));
-    $2 = reinterpret_cast<const $1*>(par.data());
-    $0
-}
+const auto& ici = castHead<${1:T}>(${2:msg}.par());
+NSFX_ASSERT(ici.typeHash_ == type_hash<$1>());
 endsnippet
 
 snippet icipeep "ici.peep"
@@ -2396,7 +2335,7 @@ $1 ${6:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); sni
 endsnippet
 
 snippet ho "IntrusiveXxxHook"
-Intrusive${1:List}Hook<${1:T}>
+Intrusive${1:List}Hook<${2:T}>
 endsnippet
 
 snippet hof "IntrusiveTreeHookOf"
@@ -2450,8 +2389,7 @@ $1 ${4:`!p snip.rv = type2var(t[1])`_};`!p snip << 1; snip += snip.mkline(); sni
 endsnippet
 
 snippet isl> "IntrusiveSlist"
-using ${1:List} = IntrusiveSlistBuilder<${2:T}, class ${3:C}>
-                ::build;
+using ${1:List} = IntrusiveSlist<${2:T}, ${3:HookOf}>;
 /// 管理表项生命期.
 // FIXME
 /// 不管理表项生命期.
@@ -3139,25 +3077,16 @@ public:
     virtual void* query(std::string_view iid) noexcept override;
     virtual void use(std::string_view iid, void* p) override;
     virtual void initialize(const JsonVar& cfg) override;
-    virtual void on(const Event& ev) override;
-    virtual void handle(Message&& msg) override;
 
     // 参数及数据结构.
 private:
 
     // 事件.
 private:
-    enum class EventId {
-        None,
-        Last,
-    };
 
     // 端口.
 private:
-    enum class PortId {
-        None,
-        Last,
-    };
+
 endsnippet
 
 snippet cname "cname"
@@ -3166,24 +3095,6 @@ virtual std::string_view className(void) const noexcept override
 {
     return Object::className(this);
 }
-endsnippet
-
-snippet deid "enum EventId"
-// 事件.`!p snip << 1; snip += snip.mkline('private:')`
-enum class EventId
-{
-    None,
-    Last,
-};
-endsnippet
-
-snippet dpid "enum PortId"
-// 端口.`!p snip << 1; snip += snip.mkline('private:')`
-enum class PortId
-{
-    None,
-    Last,
-};
 endsnippet
 
 snippet ccm "create child module"
@@ -3197,16 +3108,33 @@ Module::connect(*this, ">xxx-data.ind", *$1, "<xxx-data.ind");
 $1->initialize($2);
 endsnippet
 
+# snippet dev "define event"
+# Event ${1:timer} {EventId::`!p snip.rv=var2type(t[1])`};
+# void on$2(void);
+#     ${2:`!p snip.rv=var2type(var2type(t[1]))`},
+# endsnippet
+
 snippet dev "define event"
-Event ${1:timer} {EventId::`!p snip.rv=var2type(t[1])`};
-void on$2(void);
-    ${2:`!p snip.rv=var2type(var2type(t[1]))`},
+Event ${1:x}Timer_{*this,
+      Event::Bind<&${2:O}::on${3:`!p snip.rv=var2type(t[1])`Timer}>{*this}};
+void schedule$3(void);
+void on$3(const Event&);
 endsnippet
 
-snippet dport "define port"
-Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_ {*this, "${1:name}", PortId::`!p snip.rv=str2camel(t[1],True)`};
+# snippet dport "define port"
+# Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_{*this, "${1:name}", PortId::`!p snip.rv=str2camel(t[1],True)`};
+# void `!p snip.rv=prim2func(t[1])`(Message&& msg);
+#     ${3:`!p snip.rv=str2camel(t[1],True)`},
+# endsnippet
+
+snippet dpi "define input port"
+Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_{*this, "${1:name}",
+     Port::Bind<&${3:O}::`!p snip.rv=prim2func(t[1])`>{*this}};
 void `!p snip.rv=prim2func(t[1])`(Message&& msg);
-    ${3:`!p snip.rv=str2camel(t[1],True)`},
+endsnippet
+
+snippet dpo "define output port"
+Port ${2:`!p snip.rv=str2camel(t[1],False)`}Port_{*this, "${1:name}"};
 endsnippet
 
 snippet mcp "module connect port"
