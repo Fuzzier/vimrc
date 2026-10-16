@@ -2,23 +2,28 @@
   // Automatically update 'b:coc_current_function'.
   "coc.preferences.extensionUpdateCheck": "daily",
 
-  // Select first item on completion start.
-  "suggest.noselect": false,
-  // The indicator that shows a complete item can be expanded as a snippet.
-  "suggest.snippetIndicator": "🐼✨",
-  // The maximum number of completion items shown.
-  "suggest.maxCompleteItemCount": 20,
-  // Floating window style.
-  "suggest.floatConfig":
-  {
+  ////////////////////
+  // coc-codeLens
+  "codeLens.enable": false,
+
+  ////////////////////
+  // coc-colors
+  "colors.enable": false,
+
+  ////////////////////
+  // coc-suggest
+  // The style of tghe popup menu and documentation window for completion.
+  "suggest.floatConfig": {
     "border": false,
     "borderhighlight": "NonText"
   },
+  // The maximum number of completion items shown.
+  "suggest.maxCompleteItemCount": 32,
+  // The indicator that shows a complete item can be expanded as a snippet.
+  "suggest.snippetIndicator": "🐼✨",
 
-  "signature.enable": false,
-  // Show signature in status line.
-  "signature.target": "float",
-
+  ////////////////////
+  // coc-diagnostic
   "diagnostic.enableSign": true,
   "diagnostic.errorSign": "E",
   "diagnostic.warningSign": "W",
@@ -26,12 +31,18 @@
   "diagnostic.hintSign": "H",
   "diagnostic.messageTarget": "float",
 
-  "codeLens.enable": false,
+  ////////////////////
+  // coc-inlayHint
+  "inlayHint.enable": true,
+  "inlayHint.display": false,
+  "inlayHint.enableParameter": true,
+  "inlayHint.position": "inline",
 
   ////////////////////
-  // coc-highlight
-  "highlight.document.enable": false,
-  "highlight.colors.enable": true,
+  // coc-signature
+  "signature.enable": false,
+  // Show signature in float.
+  "signature.target": "float",
 
   ////////////////////
   // coc-json
@@ -40,50 +51,56 @@
 
   ////////////////////
   // language servers
-  "languageserver":
-  {
-    "ccls":
-    {
-      "enable": true,
+  "languageserver": {
+    "ccls": {
+      "enable": false,
       "command": "ccls",
       // "args": [ "--log-file=Z:/ccls.log", "-v=1" ],
       "filetypes": [ "c", "cpp", "cuda", "objc", "objcpp" ],
       "rootPatterns": [ ".ccls-root", "compile_commands.json" ],
       "requireRootPattern": true,
-      "initializationOptions":
-      {
-        "cache":
-        {
+      "initializationOptions": {
+        "cache": {
           "directory": ".ccls-cache",
           "retainInMemory": 1,
         },
-        "client":
-        {
+        "client": {
           // Effect: add parenthesis for functions automatically.
           "snippetSupport": true,
         },
-        "completion":
-        {
+        "completion": {
           "placeholder": false,
           "filterAndSort": false,
           "detailedLabel": false,
         },
-        "highlight": { "lsRanges": true, },
-        "clang": {
-          "extraArgs": [
-            "-I..",
-            "-std=c++17"
-          ]
-        }
+        "highlight": {
+          "lsRanges": true,
+        },
+        // "clang": {
+        //   "extraArgs": [
+        //     "-I..",
+        //     "-std=c++17"
+        //   ]
+        // }
       },
     },
-    "clangd":
-    {
-      "enable": false,
+    "clangd": {
+      "enable": true,
       "command": "clangd",
-      "args": [ "--background-index" ],
-      "filetypes": [ "c", "cpp", "objc", "objcpp" ],
-      "rootPatterns": [ "compile_commands.json", "compile_flags.txt" ]
+      "filetypes": [
+        "c",
+        "cpp",
+        "cuda",
+        "objc",
+        "objcpp",
+      ],
+      "rootPatterns": [
+        "compile_commands.json",
+        "compile_flags.txt",
+      ],
+      "args": [
+        "--background-index",
+      ],
     }
   }
 }
