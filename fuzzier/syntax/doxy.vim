@@ -26,38 +26,30 @@ syn sync fromstart
 " /** ... */
 " /*! ... */
 execu 'syn region doxyBody matchgroup=doxyDelimiter '
-  \ . 'start=+/\*\%(\*/\)\@![*!]<\@!+ '
+  \ . 'start=+/\*[*!]<\@!+ '
   \ . 'end=+\*/+ '
   \ . 'keepend contains=@doxyInbody'
 
 " /// ...
 " //! ...
 execu 'syn region doxyBody matchgroup=doxyDelimiter '
-  \ . 'start=+^\s*//[/!][/!]\@!+ '
-  \ . 'end=+$+ '
-  \ . 'contains=@doxyInbody'
+  \ . 'start=+^\s*\zs//[/!]/\@!+ '
+  \ . 'end=+\n\%(\s*//[/!]\)\@!+ '
+  \ . 'keepend contains=@doxyInbody'
 
 " /**< ... */
 " /*!< ... */
 execu 'syn region doxyBody matchgroup=doxyDelimiter '
-  \ . 'start=+/\*[*!]<<\@!+ '
+  \ . 'start=+/\*[!*]<+ '
   \ . 'end=+\*/+ '
   \ . 'keepend contains=@doxyInbody'
 
 " ///< ...
 " //!< ...
-" Put after and override '///' and '//!'.
 execu 'syn region doxyBody matchgroup=doxyDelimiter '
-  \ . 'start=+^\s*//[/!]<+ '
-  \ . 'end=+$+ '
-  \ . 'contains=@doxyInbody'
-
-" xxx ///< ...
-" xxx //!< ...
-execu 'syn region doxyBody matchgroup=doxyDelimiter '
-  \ . 'start=+/\@<!//[/!]<+ '
-  \ . 'end=+$+ '
-  \ . 'contains=@doxyInbody'
+  \ . 'start=+//[/!]<+ '
+  \ . 'end=+\n\%(\s*//[/!]<\)\@!+ '
+  \ . 'keepend contains=@doxyInbody'
 
 " * ...
 syn match doxyContinue +^\s*\*/\@!\_s+ display contained
@@ -70,6 +62,7 @@ syn match doxyContinue +^\s*//[/!]\_s+ display contained
 " //!< ...
 syn match doxyContinue +^\s*//[/!]<\_s+ display contained
 
+let s:doxyPrefix = '\%(\%(/\*[*!]<\?\|//[/!]<\?\|^\s*\*\)\s*\)\@<='
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Python, makefile
@@ -146,7 +139,7 @@ endif
 "       Users do not have to scroll back and forth to correct the highlighting.
 
 " An escaped characters: @n, @\, @@, @&, @$, @#, @<, @>, @%, @", @., @=, @::, @|, @--, @---
-syn match doxyEscaped +[@\\]\%(n\>\|[\\@&$#<>%".=|]\|::\|-\{2,3}\)+ contained
+syn match doxyEscaped +[@\\]\%([n\\@&$#<>%".=|]\|::\|-\{2,3}\)+ contained
 
 """"""""""""""""""""""""""""""""""""""""
 " Basic syntax items
@@ -491,12 +484,12 @@ execu 'syn region doxyMdInlineCode matchgroup=doxyMdDelimiter '
 " #### H4
 " ##### H5
 " ###### H6
-syn region doxyMdH1 matchgroup=doxyMdDelimiter start=+#\@<!#\s\@=+      end=+#*\s*$+ display oneline contained contains=@doxyMdInline
-syn region doxyMdH2 matchgroup=doxyMdDelimiter start=+#\@<!##\s\@=+     end=+#*\s*$+ display oneline contained contains=@doxyMdInline
-syn region doxyMdH3 matchgroup=doxyMdDelimiter start=+#\@<!###\s\@=+    end=+#*\s*$+ display oneline contained contains=@doxyMdInline
-syn region doxyMdH4 matchgroup=doxyMdDelimiter start=+#\@<!####\s\@=+   end=+#*\s*$+ display oneline contained contains=@doxyMdInline
-syn region doxyMdH5 matchgroup=doxyMdDelimiter start=+#\@<!#####\s\@=+  end=+#*\s*$+ display oneline contained contains=@doxyMdInline
-syn region doxyMdH6 matchgroup=doxyMdDelimiter start=+#\@<!######\s\@=+ end=+#*\s*$+ display oneline contained contains=@doxyMdInline
+syn region doxyMdH1 matchgroup=doxyMdDelimiter start=+[#-]\@<!#\s\@=+      end=+#*\s*$+ display oneline contained contains=@doxyMdInline
+syn region doxyMdH2 matchgroup=doxyMdDelimiter start=+[#-]\@<!##\s\@=+     end=+#*\s*$+ display oneline contained contains=@doxyMdInline
+syn region doxyMdH3 matchgroup=doxyMdDelimiter start=+[#-]\@<!###\s\@=+    end=+#*\s*$+ display oneline contained contains=@doxyMdInline
+syn region doxyMdH4 matchgroup=doxyMdDelimiter start=+[#-]\@<!####\s\@=+   end=+#*\s*$+ display oneline contained contains=@doxyMdInline
+syn region doxyMdH5 matchgroup=doxyMdDelimiter start=+[#-]\@<!#####\s\@=+  end=+#*\s*$+ display oneline contained contains=@doxyMdInline
+syn region doxyMdH6 matchgroup=doxyMdDelimiter start=+[#-]\@<!######\s\@=+ end=+#*\s*$+ display oneline contained contains=@doxyMdInline
 
 " Underlined headers (limited support: no highlight of the header itself).
 syn match doxyMdHeaderLine "\%(^\|\s\)\@<==\+$" display contained
@@ -554,13 +547,14 @@ execu 'syn region doxyMdFencedCodeBlock matchgroup=doxyMdDelimiter '
 " * xxx
 " + xxx
 " - xxx
-" \s\@<=   must not start from the beginning of a line
-syn match doxyMdBulletList +\s\@<=\*\s\@=+ display contained
-syn match doxyMdBulletList +\_s\@<=[+-]\s\@=+ display contained
+execu 'syn match doxyMdBulletList +'
+  \ . s:doxyPrefix
+  \ . '[*+-]\ze\s+ display contained'
 " 1. xxx
 " -# xxx
-syn match doxyMdNumberList +\_s\@<=\d\+\.\s\@=+ display contained
-syn match doxyMdNumberList +\_s\@<=-#\s\@=+ display contained
+execu 'syn match doxyMdNumberList +'
+  \ . s:doxyPrefix
+  \ . '\%(\d\+\.\|-#\)\ze\s+ display contained'
 
 " Horizontal rules (put after and override bullet lists)
 " * * *

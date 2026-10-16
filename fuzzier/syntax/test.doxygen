@@ -280,16 +280,16 @@ C-style comment block
  * ===========
  * Bullet list
  * ===========
- * * xxx
- * + xxx
- * - xxx
+ * * xxx * xxx
+ * + xxx + xxx
+ * - xxx - xxx
  *
  * ===========
  * Number list
  * ===========
- * 1. xxx
- * 2. xxx
- * -# xx
+ * 1. xxx 1. xxx
+ * 2. xxx 2. xxx
+ * -# xxx -# xxx
  *
  * ================
  * Horizontal rules
@@ -445,14 +445,14 @@ C++ style comment block
 /// ~~~
 ///
 /// Bullet lists
-/// * xxx
-/// + xxx
-/// - xxx
+/// * xxx * xxx
+/// + xxx + xxx
+/// - xxx - xxx
 ///
 /// Number lists
-/// 1. xxx
-/// 2. xxx
-/// -# xx
+/// 1. xxx 1. xxx
+/// 2. xxx 2. xxx
+/// -# xxx -# xxx
 ///
 /// Inline code
 /// `Code `` line`
@@ -475,10 +475,12 @@ C++ style comment block
 ///   xxx__ xx
 /// ~~xxx
 ///   xxx~~ xx
+A non doxygen line.
 
 //!
 //!
 //!
+A non doxygen line.
 
 C-style post-member comment block
 xxx /**<
@@ -533,14 +535,14 @@ xxx ///< doxyEscaped
     ///< ~~~
     ///<
     ///< Bullet lists
-    ///< * xxx
-    ///< + xxx
-    ///< - xxx
+    ///< * xxx * xxx
+    ///< + xxx + xxx
+    ///< - xxx - xxx
     ///<
     ///< Number lists
-    ///< 1. xxx
-    ///< 2. xxx
-    ///< -# xx
+    ///< 1. xxx 1. xxx
+    ///< 2. xxx 2. xxx
+    ///< -# xxx -# xxx
     ///<
     ///< Inline code
     ///< `single `` line`
@@ -563,6 +565,7 @@ xxx ///< doxyEscaped
     ///<   xxx__ xx
     ///< ~~xxx
     ///<   xxx~~ xx
+xx
 
 xxx //!<
     //!<
