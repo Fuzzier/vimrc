@@ -82,6 +82,8 @@ if isdirectory(g:repos_path .. '/coc.nvim')
     nmap <silent> <Leader>ga :CocCommand document.toggleInlayHint<CR>
     highlight! def link CocInlayHint CocFloating
     "
+    highlight! def link CocUnusedHighlight CocWarningHighlight
+    "
     " Show diagnostics in status line.
     function! CocStatusDiagnostic() abort
         let info = get(b:, 'coc_diagnostic_info', {})
