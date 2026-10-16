@@ -78,6 +78,10 @@ if isdirectory(g:repos_path .. '/coc.nvim')
     autocmd CursorHold * silent call CocActionAsync('highlight')
     highlight! def link CocHighlightText Pmenu
     "
+    " Toggle inlay hint for the current buffer.
+    nmap <silent> <Leader>ga :CocCommand document.toggleInlayHint<CR>
+    highlight! def link CocInlayHint CocFloating
+    "
     " Show diagnostics in status line.
     function! CocStatusDiagnostic() abort
         let info = get(b:, 'coc_diagnostic_info', {})
